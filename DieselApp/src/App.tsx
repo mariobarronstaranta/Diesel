@@ -4,7 +4,7 @@ import CapturaLecturas from "./components/CapturaLecturas";
 function App() {
   return (
     <>
-      return <CapturaLecturas />;
+      <CapturaLecturas />;
     </>
   );
 }
