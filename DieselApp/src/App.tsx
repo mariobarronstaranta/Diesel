@@ -1,12 +1,27 @@
 import "./App.css";
 import CapturaLecturas from "./components/CapturaLecturas";
 
-function App() {
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Login from "./auth/Login";
+
+export default function App() {
   return (
-    <>
-      <CapturaLecturas />;
-    </>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<Login />} />
+        <Route path="/captura" element={<CapturaLecturas />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 
-export default App;
+
+//function App() {
+//  return (
+//    <>
+//      <CapturaLecturas />;
+//    </>
+//  );
+//}
+
+//export default App;
