@@ -1,11 +1,17 @@
-import { Container, Card, Form, Button, Row, Col } from "react-bootstrap";
+import { Container, Card, Form, Button, Row, Col, Alert } from "react-bootstrap";
 import { useForm } from "react-hook-form";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import ComboCiudad from "./ComboCiudad";
 import ComboPlanta from "./ComboPlanta";
 import ComboTanque from "./ComboTanque";
 
 export default function CapturaLecturas() {
+  const [isLoading, setIsLoading] = useState(false);
+  const [alertMessage, setAlertMessage] = useState<{
+    type: "success" | "danger";
+    text: string;
+  } | null>(null);
+
   const {
     register,
     handleSubmit,
@@ -45,13 +51,83 @@ export default function CapturaLecturas() {
     setValue("IDTanque", "");
   }, [idPlantaSeleccionada, setValue]);
 
-  const onSubmit = (data: any) => {
-    console.log("Formulario válido:", data);
+  const onSubmit = async (data: any) => {
+    try {
+      setIsLoading(true);
+      setAlertMessage(null);
+
+      // Formatear hora a HH:MM:SS (si solo tiene HH:MM, agregar :00)
+      const horaFormateada = data.Hora.includes(":00:")
+        ? data.Hora
+        : `${data.Hora}:00`;
+
+      // Preparar el payload según la especificación del API
+      const payload = {
+        idTanque: Number(data.IDTanque),
+        fecha: data.Fecha, // Ya está en formato YYYY-MM-DD
+        hora: horaFormateada,
+        lecturaCms: Number(data.AlturaCms),
+        temperatura: Number(data.Temperatura),
+        idUsuarioRegistro: 1,
+      };
+
+      console.log("Enviando datos:", payload);
+
+      // Realizar la petición POST
+      const response = await fetch(
+        "http://localhost/apitest/api/lecturas/crear",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      const result = await response.json();
+
+      if (result.success) {
+        setAlertMessage({
+          type: "success",
+          text: "La lectura del Tanque fue registrada exitosamente",
+        });
+
+        // Opcional: limpiar el formulario o resetear campos
+        console.log("Lectura registrada:", result);
+      } else {
+        // Manejar error del servidor
+        setAlertMessage({
+          type: "danger",
+          text: result.message || "Error al registrar la lectura",
+        });
+      }
+    } catch (error: any) {
+      console.error("Error al enviar datos:", error);
+      setAlertMessage({
+        type: "danger",
+        text: error.message || "Error de conexión con el servidor",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
     <Container fluid className="p-3">
       <h4 className="text-center mb-4">Captura Diaria de Lecturas</h4>
+
+      {/* Mensaje de alerta */}
+      {alertMessage && (
+        <Alert
+          variant={alertMessage.type}
+          dismissible
+          onClose={() => setAlertMessage(null)}
+          className="mb-3"
+        >
+          {alertMessage.text}
+        </Alert>
+      )}
 
       <Form noValidate onSubmit={handleSubmit(onSubmit)}>
         <Card className="mb-3">
@@ -173,8 +249,13 @@ export default function CapturaLecturas() {
         </Card>
 
         <div className="d-grid">
-          <Button size="lg" variant="warning" type="submit">
-            Guardar Datos
+          <Button
+            size="lg"
+            variant="warning"
+            type="submit"
+            disabled={isLoading}
+          >
+            {isLoading ? "Guardando..." : "Guardar Datos"}
           </Button>
         </div>
       </Form>
