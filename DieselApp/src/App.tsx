@@ -6,7 +6,7 @@ import Login from "./auth/Login";
 
 export default function App() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename="/dieselapp">
       <Routes>
         <Route path="/" element={<Login />} />
         <Route path="/captura" element={<CapturaLecturas />} />
