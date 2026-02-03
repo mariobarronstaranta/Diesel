@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import ComboCiudad from "./ComboCiudad";
 import ComboPlanta from "./ComboPlanta";
 import ComboTanque from "./ComboTanque";
+import { API_ENDPOINTS, apiRequest } from "../config/api.config";
 
 export default function CapturaLecturas() {
   const [isLoading, setIsLoading] = useState(false);
@@ -68,24 +69,17 @@ export default function CapturaLecturas() {
         hora: horaFormateada,
         lecturaCms: Number(data.AlturaCms),
         temperatura: Number(data.Temperatura),
+        cuentaLitros: Number(data.CuentaLitros),
         idUsuarioRegistro: 1,
       };
 
       console.log("Enviando datos:", payload);
 
-      // Realizar la petición POST
-      const response = await fetch(
-        "http://localhost/apitest/api/lecturas/crear",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      const result = await response.json();
+      // Realizar la petición POST usando configuración centralizada
+      const result = await apiRequest(API_ENDPOINTS.lecturas.crear, {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
 
       if (result.success) {
         setAlertMessage({
@@ -241,6 +235,30 @@ export default function CapturaLecturas() {
                   />
                   <Form.Control.Feedback type="invalid">
                     {errors.AlturaCms?.message as string}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+            </Row>
+
+            {/* Cuenta Litros */}
+            <Row className="mb-3">
+              <Col xs={12}>
+                <Form.Group>
+                  <Form.Label>Cuenta Litros</Form.Label>
+                  <Form.Control
+                    type="number"
+                    inputMode="numeric"
+                    isInvalid={!!errors.CuentaLitros}
+                    {...register("CuentaLitros", {
+                      required: "La cuenta litros es obligatoria",
+                      min: {
+                        value: 0,
+                        message: "La cuenta litros debe ser mayor o igual a 0",
+                      },
+                    })}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.CuentaLitros?.message as string}
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
