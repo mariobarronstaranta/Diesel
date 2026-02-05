@@ -18,6 +18,7 @@ export default function CapturaLecturas() {
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors },
   } = useForm({
     mode: "onSubmit",
@@ -87,7 +88,11 @@ export default function CapturaLecturas() {
           text: "La lectura del Tanque fue registrada exitosamente",
         });
 
-        // Opcional: limpiar el formulario o resetear campos
+        // Limpiar el formulario para permitir nueva captura
+        reset();
+        // Restablecer la fecha al día actual
+        setValue("Fecha", todayStr);
+
         console.log("Lectura registrada:", result);
       } else {
         // Manejar error del servidor
