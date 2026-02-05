@@ -1,16 +1,30 @@
 import "./App.css";
-import CapturaLecturas from "./components/CapturaLecturas";
-
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import Login from "./auth/Login";
+import CapturaLecturas from "./components/CapturaLecturas";
+import TopNav from "./components/TopNav";
+
+function AppLayout() {
+  const location = useLocation();
+  const showNav = location.pathname !== "/";
+
+  return (
+    <div className="app-shell">
+      {showNav && <TopNav />}
+      <main className={`app-content${showNav ? "" : " app-content--full"}`}>
+        <Routes>
+          <Route path="/" element={<Login />} />
+          <Route path="/captura" element={<CapturaLecturas />} />
+        </Routes>
+      </main>
+    </div>
+  );
+}
 
 export default function App() {
   return (
     <BrowserRouter basename="/dieselapp">
-      <Routes>
-        <Route path="/" element={<Login />} />
-        <Route path="/captura" element={<CapturaLecturas />} />
-      </Routes>
+      <AppLayout />
     </BrowserRouter>
   );
 }
