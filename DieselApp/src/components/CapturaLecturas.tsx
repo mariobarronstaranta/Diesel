@@ -6,6 +6,17 @@ import ComboPlanta from "./ComboPlanta";
 import ComboTanque from "./ComboTanque";
 import { API_ENDPOINTS, apiRequest } from "../config/api.config";
 
+interface CapturaLecturasForm {
+  IDCiudad: string;
+  IDPlanta: string;
+  IDTanque: string;
+  Fecha: string;
+  Hora: string;
+  Temperatura: string; // Inputs returns strings usually
+  AlturaCms: string;
+  CuentaLitros: string;
+}
+
 export default function CapturaLecturas() {
   const [isLoading, setIsLoading] = useState(false);
   const [alertMessage, setAlertMessage] = useState<{
@@ -18,8 +29,9 @@ export default function CapturaLecturas() {
     handleSubmit,
     watch,
     setValue,
+    reset,
     formState: { errors },
-  } = useForm({
+  } = useForm<CapturaLecturasForm>({
     mode: "onSubmit",
     reValidateMode: "onChange",
   });
@@ -52,7 +64,7 @@ export default function CapturaLecturas() {
     setValue("IDTanque", "");
   }, [idPlantaSeleccionada, setValue]);
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: CapturaLecturasForm) => {
     try {
       setIsLoading(true);
       setAlertMessage(null);
@@ -87,7 +99,7 @@ export default function CapturaLecturas() {
           text: "La lectura del Tanque fue registrada exitosamente",
         });
 
-        // Opcional: limpiar el formulario o resetear campos
+        reset();
         console.log("Lectura registrada:", result);
       } else {
         // Manejar error del servidor
@@ -96,11 +108,12 @@ export default function CapturaLecturas() {
           text: result.message || "Error al registrar la lectura",
         });
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Error al enviar datos:", error);
+      const errorMessage = error instanceof Error ? error.message : "Error de conexión con el servidor";
       setAlertMessage({
         type: "danger",
-        text: error.message || "Error de conexión con el servidor",
+        text: errorMessage,
       });
     } finally {
       setIsLoading(false);
@@ -165,7 +178,7 @@ export default function CapturaLecturas() {
                     isInvalid={!!errors.Fecha}
                     {...register("Fecha", {
                       required: "La fecha es obligatoria",
-                      validate: (value) => {
+                      validate: (value: string) => {
                         if (!value) return "La fecha es obligatoria";
                         if (value > todayStr)
                           return "La fecha no puede ser mayor al día de hoy";
