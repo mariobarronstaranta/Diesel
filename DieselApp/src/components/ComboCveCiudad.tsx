@@ -46,7 +46,7 @@ export default function ComboCveCiudad({ register, error }: ComboCveCiudadProps)
     }, []);
 
     return (
-        <Form.Group className="mb-3">
+        <Form.Group>
             <Form.Label>Ciudad</Form.Label>
 
             <Form.Select
