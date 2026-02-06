@@ -1,4 +1,5 @@
 import { NavLink } from "react-router-dom";
+import { Dropdown } from "react-bootstrap";
 
 export default function TopNav() {
   return (
@@ -27,9 +28,16 @@ export default function TopNav() {
         <button className="top-nav__action top-nav__action--ghost" type="button">
           Salidas
         </button>
-        <button className="top-nav__action" type="button">
-          Reportes
-        </button>
+        <Dropdown>
+          <Dropdown.Toggle className="top-nav__action" variant="" id="dropdown-reportes">
+            Reportes
+          </Dropdown.Toggle>
+
+          <Dropdown.Menu>
+            <Dropdown.Item as={NavLink} to="/reportes/lecturas">Lecturas</Dropdown.Item>
+            <Dropdown.Item href="#/consumos">Consumos</Dropdown.Item>
+          </Dropdown.Menu>
+        </Dropdown>
       </nav>
     </header>
   );

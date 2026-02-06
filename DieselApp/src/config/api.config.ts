@@ -19,6 +19,7 @@ export const API_ENDPOINTS = {
         obtener: (id: number) => `${API_BASE_URL}/api/lecturas/${id}`,
         actualizar: (id: number) => `${API_BASE_URL}/api/lecturas/${id}`,
         eliminar: (id: number) => `${API_BASE_URL}/api/lecturas/${id}`,
+        diarias: `${API_BASE_URL}/api/Lecturas/diarias`,
     },
 
     // Otros endpoints que puedas necesitar en el futuro

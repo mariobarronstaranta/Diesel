@@ -2,6 +2,7 @@ import "./App.css";
 import { BrowserRouter, Route, Routes, useLocation } from "react-router-dom";
 import Login from "./auth/Login";
 import CapturaLecturas from "./components/CapturaLecturas";
+import ReporteLecturas from "./components/ReporteLecturas";
 import TopNav from "./components/TopNav";
 
 function AppLayout() {
@@ -15,6 +16,7 @@ function AppLayout() {
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/captura" element={<CapturaLecturas />} />
+          <Route path="/reportes/lecturas" element={<ReporteLecturas />} />
         </Routes>
       </main>
     </div>
