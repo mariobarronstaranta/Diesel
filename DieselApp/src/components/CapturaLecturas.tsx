@@ -49,8 +49,17 @@ export default function CapturaLecturas() {
   minDate.setDate(minDate.getDate() - 2);
   const minDateStr = toDateInput(minDate);
 
-  useEffect(() => {
+  // Helper to set default date/time
+  const setDefaults = () => {
     setValue("Fecha", todayStr);
+    const now = new Date();
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    setValue("Hora", `${hours}:${minutes}`);
+  };
+
+  useEffect(() => {
+    setDefaults();
   }, [setValue, todayStr]);
 
   // Encadenamiento de combos
@@ -120,6 +129,23 @@ export default function CapturaLecturas() {
     }
   };
 
+
+
+  const handleClean = () => {
+    reset({
+      IDCiudad: "",
+      IDPlanta: "",
+      IDTanque: "",
+      Fecha: todayStr, // Reset to today
+      Hora: "",
+      Temperatura: "",
+      AlturaCms: "",
+      CuentaLitros: "",
+    });
+    setDefaults(); // Use the helper
+    setAlertMessage(null);
+  };
+
   return (
     <Container fluid className="p-3">
       <h4 className="text-center mb-4">Captura Diaria de Lecturas</h4>
@@ -137,38 +163,48 @@ export default function CapturaLecturas() {
       )}
 
       <Form noValidate onSubmit={handleSubmit(onSubmit)}>
-        <Card className="mb-3">
+        <Card className="mb-4">
+          <Card.Header className="bg-secondary text-white text-center fw-bold">DATOS DEL TANQUE</Card.Header>
           <Card.Body>
-            {/* Ciudad */}
-            <ComboCiudad register={register} error={errors.IDCiudad} />
+            <Row>
+              <Col md={4}>
+                <ComboCiudad register={register} error={errors.IDCiudad} />
+              </Col>
 
-            {/* Planta */}
-            <ComboPlanta
-              idCiudad={
-                idCiudadSeleccionada ? Number(idCiudadSeleccionada) : null
-              }
-              register={register}
-            />
-            {errors.IDPlanta && (
-              <div className="text-danger small mb-2">
-                Seleccione una planta
-              </div>
-            )}
+              <Col md={4}>
+                <ComboPlanta
+                  idCiudad={
+                    idCiudadSeleccionada ? Number(idCiudadSeleccionada) : null
+                  }
+                  register={register}
+                />
+                {errors.IDPlanta && (
+                  <div className="text-danger small mb-2">
+                    Seleccione una planta
+                  </div>
+                )}
+              </Col>
 
-            {/* Tanque */}
-            <ComboTanque
-              idPlanta={
-                idPlantaSeleccionada ? Number(idPlantaSeleccionada) : null
-              }
-              register={register}
-            />
-            {errors.IDTanque && (
-              <div className="text-danger small mb-2">Seleccione un tanque</div>
-            )}
+              <Col md={4}>
+                <ComboTanque
+                  idPlanta={
+                    idPlantaSeleccionada ? Number(idPlantaSeleccionada) : null
+                  }
+                  register={register}
+                />
+                {errors.IDTanque && (
+                  <div className="text-danger small mb-2">Seleccione un tanque</div>
+                )}
+              </Col>
+            </Row>
+          </Card.Body>
+        </Card>
 
-            {/* Fecha y Hora */}
+        <Card className="mb-3">
+          <Card.Header className="bg-secondary text-white text-center fw-bold">DATOS DE LECTURA</Card.Header>
+          <Card.Body>
             <Row className="mb-3">
-              <Col xs={6}>
+              <Col md={4}>
                 <Form.Group>
                   <Form.Label>Fecha</Form.Label>
                   <Form.Control
@@ -194,7 +230,7 @@ export default function CapturaLecturas() {
                 </Form.Group>
               </Col>
 
-              <Col xs={6}>
+              <Col md={4}>
                 <Form.Group>
                   <Form.Label>Hora</Form.Label>
                   <Form.Control
@@ -209,11 +245,8 @@ export default function CapturaLecturas() {
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
-            </Row>
 
-            {/* Mediciones */}
-            <Row className="mb-3">
-              <Col xs={6}>
+              <Col md={4}>
                 <Form.Group>
                   <Form.Label>Temperatura (°C)</Form.Label>
                   <Form.Control
@@ -230,8 +263,10 @@ export default function CapturaLecturas() {
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
+            </Row>
 
-              <Col xs={6}>
+            <Row className="mb-3">
+              <Col md={4}>
                 <Form.Group>
                   <Form.Label>Altura (cms)</Form.Label>
                   <Form.Control
@@ -251,11 +286,8 @@ export default function CapturaLecturas() {
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
-            </Row>
 
-            {/* Cuenta Litros */}
-            <Row className="mb-3">
-              <Col xs={12}>
+              <Col md={4}>
                 <Form.Group>
                   <Form.Label>Cuenta Litros</Form.Label>
                   <Form.Control
@@ -279,14 +311,23 @@ export default function CapturaLecturas() {
           </Card.Body>
         </Card>
 
-        <div className="d-grid">
+        <div className="d-flex gap-2 justify-content-end">
+          <Button
+            size="lg"
+            variant="info"
+            type="button"
+            onClick={handleClean}
+            disabled={isLoading}
+          >
+            Limpiar Formulario
+          </Button>
           <Button
             size="lg"
             variant="warning"
             type="submit"
             disabled={isLoading}
           >
-            {isLoading ? "Guardando..." : "Guardar Datos"}
+            {isLoading ? "Guardando..." : "Guardar"}
           </Button>
         </div>
       </Form>

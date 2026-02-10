@@ -35,46 +35,79 @@ export default function Login() {
   };
 
   return (
-    <Container fluid className="p-3">
-      <h4 className="text-center mb-4">Captura Diaria de Lecturas</h4>
+    <div
+      className="d-flex align-items-center justify-content-center"
+      style={{
+        background: "linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)",
+        position: "fixed",
+        top: 0,
+        left: 0,
+        width: "100%",
+        height: "100%",
+        overflow: "auto"
+      }}
+    >
+      <Container style={{ maxWidth: "500px" }}>
+        <Card className="shadow-lg border-0 rounded-4">
+          <Card.Body className="p-5">
+            <div className="text-center mb-4">
 
-      <Form onSubmit={onLogin}>
-        <Card className="mb-3">
-          <Card.Body>
+              <h2 className="fw-bold text-dark">Admon. de Combustibles</h2>
+              <h3 className="fw-bold text-dark">Bienvenido</h3>
+            </div>
+
             {error && (
-              <Alert variant="danger" className="mb-3">
+              <Alert variant="danger" className="mb-4 text-center">
                 {error}
               </Alert>
             )}
 
-            <Form.Group className="mb-3">
-              <Form.Label>Usuario</Form.Label>
-              <Form.Control
-                value={usuario}
-                onChange={(e) => setUsuario(e.target.value)}
-                required
-                autoFocus
-              />
-            </Form.Group>
+            <Form onSubmit={onLogin}>
+              <Form.Group className="mb-3" controlId="formBasicEmail">
+                <Form.Label className="fw-bold medium text-secondary">USUARIO</Form.Label>
+                <Form.Control
+                  size="lg"
+                  type="text"
+                  placeholder="Ingrese su usuario"
+                  value={usuario}
+                  onChange={(e) => setUsuario(e.target.value)}
+                  className="bg-light border-0"
+                  required
+                  autoFocus
+                />
+              </Form.Group>
 
-            <Form.Group className="mb-3">
-              <Form.Label>Password</Form.Label>
-              <Form.Control
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </Form.Group>
+              <Form.Group className="mb-4" controlId="formBasicPassword">
+                <Form.Label className="fw-bold medium text-secondary">CONTRASEÑA</Form.Label>
+                <Form.Control
+                  size="lg"
+                  type="password"
+                  placeholder="Ingrese su contraseña"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="bg-light border-0"
+                  required
+                />
+              </Form.Group>
+
+              <div className="d-grid gap-2">
+                <Button
+                  variant="primary"
+                  size="lg"
+                  type="submit"
+                  className="fw-bold shadow-sm"
+                  style={{ background: "#f0ad4e", border: "none", color: "white" }} // Keeping the warning color feel but custom styled if needed, or just use variant="warning"
+                >
+                  INGRESAR
+                </Button>
+              </div>
+            </Form>
           </Card.Body>
+          <Card.Footer className="text-center bg-transparent border-0 pb-4">
+            <small className="text-muted">&copy; 2026 Diesel App System</small>
+          </Card.Footer>
         </Card>
-
-        <div className="d-grid">
-          <Button size="lg" variant="warning" type="submit">
-            Entrar
-          </Button>
-        </div>
-      </Form>
-    </Container>
+      </Container>
+    </div >
   );
 }

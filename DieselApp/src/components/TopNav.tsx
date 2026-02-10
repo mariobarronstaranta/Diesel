@@ -22,9 +22,14 @@ export default function TopNav() {
         >
           Lecturas
         </NavLink>
-        <button className="top-nav__action top-nav__action--ghost" type="button">
+        <NavLink
+          className={({ isActive }) =>
+            `top-nav__link${isActive ? " top-nav__link--active" : ""}`
+          }
+          to="/entradas"
+        >
           Entradas
-        </button>
+        </NavLink>
         <button className="top-nav__action top-nav__action--ghost" type="button">
           Salidas
         </button>
