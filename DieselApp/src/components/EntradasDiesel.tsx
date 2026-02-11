@@ -62,7 +62,6 @@ export default function EntradasDiesel() {
             CuentaLitros: "",
         });
         setDefaults();
-        setMessage(null);
     };
 
     const onSubmit = async (data: EntradasForm) => {
@@ -70,21 +69,34 @@ export default function EntradasDiesel() {
         setMessage(null);
 
         try {
+            // Get current local date and time
+            const now = new Date();
+            const year = now.getFullYear();
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const day = String(now.getDate()).padStart(2, '0');
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const localDateTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+
+            // Insert into TanqueMovimiento table
             const { error } = await supabase
-                .from("Entradas") // Assuming table name
+                .from("TanqueMovimiento")
                 .insert([
                     {
-                        IDTanque: Number(data.IDTanque),
-                        Fecha: data.Fecha,
-                        Hora: data.Hora,
-                        Temperatura: Number(data.Temperatura),
+                        CveCiudad: data.CveCiudad,
+                        IdTanque: Number(data.IDTanque),
+                        FechaCarga: data.Fecha,
+                        HoraCarga: data.Hora,
+                        TemperaturaCarga: Number(data.Temperatura),
                         LitrosCarga: Number(data.LitrosCarga),
-                        Altura: Number(data.Altura),
+                        AlturaTanque: Number(data.Altura),
                         CuentaLitros: Number(data.CuentaLitros),
-                        IdProveedor: Number(data.IdProveedor), // Fixed field name
                         Remision: data.Remision,
+                        IdProveedor: Number(data.IdProveedor),
                         Observaciones: data.Observaciones,
-                        IDUsuario: 1 // Hardcoded user for now as per other components
+                        TipoMovimiento: "E",
+                        FechaHoraMovimiento: localDateTime
                     }
                 ]);
 
@@ -243,7 +255,16 @@ export default function EntradasDiesel() {
                 </Card>
 
                 <div className="d-flex gap-2 justify-content-end">
-                    <Button variant="info" size="lg" type="button" onClick={handleClean} disabled={loading}>
+                    <Button
+                        variant="info"
+                        size="lg"
+                        type="button"
+                        onClick={() => {
+                            handleClean();
+                            setMessage(null);
+                        }}
+                        disabled={loading}
+                    >
                         Limpiar Formulario
                     </Button>
                     <Button variant="warning" size="lg" type="submit" disabled={loading}>
