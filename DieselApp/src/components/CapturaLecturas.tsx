@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import ComboCiudad from "./ComboCiudad";
 import ComboPlanta from "./ComboPlanta";
 import ComboTanque from "./ComboTanque";
-import { API_ENDPOINTS, apiRequest } from "../config/api.config";
+import { supabase } from "../supabase/client";
 
 interface CapturaLecturasForm {
   IDCiudad: string;
@@ -83,40 +83,33 @@ export default function CapturaLecturas() {
         ? data.Hora
         : `${data.Hora}:00`;
 
-      // Preparar el payload según la especificación del API
-      const payload = {
-        idTanque: Number(data.IDTanque),
-        fecha: data.Fecha, // Ya está en formato YYYY-MM-DD
-        hora: horaFormateada,
-        lecturaCms: Number(data.AlturaCms),
-        temperatura: Number(data.Temperatura),
-        cuentaLitros: Number(data.CuentaLitros),
-        idUsuarioRegistro: 1,
-      };
+      const { error } = await supabase
+        .from("TanqueLecturas")
+        .insert([
+          {
+            IDTanque: Number(data.IDTanque),
+            Fecha: data.Fecha,
+            Hora: horaFormateada,
+            LecturaCms: Number(data.AlturaCms),
+            Temperatura: Number(data.Temperatura),
+            VolActualTA: 0,
+            VolActual15C: 0,
+            CuentaLitros: Number(data.CuentaLitros),
+            FechaRegistro: new Date(),
+            IDUsuarioRegistro: 1,
+          },
+        ]);
 
-      console.log("Enviando datos:", payload);
+      if (error) {
+        throw error;
+      }
 
-      // Realizar la petición POST usando configuración centralizada
-      const result = await apiRequest(API_ENDPOINTS.lecturas.crear, {
-        method: "POST",
-        body: JSON.stringify(payload),
+      setAlertMessage({
+        type: "success",
+        text: "Lectura registrada de manera exitosa",
       });
 
-      if (result.success) {
-        setAlertMessage({
-          type: "success",
-          text: "La lectura del Tanque fue registrada exitosamente",
-        });
-
-        reset();
-        console.log("Lectura registrada:", result);
-      } else {
-        // Manejar error del servidor
-        setAlertMessage({
-          type: "danger",
-          text: result.message || "Error al registrar la lectura",
-        });
-      }
+      handleClean();
     } catch (error: unknown) {
       console.error("Error al enviar datos:", error);
       const errorMessage = error instanceof Error ? error.message : "Error de conexión con el servidor";
@@ -143,7 +136,6 @@ export default function CapturaLecturas() {
       CuentaLitros: "",
     });
     setDefaults(); // Use the helper
-    setAlertMessage(null);
   };
 
   return (
@@ -316,7 +308,10 @@ export default function CapturaLecturas() {
             size="lg"
             variant="info"
             type="button"
-            onClick={handleClean}
+            onClick={() => {
+              handleClean();
+              setAlertMessage(null);
+            }}
             disabled={isLoading}
           >
             Limpiar Formulario

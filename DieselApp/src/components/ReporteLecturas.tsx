@@ -2,7 +2,7 @@ import { Container, Card, Form, Button, Row, Col, Alert, Table, Spinner } from "
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import ComboCveCiudad from "./ComboCveCiudad";
-import { API_ENDPOINTS, apiRequest } from "../config/api.config";
+import { supabase } from "../supabase/client";
 
 interface ReporteLecturasForm {
     CveCiudad: string;
@@ -14,11 +14,11 @@ interface LecturaDiaria {
     ciudad: string;
     nombre: string;
     fecha: string;
-    lecturaInicialCms: number;
-    lecturaFinalCms: number;
-    cuentaLitrosInicial: number;
-    cuentaLitrosFinal: number;
-    diferenciaCuentaLitros: number;
+    lectura_inicial_cms: number;
+    lectura_final_cms: number;
+    cuenta_litros_inicial: number;
+    cuenta_litros_final: number;
+    diferencia_cuenta_litros: number;
 }
 
 export default function ReporteLecturas() {
@@ -53,20 +53,24 @@ export default function ReporteLecturas() {
             setIsLoading(true);
             setAlertMessage(null);
 
-            // Preparar el payload
-            const payload = {
-                FechaInicial: data.FechaInicial,
-                FechaFinal: data.FechaFinal,
-                Ciudad: data.CveCiudad,
-            };
-
-            console.log("Consultando lecturas diarias:", payload);
-
-            // Realizar la petición POST
-            const result = await apiRequest<LecturaDiaria[]>(API_ENDPOINTS.lecturas.diarias, {
-                method: "POST",
-                body: JSON.stringify(payload),
+            console.log("Consultando lecturas diarias:", {
+                p_ciudad: data.CveCiudad,
+                p_fecha_inicial: data.FechaInicial,
+                p_fecha_final: data.FechaFinal,
             });
+
+            // Llamar a la función RPC de Supabase
+            const { data: result, error } = await supabase.rpc('sp_obtener_lecturas_diarias', {
+                p_ciudad: data.CveCiudad,
+                p_fecha_inicial: data.FechaInicial,
+                p_fecha_final: data.FechaFinal,
+            });
+
+            if (error) {
+                throw error;
+            }
+
+            console.log("Resultado de Supabase RPC:", result);
 
             if (Array.isArray(result)) {
                 setLecturas(result);
@@ -121,11 +125,11 @@ export default function ReporteLecturas() {
                 `"${l.ciudad}"`,
                 `"${l.nombre}"`,
                 `"${formatearFecha(l.fecha)}"`,
-                l.lecturaInicialCms,
-                l.lecturaFinalCms,
-                l.cuentaLitrosInicial,
-                l.cuentaLitrosFinal,
-                l.diferenciaCuentaLitros
+                l.lectura_inicial_cms,
+                l.lectura_final_cms,
+                l.cuenta_litros_inicial,
+                l.cuenta_litros_final,
+                l.diferencia_cuenta_litros
             ].join(","))
         ].join("\n");
 
@@ -251,14 +255,14 @@ export default function ReporteLecturas() {
                                 <tbody>
                                     {lecturas.map((lectura, index) => (
                                         <tr key={index}>
-                                            <td>{lectura.ciudad}</td>
-                                            <td>{lectura.nombre}</td>
-                                            <td>{formatearFecha(lectura.fecha)}</td>
-                                            <td>{lectura.lecturaInicialCms}</td>
-                                            <td>{lectura.lecturaFinalCms}</td>
-                                            <td>{lectura.cuentaLitrosInicial.toLocaleString()}</td>
-                                            <td>{lectura.cuentaLitrosFinal.toLocaleString()}</td>
-                                            <td>{lectura.diferenciaCuentaLitros.toLocaleString()}</td>
+                                            <td>{lectura.ciudad ?? ''}</td>
+                                            <td>{lectura.nombre ?? ''}</td>
+                                            <td>{lectura.fecha ? formatearFecha(lectura.fecha) : ''}</td>
+                                            <td>{lectura.lectura_inicial_cms ?? 0}</td>
+                                            <td>{lectura.lectura_final_cms ?? 0}</td>
+                                            <td>{(lectura.cuenta_litros_inicial ?? 0).toLocaleString()}</td>
+                                            <td>{(lectura.cuenta_litros_final ?? 0).toLocaleString()}</td>
+                                            <td>{(lectura.diferencia_cuenta_litros ?? 0).toLocaleString()}</td>
                                         </tr>
                                     ))}
                                 </tbody>
