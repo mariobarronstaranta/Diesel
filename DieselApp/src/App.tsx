@@ -4,6 +4,7 @@ import Login from "./auth/Login";
 import CapturaLecturas from "./components/CapturaLecturas";
 import ReporteLecturas from "./components/ReporteLecturas";
 import EntradasDiesel from "./components/EntradasDiesel";
+import SalidasDiesel from "./components/SalidasDiesel";
 import TopNav from "./components/TopNav";
 
 function AppLayout() {
@@ -18,6 +19,7 @@ function AppLayout() {
           <Route path="/" element={<Login />} />
           <Route path="/captura" element={<CapturaLecturas />} />
           <Route path="/entradas" element={<EntradasDiesel />} />
+          <Route path="/salidas" element={<SalidasDiesel />} />
           <Route path="/reportes/lecturas" element={<ReporteLecturas />} />
         </Routes>
       </main>

@@ -30,9 +30,14 @@ export default function TopNav() {
         >
           Entradas
         </NavLink>
-        <button className="top-nav__action top-nav__action--ghost" type="button">
+        <NavLink
+          className={({ isActive }) =>
+            `top-nav__link${isActive ? " top-nav__link--active" : ""}`
+          }
+          to="/salidas"
+        >
           Salidas
-        </button>
+        </NavLink>
         <Dropdown>
           <Dropdown.Toggle className="top-nav__action" variant="" id="dropdown-reportes">
             Reportes

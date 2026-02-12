@@ -73,8 +73,18 @@ export default function ReporteLecturas() {
             console.log("Resultado de Supabase RPC:", result);
 
             if (Array.isArray(result)) {
-                setLecturas(result);
-                if (result.length === 0) {
+                // Sort by fecha (date) first, then by nombre (tank name)
+                const sortedResult = result.sort((a, b) => {
+                    // First sort by fecha
+                    const dateCompare = new Date(a.fecha).getTime() - new Date(b.fecha).getTime();
+                    if (dateCompare !== 0) return dateCompare;
+
+                    // If dates are equal, sort by nombre
+                    return a.nombre.localeCompare(b.nombre);
+                });
+
+                setLecturas(sortedResult);
+                if (sortedResult.length === 0) {
                     setAlertMessage({
                         type: "success",
                         text: "No se encontraron lecturas para los filtros seleccionados",
@@ -82,7 +92,7 @@ export default function ReporteLecturas() {
                 } else {
                     setAlertMessage({
                         type: "success",
-                        text: `Se encontraron ${result.length} lecturas`,
+                        text: `Se encontraron ${sortedResult.length} lecturas`,
                     });
                 }
             } else {
