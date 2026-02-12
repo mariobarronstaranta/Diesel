@@ -110,13 +110,14 @@ export default function SalidasDiesel() {
                         LitrosCarga: Number(data.LitrosCarga),
                         AlturaTanque: 0, // Not captured in this form
                         CuentaLitros: Number(data.CuentaLitros),
-                        Remision: data.FolioVale,
+                        Remision: null, // Remision is for Entradas, FolioVale is for Salidas
                         IdProveedor: null, // Not applicable for salidas
                         Observaciones: data.Observaciones,
-                        TipoMovimiento: "S",
+                        TipoMovimiento: "S", // User explicitly requested "S" for Salidas
                         FechaHoraMovimiento: localDateTime,
-                        IDUnidad: Number(data.IDUnidad),
-                        IdOperador: Number(data.IdOperador),
+                        IdUnidad: Number(data.IDUnidad),
+                        IdPersonal: Number(data.IdOperador), // Mapped to IdPersonal
+                        FolioVale: data.FolioVale,
                         Horimetro: Number(data.Horimetro),
                         Odometro: Number(data.Odometro),
                     }
