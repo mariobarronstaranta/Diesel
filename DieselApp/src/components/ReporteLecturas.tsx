@@ -1,4 +1,4 @@
-import { Container, Card, Form, Button, Row, Col, Alert, Table, Spinner } from "react-bootstrap";
+import { Container, Card, Form, Button, Row, Col, Alert, Table, Spinner, Modal } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import ComboCveCiudad from "./ComboCveCiudad";
@@ -21,6 +21,16 @@ interface LecturaDiaria {
     diferencia_cuenta_litros: number;
 }
 
+interface DetalleLectura {
+    IDTanqueLecturas: number;
+    Tanque: string;
+    Fecha: string;
+    Hora: string;
+    LecturaCms: number;
+    Temperatura: number;
+    CuentaLitros: number;
+}
+
 export default function ReporteLecturas() {
     const [isLoading, setIsLoading] = useState(false);
     const [alertMessage, setAlertMessage] = useState<{
@@ -28,6 +38,13 @@ export default function ReporteLecturas() {
         text: string;
     } | null>(null);
     const [lecturas, setLecturas] = useState<LecturaDiaria[]>([]);
+
+    // Estados para el detalle
+    const [showModal, setShowModal] = useState(false);
+    const [detalleLecturas, setDetalleLecturas] = useState<DetalleLectura[]>([]);
+    const [isModalLoading, setIsModalLoading] = useState(false);
+    const [modalError, setModalError] = useState<string | null>(null);
+    const [infoFilaSeleccionada, setInfoFilaSeleccionada] = useState<{ fecha: string; tanque: string } | null>(null);
 
     const {
         register,
@@ -110,6 +127,34 @@ export default function ReporteLecturas() {
             });
         } finally {
             setIsLoading(false);
+        }
+    };
+
+    const handleVerDetalle = async (fecha: string, tanque: string) => {
+        try {
+            setIsModalLoading(true);
+            setModalError(null);
+            setInfoFilaSeleccionada({ fecha, tanque });
+            setShowModal(true);
+            setDetalleLecturas([]);
+
+            console.log("Consultando detalle de lecturas:", { fecha, tanque });
+
+            const { data: result, error } = await supabase.rpc('fn_obtener_lecturas_por_fecha', {
+                p_fecha: fecha,
+                p_tanque: tanque
+            });
+
+            if (error) throw error;
+
+            console.log("Resultado detalle Supabase:", result);
+            setDetalleLecturas(result || []);
+
+        } catch (error: unknown) {
+            console.error("Error al obtener detalle:", error);
+            setModalError(error instanceof Error ? error.message : "Error al obtener el detalle");
+        } finally {
+            setIsModalLoading(false);
         }
     };
 
@@ -218,10 +263,11 @@ export default function ReporteLecturas() {
 
                             <Col lg={2} md={12} className="d-flex align-items-center mt-lg-4">
                                 <Button
-                                    variant="primary"
+                                    variant="warning"
+                                    size="lg"
                                     type="submit"
                                     disabled={isLoading}
-                                    className="w-100"
+                                    className="w-100 fw-bold"
                                 >
                                     {isLoading ? (
                                         <>
@@ -250,16 +296,21 @@ export default function ReporteLecturas() {
                     <Card.Body>
                         <div className="table-responsive">
                             <Table striped bordered hover>
-                                <thead>
+                                <thead style={{ background: '#6c757d', color: '#fff', borderColor: '#5a6268' }}>
                                     <tr>
-                                        <th>Ciudad</th>
-                                        <th>Tanque</th>
-                                        <th>Fecha Lectura</th>
-                                        <th>Lectura Inicial CMS</th>
-                                        <th>Lectura Final CMS</th>
-                                        <th>Cuenta Lts Inicial</th>
-                                        <th>Cuenta Lts Final</th>
-                                        <th>Lts Consumidos</th>
+                                        <th rowSpan={2} className="align-middle text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Ciudad</th>
+                                        <th rowSpan={2} className="align-middle text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Tanque</th>
+                                        <th rowSpan={2} className="align-middle text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Fecha Lectura</th>
+                                        <th colSpan={2} className="text-center align-middle" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Altura (cms)</th>
+                                        <th colSpan={2} className="text-center align-middle" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Cuenta Litros</th>
+                                        <th rowSpan={2} className="align-middle text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Lts Consumidos</th>
+                                        <th rowSpan={2} className="align-middle text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Acción</th>
+                                    </tr>
+                                    <tr>
+                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Inicial</th>
+                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Final</th>
+                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Inicial</th>
+                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Final</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -273,6 +324,16 @@ export default function ReporteLecturas() {
                                             <td>{(lectura.cuenta_litros_inicial ?? 0).toLocaleString()}</td>
                                             <td>{(lectura.cuenta_litros_final ?? 0).toLocaleString()}</td>
                                             <td>{(lectura.diferencia_cuenta_litros ?? 0).toLocaleString()}</td>
+                                            <td className="text-center">
+                                                <Button
+                                                    variant="link"
+                                                    size="sm"
+                                                    className="p-0 text-primary fw-bold"
+                                                    onClick={() => handleVerDetalle(lectura.fecha, lectura.nombre)}
+                                                >
+                                                    Detalle
+                                                </Button>
+                                            </td>
                                         </tr>
                                     ))}
                                 </tbody>
@@ -281,6 +342,82 @@ export default function ReporteLecturas() {
                     </Card.Body>
                 </Card>
             )}
+            {/* Modal de Detalle */}
+            <Modal
+                show={showModal}
+                onHide={() => setShowModal(false)}
+                size="lg"
+                centered
+                backdropClassName="modal-backdrop-blur"
+            >
+                <Modal.Header closeButton className="bg-light">
+                    <Modal.Title>
+                        Detalle de Movimientos - {infoFilaSeleccionada?.tanque} ({infoFilaSeleccionada ? formatearFecha(infoFilaSeleccionada.fecha) : ''})
+                    </Modal.Title>
+                </Modal.Header>
+                <Modal.Body className="p-0">
+                    {isModalLoading ? (
+                        <div className="text-center p-5">
+                            <Spinner animation="border" variant="warning" />
+                            <p className="mt-2 text-muted">Cargando detalles...</p>
+                        </div>
+                    ) : modalError ? (
+                        <Alert variant="danger" className="m-3">{modalError}</Alert>
+                    ) : (
+                        <div className="table-responsive">
+                            <Table striped bordered hover className="mb-0">
+                                <thead style={{ background: '#6c757d', color: '#fff' }}>
+                                    <tr>
+                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Movimiento</th>
+                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Tanque</th>
+                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Fecha</th>
+                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Hora</th>
+                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Lectura CMS</th>
+                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Temperatura</th>
+                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>CuentaLitros</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {detalleLecturas.length > 0 ? (
+                                        detalleLecturas.map((d, i) => (
+                                            <tr key={i}>
+                                                <td className="text-center">{d.IDTanqueLecturas}</td>
+                                                <td>{d.Tanque}</td>
+                                                <td className="text-center">{formatearFecha(d.Fecha)}</td>
+                                                <td className="text-center">{d.Hora}</td>
+                                                <td className="text-end">{d.LecturaCms}</td>
+                                                <td className="text-end">{d.Temperatura}</td>
+                                                <td className="text-end">{d.CuentaLitros.toLocaleString()}</td>
+                                            </tr>
+                                        ))
+                                    ) : (
+                                        <tr>
+                                            <td colSpan={7} className="text-center p-3 text-muted">
+                                                No hay movimientos registrados para este tanque en la fecha seleccionada.
+                                            </td>
+                                        </tr>
+                                    )}
+                                </tbody>
+                            </Table>
+                        </div>
+                    )}
+                </Modal.Body>
+                <Modal.Footer className="bg-light">
+                    <Button variant="secondary" onClick={() => setShowModal(false)}>
+                        Cerrar
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+
+            {/* Estilos para el blur del modal */}
+            <style>
+                {`
+                .modal-backdrop-blur {
+                    backdrop-filter: blur(5px);
+                    background-color: rgba(0, 0, 0, 0.5) !important;
+                }
+                `}
+            </style>
         </Container>
     );
 }
