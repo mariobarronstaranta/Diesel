@@ -46,6 +46,16 @@ export default function ReporteLecturas() {
     const [modalError, setModalError] = useState<string | null>(null);
     const [infoFilaSeleccionada, setInfoFilaSeleccionada] = useState<{ fecha: string; tanque: string } | null>(null);
 
+    // Estados para edición
+    const [editingId, setEditingId] = useState<number | null>(null);
+    const [editForm, setEditForm] = useState({
+        Hora: "",
+        LecturaCms: 0,
+        Temperatura: 0,
+        CuentaLitros: 0
+    });
+    const [lastQueryParams, setLastQueryParams] = useState<ReporteLecturasForm | null>(null);
+
     const {
         register,
         handleSubmit,
@@ -69,6 +79,7 @@ export default function ReporteLecturas() {
         try {
             setIsLoading(true);
             setAlertMessage(null);
+            setLastQueryParams(data);
 
             console.log("Consultando lecturas diarias:", {
                 p_ciudad: data.CveCiudad,
@@ -153,6 +164,80 @@ export default function ReporteLecturas() {
         } catch (error: unknown) {
             console.error("Error al obtener detalle:", error);
             setModalError(error instanceof Error ? error.message : "Error al obtener el detalle");
+        } finally {
+            setIsModalLoading(false);
+        }
+    };
+
+    const handleDelete = async (id: number, tanque: string) => {
+        const confirmar = window.confirm(`¿Desea Borrar el registro del Movimiento ${id} del Tanque ${tanque}?`);
+        if (!confirmar) return;
+
+        try {
+            setIsModalLoading(true);
+            const { error } = await supabase
+                .from('TanqueLecturas')
+                .update({ Activo: 0 })
+                .eq('IDTanqueLecturas', id);
+
+            if (error) throw error;
+
+            alert("Registro borrado exitosamente");
+            setShowModal(false);
+            // Recargar consulta principal
+            if (lastQueryParams) onSubmit(lastQueryParams);
+
+        } catch (error: unknown) {
+            console.error("Error al borrar:", error);
+            alert("Error al borrar el registro: " + (error instanceof Error ? error.message : "Error desconocido"));
+        } finally {
+            setIsModalLoading(false);
+        }
+    };
+
+    const handleEditStart = (item: DetalleLectura) => {
+        setEditingId(item.IDTanqueLecturas);
+        setEditForm({
+            Hora: item.Hora,
+            LecturaCms: item.LecturaCms,
+            Temperatura: item.Temperatura,
+            CuentaLitros: item.CuentaLitros
+        });
+    };
+
+    const handleUpdate = async (id: number, tanque: string) => {
+        // Validaciones
+        if (!editForm.Hora || editForm.LecturaCms === null || editForm.Temperatura === null || editForm.CuentaLitros === null) {
+            alert("Todos los campos son obligatorios y no pueden ir en blanco");
+            return;
+        }
+
+        const confirmar = window.confirm(`¿Desea actualizar el registro del Movimiento ${id} del Tanque ${tanque}?`);
+        if (!confirmar) return;
+
+        try {
+            setIsModalLoading(true);
+            const { error } = await supabase
+                .from('TanqueLecturas')
+                .update({
+                    Hora: editForm.Hora,
+                    LecturaCms: editForm.LecturaCms,
+                    Temperatura: editForm.Temperatura,
+                    CuentaLitros: editForm.CuentaLitros
+                })
+                .eq('IDTanqueLecturas', id);
+
+            if (error) throw error;
+
+            alert("Registro actualizado exitosamente");
+            setEditingId(null);
+            setShowModal(false);
+            // Recargar consulta principal
+            if (lastQueryParams) onSubmit(lastQueryParams);
+
+        } catch (error: unknown) {
+            console.error("Error al actualizar:", error);
+            alert("Error al actualizar el registro: " + (error instanceof Error ? error.message : "Error desconocido"));
         } finally {
             setIsModalLoading(false);
         }
@@ -346,9 +431,9 @@ export default function ReporteLecturas() {
             <Modal
                 show={showModal}
                 onHide={() => setShowModal(false)}
-                size="lg"
                 centered
                 backdropClassName="modal-backdrop-blur"
+                dialogClassName="modal-custom-width"
             >
                 <Modal.Header closeButton className="bg-light">
                     <Modal.Title>
@@ -371,10 +456,12 @@ export default function ReporteLecturas() {
                                         <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Movimiento</th>
                                         <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Tanque</th>
                                         <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Fecha</th>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Hora</th>
+                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff', minWidth: '120px' }}>Hora</th>
                                         <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Lectura CMS</th>
                                         <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Temperatura</th>
                                         <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>CuentaLitros</th>
+                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Editar</th>
+                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Eliminar</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -384,15 +471,83 @@ export default function ReporteLecturas() {
                                                 <td className="text-center">{d.IDTanqueLecturas}</td>
                                                 <td>{d.Tanque}</td>
                                                 <td className="text-center">{formatearFecha(d.Fecha)}</td>
-                                                <td className="text-center">{d.Hora}</td>
-                                                <td className="text-end">{d.LecturaCms}</td>
-                                                <td className="text-end">{d.Temperatura}</td>
-                                                <td className="text-end">{d.CuentaLitros.toLocaleString()}</td>
+                                                <td className="text-center">
+                                                    {editingId === d.IDTanqueLecturas ? (
+                                                        <Form.Control
+                                                            type="time"
+                                                            size="sm"
+                                                            value={editForm.Hora}
+                                                            onChange={(e) => setEditForm({ ...editForm, Hora: e.target.value })}
+                                                        />
+                                                    ) : d.Hora}
+                                                </td>
+                                                <td className="text-end">
+                                                    {editingId === d.IDTanqueLecturas ? (
+                                                        <Form.Control
+                                                            type="number"
+                                                            size="sm"
+                                                            value={editForm.LecturaCms}
+                                                            onChange={(e) => setEditForm({ ...editForm, LecturaCms: parseInt(e.target.value) || 0 })}
+                                                        />
+                                                    ) : d.LecturaCms}
+                                                </td>
+                                                <td className="text-end">
+                                                    {editingId === d.IDTanqueLecturas ? (
+                                                        <Form.Control
+                                                            type="number"
+                                                            size="sm"
+                                                            value={editForm.Temperatura}
+                                                            onChange={(e) => setEditForm({ ...editForm, Temperatura: parseInt(e.target.value) || 0 })}
+                                                        />
+                                                    ) : d.Temperatura}
+                                                </td>
+                                                <td className="text-end">
+                                                    {editingId === d.IDTanqueLecturas ? (
+                                                        <Form.Control
+                                                            type="number"
+                                                            size="sm"
+                                                            value={editForm.CuentaLitros}
+                                                            onChange={(e) => setEditForm({ ...editForm, CuentaLitros: parseInt(e.target.value) || 0 })}
+                                                        />
+                                                    ) : d.CuentaLitros.toLocaleString()}
+                                                </td>
+                                                <td className="text-center">
+                                                    {editingId === d.IDTanqueLecturas ? (
+                                                        <div className="d-flex gap-1 justify-content-center">
+                                                            <Button variant="success" size="sm" onClick={() => handleUpdate(d.IDTanqueLecturas, d.Tanque)}>
+                                                                Ok
+                                                            </Button>
+                                                            <Button variant="secondary" size="sm" onClick={() => setEditingId(null)}>
+                                                                X
+                                                            </Button>
+                                                        </div>
+                                                    ) : (
+                                                        <Button
+                                                            variant="link"
+                                                            size="sm"
+                                                            className="p-0 text-primary fw-bold"
+                                                            onClick={() => handleEditStart(d)}
+                                                        >
+                                                            Editar
+                                                        </Button>
+                                                    )}
+                                                </td>
+                                                <td className="text-center">
+                                                    <Button
+                                                        variant="link"
+                                                        size="sm"
+                                                        className="text-danger p-0 fw-bold"
+                                                        onClick={() => handleDelete(d.IDTanqueLecturas, d.Tanque)}
+                                                        disabled={editingId === d.IDTanqueLecturas}
+                                                    >
+                                                        Eliminar
+                                                    </Button>
+                                                </td>
                                             </tr>
                                         ))
                                     ) : (
                                         <tr>
-                                            <td colSpan={7} className="text-center p-3 text-muted">
+                                            <td colSpan={9} className="text-center p-3 text-muted">
                                                 No hay movimientos registrados para este tanque en la fecha seleccionada.
                                             </td>
                                         </tr>
@@ -415,6 +570,16 @@ export default function ReporteLecturas() {
                 .modal-backdrop-blur {
                     backdrop-filter: blur(5px);
                     background-color: rgba(0, 0, 0, 0.5) !important;
+                }
+                .modal-custom-width {
+                    width: 1050px !important;
+                    max-width: 95% !important;
+                    margin: 16px auto !important;
+                }
+                @media (min-width: 576px) {
+                    .modal-custom-width {
+                        max-width: calc(100% - 32px) !important;
+                    }
                 }
                 `}
             </style>
