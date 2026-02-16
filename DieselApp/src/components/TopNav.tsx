@@ -45,7 +45,7 @@ export default function TopNav() {
 
           <Dropdown.Menu>
             <Dropdown.Item as={NavLink} to="/reportes/lecturas">Lecturas</Dropdown.Item>
-            <Dropdown.Item href="#/consumos">Consumos</Dropdown.Item>
+            <Dropdown.Item as={NavLink} to="/reportes/consumos">Consumos</Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
       </nav>
