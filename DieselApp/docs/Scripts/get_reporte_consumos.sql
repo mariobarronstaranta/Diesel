@@ -10,55 +10,75 @@
 -- Retorna: JSON con el reporte de consumos
 -- =====================================================
 
+DROP FUNCTION IF EXISTS public.get_reporte_consumos(date, date, text, bigint);
+
 CREATE OR REPLACE FUNCTION public.get_reporte_consumos(
-    p_fecha_inicio DATE,
-    p_fecha_fin DATE,
-    p_cve_ciudad TEXT DEFAULT NULL,
-    p_id_tanque BIGINT DEFAULT NULL
+    p_fecha_inicio date,
+    p_fecha_fin date,
+    p_cve_ciudad text DEFAULT NULL,
+    p_id_tanque bigint DEFAULT NULL
 )
 RETURNS TABLE (
-    fecha DATE,
-    ciudad TEXT,
-    tanque TEXT,
-    "idTanque" BIGINT,
-    "totalEntradas" BIGINT,
-    "totalSalidas" BIGINT
+    fecha date,
+    ciudad text,
+    tanque text,
+    "idTanque" bigint,
+    "totalEntradas" numeric,
+    "totalSalidas" numeric
 )
 LANGUAGE plpgsql
-SECURITY DEFINER
 AS $$
 BEGIN
     RETURN QUERY
     SELECT 
         tm."FechaCarga" AS fecha,
-        tm."CveCiudad" AS ciudad,
-        t."Nombre" AS tanque,
+        tm."CveCiudad"::text AS ciudad,
+        t."Nombre"::text AS tanque,
         tm."IdTanque" AS "idTanque",
-        
-        -- Suma de entradas (TipoMovimiento = 'E')
-        COALESCE(SUM(CASE WHEN tm."TipoMovimiento" = 'E' THEN tm."LitrosCarga" ELSE 0 END), 0) AS "totalEntradas",
-        
-        -- Suma de salidas (TipoMovimiento = 'S')
-        COALESCE(SUM(CASE WHEN tm."TipoMovimiento" = 'S' THEN tm."LitrosCarga" ELSE 0 END), 0) AS "totalSalidas"
-    FROM 
-        public."TanqueMovimiento" tm
-        INNER JOIN public."Tanque" t ON tm."CveCiudad" = t."CveCiudad" AND tm."IdTanque" = t."IDTanque"
-    WHERE 
-        tm."FechaCarga" BETWEEN p_fecha_inicio AND p_fecha_fin
-        -- Filtros opcionales
+
+        COALESCE(
+            SUM(
+                CASE 
+                    WHEN tm."TipoMovimiento" = 'E' 
+                    THEN tm."LitrosCarga" 
+                    ELSE 0 
+                END
+            ), 
+        0)::numeric AS "totalEntradas",
+
+        COALESCE(
+            SUM(
+                CASE 
+                    WHEN tm."TipoMovimiento" = 'S' 
+                    THEN tm."LitrosCarga" 
+                    ELSE 0 
+                END
+            ), 
+        0)::numeric AS "totalSalidas"
+
+    FROM public."TanqueMovimiento" tm
+    INNER JOIN public."Tanque" t
+        ON tm."CveCiudad" = t."CveCiudad"
+        AND tm."IdTanque" = t."IDTanque"
+
+    WHERE tm."FechaCarga" BETWEEN p_fecha_inicio AND p_fecha_fin
         AND (p_cve_ciudad IS NULL OR tm."CveCiudad" = p_cve_ciudad)
         AND (p_id_tanque IS NULL OR tm."IdTanque" = p_id_tanque)
+
     GROUP BY 
         tm."FechaCarga",
         tm."CveCiudad",
         t."Nombre",
         tm."IdTanque"
+
     ORDER BY 
         tm."FechaCarga" DESC,
         tm."CveCiudad",
         t."Nombre";
+
 END;
 $$;
+
 
 -- =====================================================
 -- Permisos
