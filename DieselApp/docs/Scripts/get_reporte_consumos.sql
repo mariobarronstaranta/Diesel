@@ -44,11 +44,11 @@ BEGIN
         public."TanqueMovimiento" tm
         INNER JOIN public."Tanque" t ON tm."IdTanque" = t."IDTanque"
         INNER JOIN public."Planta" p ON t."IDPlanta" = p."IDPlanta"
-        INNER JOIN public."Ciudades" c ON p."IdCiudad" = c."IdCiudad"
+        INNER JOIN public."Ciudad" c ON p."IdCiudad" = c."IDCiudad"
     WHERE 
         tm."FechaCarga" BETWEEN p_fecha_inicio AND p_fecha_fin
         -- Filtros opcionales
-        AND (p_id_ciudad IS NULL OR c."IdCiudad" = p_id_ciudad)
+        AND (p_id_ciudad IS NULL OR c."IDCiudad" = p_id_ciudad)
         AND (p_id_tanque IS NULL OR tm."IdTanque" = p_id_tanque)
     GROUP BY 
         tm."FechaCarga",
@@ -90,19 +90,19 @@ $$;
 -- Notas de implementación
 -- =====================================================
 -- 1. Verificar que los nombres de las tablas coincidan con el schema:
---    - "TanqueMovimiento" (confirmado)
---    - "Tanque" (verificar si es "Tanque" o "Tanques")
---    - "Planta" (verificar nombre exacto)
---    - "Ciudades" (verificar nombre exacto)
+--    - "TanqueMovimiento" ✓ (confirmado)
+--    - "Tanque" ✓ (confirmado)
+--    - "Planta" ✓ (confirmado)
+--    - "Ciudad" ✓ (confirmado - singular, no plural)
 --
 -- 2. Confirmar los valores de TipoMovimiento:
 --    - 'E' = Entradas
 --    - 'S' = Salidas
 --
 -- 3. Verificar las relaciones entre tablas:
---    - TanqueMovimiento.IdTanque -> Tanque.IDTanque
---    - Tanque.IDPlanta -> Planta.IDPlanta
---    - Planta.IdCiudad -> Ciudades.IdCiudad
+--    - TanqueMovimiento.IdTanque -> Tanque.IDTanque ✓
+--    - Tanque.IDPlanta -> Planta.IDPlanta ✓
+--    - Planta.IdCiudad -> Ciudad.IDCiudad ✓
 --
 -- 4. Para usar desde el frontend (Supabase JS):
 --    const { data, error } = await supabase
