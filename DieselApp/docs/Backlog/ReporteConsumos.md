@@ -101,7 +101,7 @@ Implementar un reporte de consumos de combustible que permita visualizar las ent
 
 export interface ReporteConsumosData {
   fecha: string;           // Formato: YYYY-MM-DD
-  ciudad: string;
+  ciudad: string;          // CveCiudad (ej: "MTY", "GDL")
   tanque: string;
   idTanque: number;
   totalEntradas: number;   // Litros
@@ -109,10 +109,10 @@ export interface ReporteConsumosData {
 }
 
 export interface ReporteConsumosFiltros {
-  idCiudad?: number | null;
+  cveCiudad?: string | null;  // Clave de ciudad como texto (ej: "MTY")
   idTanque?: number | null;
-  fechaInicio: string;     // Formato: YYYY-MM-DD
-  fechaFin: string;        // Formato: YYYY-MM-DD
+  fechaInicio: string;        // Formato: YYYY-MM-DD
+  fechaFin: string;           // Formato: YYYY-MM-DD
 }
 ```
 
@@ -125,7 +125,7 @@ export interface ReporteConsumosFiltros {
 -- Basado en la tabla TanqueMovimiento (PostgreSQL)
 SELECT 
     tm."FechaCarga" AS fecha,
-    c."Nombre" AS ciudad,
+    tm."CveCiudad" AS ciudad,
     t."Nombre" AS tanque,
     tm."IdTanque" AS "idTanque",
     
@@ -136,36 +136,34 @@ SELECT
     COALESCE(SUM(CASE WHEN tm."TipoMovimiento" = 'S' THEN tm."LitrosCarga" ELSE 0 END), 0) AS "totalSalidas"
 FROM 
     public."TanqueMovimiento" tm
-    INNER JOIN public."Tanques" t ON tm."IdTanque" = t."IdTanque"
-    INNER JOIN public."Plantas" p ON t."IdPlanta" = p."IdPlanta"
-    INNER JOIN public."Ciudad" c ON p."IdCiudad" = c."IDCiudad"
+    INNER JOIN public."Tanque" t ON tm."CveCiudad" = t."CveCiudad" AND tm."IdTanque" = t."IDTanque"
 WHERE 
     tm."FechaCarga" BETWEEN :fechaInicio AND :fechaFin
     -- Filtros opcionales
-    AND (:idCiudad IS NULL OR c."IDCiudad" = :idCiudad)
+    AND (:cveCiudad IS NULL OR tm."CveCiudad" = :cveCiudad)
     AND (:idTanque IS NULL OR tm."IdTanque" = :idTanque)
 GROUP BY 
     tm."FechaCarga",
-    c."Nombre",
+    tm."CveCiudad",
     t."Nombre",
     tm."IdTanque"
 ORDER BY 
     tm."FechaCarga" DESC,
-    c."Nombre",
+    tm."CveCiudad",
     t."Nombre";
 ```
 
 ### ⚠️ Notas Importantes
 
 1. **Validar valores de `TipoMovimiento`**: Confirmar con el equipo de backend que 'E' = Entradas y 'S' = Salidas
-2. **Nombres de tablas** ✅ CORREGIDO:
-   - ✓ `"TanqueMovimiento"` - Confirmado
-   - ✓ `"Tanque"` - Confirmado (singular, no "Tanques")
-   - ✓ `"Planta"` - Confirmado (singular, no "Plantas")
-   - ✓ `"Ciudad"` - Confirmado (singular, no "Ciudades")
+2. **Estructura simplificada** ✅ CORREGIDO:
+   - ✓ Solo se usan 2 tablas: `"TanqueMovimiento"` y `"Tanque"`
+   - ✓ Relación directa mediante `CveCiudad` (campo de texto, ej: "MTY", "GDL")
+   - ✓ No se requieren las tablas `Planta` ni `Ciudad`
+   - ✓ El filtro de ciudad usa `cveCiudad` (string) en lugar de `idCiudad` (number)
 3. **Parámetros**: Los parámetros vienen del query string de la petición HTTP
 4. **Formato de respuesta**: Debe ser JSON array con la estructura de `ReporteConsumosData[]`
 
-> **Nota de corrección (2026-02-16):** Se corrigió el nombre de la tabla de `"Ciudades"` a `"Ciudad"` y el campo de `"IdCiudad"` a `"IDCiudad"` basándose en el schema real de la base de datos.
+> **Nota de corrección (2026-02-16):** Se simplificó el query para usar la relación directa `TanqueMovimiento.CveCiudad = Tanque.CveCiudad`, eliminando joins innecesarios a las tablas `Planta` y `Ciudad`. El parámetro de filtro cambió de `idCiudad` (number) a `cveCiudad` (string) para alinearse con el componente `ComboTanquePorCiudad.tsx`.
 
 ---
