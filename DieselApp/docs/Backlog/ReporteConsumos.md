@@ -1,6 +1,6 @@
 # 📊 Reporte de Consumos
 
-**Estado:** 🔴 Pendiente  
+**Estado:** 🟢 Completado (Fase 1)  
 **Prioridad:** Alta  
 **Fecha de creación:** 2026-02-16  
 **Ubicación en la app:** Reportes >> Consumos
@@ -67,30 +67,29 @@ Implementar un reporte de consumos de combustible que permita visualizar las ent
 
 ### Frontend
 
-- [ ] Crear interfaz TypeScript `ReporteConsumosData` en `src/types/reportes.types.ts`
-- [ ] Crear componente `ReporteConsumos.tsx` en `src/components/`
-- [ ] Implementar filtros con validación de fechas
-- [ ] Implementar tabla de resultados con formato de números
-- [ ] Implementar función de exportación CSV
-- [ ] Agregar ruta `/reportes/consumos` en `App.tsx`
-- [ ] Actualizar menú de navegación en `TopNav.tsx` (cambiar href por NavLink)
-- [ ] Aplicar estilos consistentes con `ReporteLecturas`
+- [x] Crear interfaz TypeScript `ReporteConsumosData` en `src/types/reportes.types.ts`
+- [x] Crear componente `ReporteConsumos.tsx` en `src/components/`
+- [x] Implementar filtros con validación de fechas
+- [x] Implementar tabla de resultados con formato de números
+- [x] Implementar función de exportación CSV
+- [x] Agregar ruta `/reportes/consumos` en `App.tsx`
+- [x] Actualizar menú de navegación en `TopNav.tsx` (cambiar href por NavLink)
+- [x] Aplicar estilos consistentes con `ReporteLecturas`
 
 ### Backend
 
-- [ ] Crear función de Supabase `get_reporte_consumos` en `docs/scripts/`
-- [ ] Verificar valores correctos de `TipoMovimiento` ('E' y 'S')
-- [ ] Confirmar relaciones entre tablas (TanqueMovimiento, Tanques, Plantas, Ciudades)
-- [ ] Implementar endpoint en Supabase Edge Functions (si aplica)
-- [ ] Probar query con datos reales
+- [x] Crear función de Supabase `get_reporte_consumos` en `docs/scripts/`
+- [x] Verificar valores correctos de `TipoMovimiento` ('E' y 'S')
+- [x] Confirmar relaciones entre tablas (TanqueMovimiento y Tanque via CveCiudad)
+- [x] Probar query con datos reales
 
 ### Testing
 
-- [ ] Probar filtros individuales y combinados
-- [ ] Verificar cálculos de totales
-- [ ] Probar exportación CSV
-- [ ] Validar formato de fechas
-- [ ] Probar con diferentes rangos de fechas
+- [x] Probar filtros individuales y combinados
+- [x] Verificar cálculos de totales
+- [x] Probar exportación CSV
+- [x] Validar formato de fechas
+- [x] Probar con diferentes rangos de fechas
 
 ---
 

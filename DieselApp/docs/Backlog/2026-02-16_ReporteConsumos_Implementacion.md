@@ -185,7 +185,10 @@ El combo de tanques no se filtraba correctamente porque se estaba utilizando `Co
 
 ## 📊 Commits Realizados
 
-```
+```text
+07095e8 - merge: Publish Consumos Report implementation and fixes to main
+4fa6023 - fix: Use ComboCveCiudad and handle null for Tanque population
+31cd13b - fix: Resolve infinite render loop in ReporteConsumos using useEffect
 ab3bad2 - feat: Implement Reporte de Consumos with filters and CSV export
 9e9d4eb - fix: Add type casts and DROP statement to Supabase function
 910ab71 - refactor: Simplify consumos query to use CveCiudad relationship
