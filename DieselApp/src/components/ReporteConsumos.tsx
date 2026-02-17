@@ -5,6 +5,7 @@ import ComboCveCiudad from "./ComboCveCiudad";
 import ComboTanquePorCiudad from "./ComboTanquePorCiudad";
 import { supabase } from "../supabase/client";
 import type { ReporteConsumosData, ReporteConsumosForm } from "../types/reportes.types";
+import ReporteConsumosDetalleModal from "./ReporteConsumosDetalleModal";
 
 export default function ReporteConsumos() {
     const [isLoading, setIsLoading] = useState(false);
@@ -14,6 +15,14 @@ export default function ReporteConsumos() {
     } | null>(null);
     const [consumos, setConsumos] = useState<ReporteConsumosData[]>([]);
     const [cveCiudadSeleccionada, setCveCiudadSeleccionada] = useState<string>("");
+
+    // Estados para el modal de detalle
+    const [showDetalle, setShowDetalle] = useState(false);
+    const [filaSeleccionada, setFilaSeleccionada] = useState<{
+        fecha: string;
+        ciudad: string;
+        tanque: string;
+    } | null>(null);
 
     const {
         register,
@@ -49,6 +58,15 @@ export default function ReporteConsumos() {
             minimumFractionDigits: 2,
             maximumFractionDigits: 2,
         });
+    };
+
+    const abrirDetalle = (consumo: ReporteConsumosData) => {
+        setFilaSeleccionada({
+            fecha: formatearFecha(consumo.fecha),
+            ciudad: consumo.ciudad,
+            tanque: consumo.tanque
+        });
+        setShowDetalle(true);
     };
 
     const onSubmit = async (data: ReporteConsumosForm) => {
@@ -283,9 +301,13 @@ export default function ReporteConsumos() {
                                             <td className="text-end">{formatearNumero(Number(consumo.totalEntradas))}</td>
                                             <td className="text-end">{formatearNumero(Number(consumo.totalSalidas))}</td>
                                             <td className="text-center">
-                                                <span className="text-muted" style={{ fontSize: '0.875rem' }}>
-                                                    (Fase 2)
-                                                </span>
+                                                <Button
+                                                    variant="outline-primary"
+                                                    size="sm"
+                                                    onClick={() => abrirDetalle(consumo)}
+                                                >
+                                                    Detalle
+                                                </Button>
                                             </td>
                                         </tr>
                                     ))}
@@ -302,6 +324,12 @@ export default function ReporteConsumos() {
                     </Card.Body>
                 </Card>
             )}
+
+            <ReporteConsumosDetalleModal
+                show={showDetalle}
+                onHide={() => setShowDetalle(false)}
+                datosFila={filaSeleccionada}
+            />
         </Container>
     );
 }

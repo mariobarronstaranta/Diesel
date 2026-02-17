@@ -237,12 +237,12 @@ export default function SalidasDiesel() {
                         <Row className="mt-3">
                             <Col md={6}>
                                 <Form.Group>
-                                    <Form.Label>Horímetro</Form.Label>
+                                    <Form.Label>Horometro</Form.Label>
                                     <Form.Control
                                         type="number"
                                         isInvalid={!!errors.Horimetro}
                                         {...register("Horimetro", {
-                                            required: "El horímetro es obligatorio",
+                                            required: "El horometro es obligatorio",
                                         })}
                                     />
                                     <Form.Control.Feedback type="invalid">

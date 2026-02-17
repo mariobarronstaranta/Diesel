@@ -411,9 +411,8 @@ export default function ReporteLecturas() {
                                             <td>{(lectura.diferencia_cuenta_litros ?? 0).toLocaleString()}</td>
                                             <td className="text-center">
                                                 <Button
-                                                    variant="link"
+                                                    variant="outline-primary"
                                                     size="sm"
-                                                    className="p-0 text-primary fw-bold"
                                                     onClick={() => handleVerDetalle(lectura.fecha, lectura.nombre)}
                                                 >
                                                     Detalle
@@ -523,9 +522,8 @@ export default function ReporteLecturas() {
                                                         </div>
                                                     ) : (
                                                         <Button
-                                                            variant="link"
+                                                            variant="outline-primary"
                                                             size="sm"
-                                                            className="p-0 text-primary fw-bold"
                                                             onClick={() => handleEditStart(d)}
                                                         >
                                                             Editar
@@ -534,9 +532,8 @@ export default function ReporteLecturas() {
                                                 </td>
                                                 <td className="text-center">
                                                     <Button
-                                                        variant="link"
+                                                        variant="outline-danger"
                                                         size="sm"
-                                                        className="text-danger p-0 fw-bold"
                                                         onClick={() => handleDelete(d.IDTanqueLecturas, d.Tanque)}
                                                         disabled={editingId === d.IDTanqueLecturas}
                                                     >
