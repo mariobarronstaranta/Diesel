@@ -1,6 +1,6 @@
 import { Container, Card, Form, Button, Row, Col, Alert, Table, Spinner } from "react-bootstrap";
 import { useForm } from "react-hook-form";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import ComboCiudad from "./ComboCiudad";
 import ComboTanquePorCiudad from "./ComboTanquePorCiudad";
 import { supabase } from "../supabase/client";
@@ -28,10 +28,10 @@ export default function ReporteConsumos() {
     // Observar cambios en CveCiudad para actualizar el combo de tanques
     const cveCiudad = watch("CveCiudad");
 
-    // Actualizar el estado cuando cambia la ciudad
-    if (cveCiudad !== cveCiudadSeleccionada) {
+    // Actualizar el estado cuando cambia la ciudad (usando useEffect para evitar loop infinito)
+    useEffect(() => {
         setCveCiudadSeleccionada(cveCiudad || "");
-    }
+    }, [cveCiudad]);
 
     // Formatear fecha para mostrar en la tabla
     const formatearFecha = (fecha: string) => {
