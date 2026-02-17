@@ -1,7 +1,7 @@
 import { Container, Card, Form, Button, Row, Col, Alert, Table, Spinner } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { useState, useEffect } from "react";
-import ComboCiudad from "./ComboCiudad";
+import ComboCveCiudad from "./ComboCveCiudad";
 import ComboTanquePorCiudad from "./ComboTanquePorCiudad";
 import { supabase } from "../supabase/client";
 import type { ReporteConsumosData, ReporteConsumosForm } from "../types/reportes.types";
@@ -180,12 +180,12 @@ export default function ReporteConsumos() {
                     <Card.Body>
                         <Row className="align-items-start">
                             <Col lg={3} md={6} className="mb-3 mb-lg-0">
-                                <ComboCiudad register={register} error={errors.CveCiudad} />
+                                <ComboCveCiudad register={register} error={errors.CveCiudad} />
                             </Col>
 
                             <Col lg={3} md={6} className="mb-3 mb-lg-0">
                                 <ComboTanquePorCiudad
-                                    cveCiudad={cveCiudadSeleccionada}
+                                    cveCiudad={cveCiudadSeleccionada || null}
                                     register={register}
                                     error={errors.IDTanque}
                                 />
