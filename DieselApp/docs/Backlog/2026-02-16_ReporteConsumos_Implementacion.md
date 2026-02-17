@@ -110,6 +110,18 @@ Características:
 
 ---
 
+## 🐞 Correcciones Realizadas durante la Implementación
+
+### 1. Loop Infinito de Renders
+Se detectó que el componente entraba en un loop infinito al actualizar un estado (`cveCiudadSeleccionada`) directamente en el cuerpo de la función.
+- **Solución:** Se implementó `useEffect` para sincronizar el estado observado por `watch` con el estado local de la ciudad seleccionada.
+
+### 2. Población del Combo de Tanques
+El combo de tanques no se filtraba correctamente porque se estaba utilizando `ComboCiudad` (que retorna IDs numéricos) en lugar de `ComboCveCiudad` (que retorna claves de texto).
+- **Solución:** Se cambió a `ComboCveCiudad` y se aseguró que se pase `null` en lugar de una cadena vacía al componente `ComboTanquePorCiudad` para disparar correctamente la carga de datos.
+
+---
+
 ## 🧪 Pasos de Verificación Manual
 
 > **Nota:** El browser automatizado no está disponible en este entorno. Se requiere verificación manual.
