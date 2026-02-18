@@ -38,7 +38,7 @@ export default function Login() {
     <div
       className="d-flex align-items-center justify-content-center"
       style={{
-        background: "linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)",
+        background: "linear-gradient(135deg, #f0ad4e 0%, #f8c471 100%)",
         position: "fixed",
         top: 0,
         left: 0,
