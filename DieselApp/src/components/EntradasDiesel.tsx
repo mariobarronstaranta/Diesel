@@ -128,7 +128,7 @@ export default function EntradasDiesel() {
 
             <Form onSubmit={handleSubmit(onSubmit)}>
                 <Card className="mb-4">
-                    <Card.Header className="bg-secondary text-white text-center fw-bold">DATOS DEL TANQUE</Card.Header>
+                    <Card.Header className="card-header-corporate text-white text-center fw-bold">DATOS DEL TANQUE</Card.Header>
                     <Card.Body>
                         <Row>
                             <Col md={6}>
@@ -185,7 +185,7 @@ export default function EntradasDiesel() {
                 </Card>
 
                 <Card className="mb-4">
-                    <Card.Header className="bg-secondary text-white text-center fw-bold">DATOS DE CARGA</Card.Header>
+                    <Card.Header className="card-header-corporate text-white text-center fw-bold">DATOS DE CARGA</Card.Header>
                     <Card.Body>
                         <Row>
                             <Col md={4}>
@@ -256,7 +256,7 @@ export default function EntradasDiesel() {
 
                 <div className="d-flex gap-2 justify-content-end">
                     <Button
-                        variant="info"
+                        variant="secondary"
                         size="lg"
                         type="button"
                         onClick={() => {
@@ -267,7 +267,7 @@ export default function EntradasDiesel() {
                     >
                         Limpiar Formulario
                     </Button>
-                    <Button variant="warning" size="lg" type="submit" disabled={loading}>
+                    <Button variant="primary" size="lg" type="submit" disabled={loading}>
                         {loading ? <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> : "Guardar"}
                     </Button>
                 </div>

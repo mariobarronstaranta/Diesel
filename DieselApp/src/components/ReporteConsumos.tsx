@@ -251,7 +251,7 @@ export default function ReporteConsumos() {
 
                             <Col lg={2} md={12} className="d-flex align-items-center mt-lg-4">
                                 <Button
-                                    variant="warning"
+                                    variant="primary"
                                     size="lg"
                                     type="submit"
                                     disabled={isLoading}
@@ -283,15 +283,15 @@ export default function ReporteConsumos() {
                     </Card.Header>
                     <Card.Body>
                         <div className="table-responsive">
-                            <Table striped bordered hover>
-                                <thead style={{ background: '#6c757d', color: '#fff', borderColor: '#5a6268' }}>
+                            <Table striped bordered hover className="table-corporate">
+                                <thead>
                                     <tr>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Fecha</th>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Ciudad</th>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Tanque</th>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Total Entradas</th>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Total Salidas</th>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Detalle</th>
+                                        <th className="text-center">Fecha</th>
+                                        <th className="text-center">Ciudad</th>
+                                        <th className="text-center">Tanque</th>
+                                        <th className="text-center">Total Entradas</th>
+                                        <th className="text-center">Total Salidas</th>
+                                        <th className="text-center">Detalle</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -304,7 +304,7 @@ export default function ReporteConsumos() {
                                             <td className="text-end">{formatearNumero(Number(consumo.totalSalidas))}</td>
                                             <td className="text-center">
                                                 <Button
-                                                    variant="outline-primary"
+                                                    variant="outline-corporate"
                                                     size="sm"
                                                     onClick={() => abrirDetalle(consumo)}
                                                 >

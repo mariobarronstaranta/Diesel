@@ -380,22 +380,22 @@ export default function ReporteLecturas() {
                     </Card.Header>
                     <Card.Body>
                         <div className="table-responsive">
-                            <Table striped bordered hover>
-                                <thead style={{ background: '#6c757d', color: '#fff', borderColor: '#5a6268' }}>
+                            <Table striped bordered hover className="table-corporate">
+                                <thead>
                                     <tr>
-                                        <th rowSpan={2} className="align-middle text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Ciudad</th>
-                                        <th rowSpan={2} className="align-middle text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Tanque</th>
-                                        <th rowSpan={2} className="align-middle text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Fecha Lectura</th>
-                                        <th colSpan={2} className="text-center align-middle" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Altura (cms)</th>
-                                        <th colSpan={2} className="text-center align-middle" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Cuenta Litros</th>
-                                        <th rowSpan={2} className="align-middle text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Lts Consumidos</th>
-                                        <th rowSpan={2} className="align-middle text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Acción</th>
+                                        <th rowSpan={2}>Ciudad</th>
+                                        <th rowSpan={2}>Tanque</th>
+                                        <th rowSpan={2}>Fecha Lectura</th>
+                                        <th colSpan={2}>Altura (cms)</th>
+                                        <th colSpan={2}>Cuenta Litros</th>
+                                        <th rowSpan={2}>Lts Consumidos</th>
+                                        <th rowSpan={2}>Acción</th>
                                     </tr>
                                     <tr>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Inicial</th>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Final</th>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Inicial</th>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Final</th>
+                                        <th>Inicial</th>
+                                        <th>Final</th>
+                                        <th>Inicial</th>
+                                        <th>Final</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -411,7 +411,7 @@ export default function ReporteLecturas() {
                                             <td>{(lectura.diferencia_cuenta_litros ?? 0).toLocaleString()}</td>
                                             <td className="text-center">
                                                 <Button
-                                                    variant="outline-primary"
+                                                    variant="outline-corporate"
                                                     size="sm"
                                                     onClick={() => handleVerDetalle(lectura.fecha, lectura.nombre)}
                                                 >
@@ -449,18 +449,18 @@ export default function ReporteLecturas() {
                         <Alert variant="danger" className="m-3">{modalError}</Alert>
                     ) : (
                         <div className="table-responsive">
-                            <Table striped bordered hover className="mb-0">
-                                <thead style={{ background: '#6c757d', color: '#fff' }}>
+                            <Table striped bordered hover className="mb-0 table-corporate">
+                                <thead>
                                     <tr>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Movimiento</th>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Tanque</th>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Fecha</th>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff', minWidth: '120px' }}>Hora</th>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Lectura CMS</th>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Temperatura</th>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>CuentaLitros</th>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Editar</th>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Eliminar</th>
+                                        <th className="text-center">Movimiento</th>
+                                        <th className="text-center">Tanque</th>
+                                        <th className="text-center">Fecha</th>
+                                        <th className="text-center" style={{ minWidth: '120px' }}>Hora</th>
+                                        <th className="text-center">Lectura CMS</th>
+                                        <th className="text-center">Temperatura</th>
+                                        <th className="text-center">CuentaLitros</th>
+                                        <th className="text-center">Editar</th>
+                                        <th className="text-center">Eliminar</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -522,7 +522,7 @@ export default function ReporteLecturas() {
                                                         </div>
                                                     ) : (
                                                         <Button
-                                                            variant="outline-primary"
+                                                            variant="outline-corporate"
                                                             size="sm"
                                                             onClick={() => handleEditStart(d)}
                                                         >

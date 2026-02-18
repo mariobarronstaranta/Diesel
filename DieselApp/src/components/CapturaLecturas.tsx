@@ -156,7 +156,7 @@ export default function CapturaLecturas() {
 
       <Form noValidate onSubmit={handleSubmit(onSubmit)}>
         <Card className="mb-4">
-          <Card.Header className="bg-secondary text-white text-center fw-bold">DATOS DEL TANQUE</Card.Header>
+          <Card.Header className="card-header-corporate text-white text-center fw-bold">DATOS DEL TANQUE</Card.Header>
           <Card.Body>
             <Row>
               <Col md={4}>
@@ -193,7 +193,7 @@ export default function CapturaLecturas() {
         </Card>
 
         <Card className="mb-3">
-          <Card.Header className="bg-secondary text-white text-center fw-bold">DATOS DE LECTURA</Card.Header>
+          <Card.Header className="card-header-corporate text-white text-center fw-bold">DATOS DE LECTURA</Card.Header>
           <Card.Body>
             <Row className="mb-3">
               <Col md={4}>
@@ -306,7 +306,7 @@ export default function CapturaLecturas() {
         <div className="d-flex gap-2 justify-content-end">
           <Button
             size="lg"
-            variant="info"
+            variant="secondary"
             type="button"
             onClick={() => {
               handleClean();

@@ -214,18 +214,18 @@ export default function ReporteConsumosDetalleModal({ show, onHide, datosFila }:
                         )}
                         {!loadingSalidas && !errorSalidas && salidas.length > 0 && (
                             <div className="table-responsive">
-                                <Table striped bordered hover size="sm" className="mb-0">
-                                    <thead style={{ background: '#6c757d', color: '#fff' }}>
+                                <Table striped bordered hover size="sm" className="mb-0 table-corporate">
+                                    <thead>
                                         <tr>
-                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Tanque</th>
-                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Fecha</th>
-                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Hora</th>
-                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Temp (°C)</th>
-                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Unidad</th>
-                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Litros</th>
-                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>CuentaLitros</th>
-                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Horómetro</th>
-                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Odómetro</th>
+                                            <th className="text-center">Tanque</th>
+                                            <th className="text-center">Fecha</th>
+                                            <th className="text-center">Hora</th>
+                                            <th className="text-center">Temp (°C)</th>
+                                            <th className="text-center">Unidad</th>
+                                            <th className="text-center">Litros</th>
+                                            <th className="text-center">CuentaLitros</th>
+                                            <th className="text-center">Horómetro</th>
+                                            <th className="text-center">Odómetro</th>
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -274,16 +274,16 @@ export default function ReporteConsumosDetalleModal({ show, onHide, datosFila }:
                         )}
                         {!loadingEntradas && !errorEntradas && entradas.length > 0 && (
                             <div className="table-responsive">
-                                <Table striped bordered hover size="sm" className="mb-0">
-                                    <thead style={{ background: '#6c757d', color: '#fff' }}>
+                                <Table striped bordered hover size="sm" className="mb-0 table-corporate">
+                                    <thead>
                                         <tr>
-                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Fecha</th>
-                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Hora</th>
-                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Temp (°C)</th>
-                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Litros</th>
-                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Planta</th>
-                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Tanque</th>
-                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>CuentaLitros</th>
+                                            <th className="text-center">Fecha</th>
+                                            <th className="text-center">Hora</th>
+                                            <th className="text-center">Temp (°C)</th>
+                                            <th className="text-center">Litros</th>
+                                            <th className="text-center">Planta</th>
+                                            <th className="text-center">Tanque</th>
+                                            <th className="text-center">CuentaLitros</th>
                                         </tr>
                                     </thead>
                                     <tbody>

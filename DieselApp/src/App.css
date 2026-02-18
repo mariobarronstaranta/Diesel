@@ -12,7 +12,8 @@
 .top-nav {
   position: sticky;
   top: 0;
-  z-index: 1000; /* Increased to stay above everything */
+  z-index: 1000;
+  /* Increased to stay above everything */
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -61,9 +62,11 @@
 .top-nav__hamburger--open .top-nav__hamburger-bar:nth-child(1) {
   transform: translateY(9px) rotate(45deg);
 }
+
 .top-nav__hamburger--open .top-nav__hamburger-bar:nth-child(2) {
   opacity: 0;
 }
+
 .top-nav__hamburger--open .top-nav__hamburger-bar:nth-child(3) {
   transform: translateY(-9px) rotate(-45deg);
 }
@@ -78,13 +81,13 @@
 }
 
 .top-nav__link:hover {
-  color: #1d4ed8;
-  background: #e0e7ff;
+  color: #856404;
+  background: #fdf5e6;
 }
 
 .top-nav__link--active {
-  color: #1d4ed8;
-  background: #e0e7ff;
+  color: #856404;
+  background: #fcf3cf;
 }
 
 .top-nav__action {
@@ -92,7 +95,8 @@
   border-radius: 999px;
   padding: 0.45rem 1rem;
   font-weight: 600;
-  background: #1d4ed8 !important; /* Ensure visibility */
+  background: #f0ad4e !important;
+  /* Corporate Yellow */
   color: #ffffff !important;
   cursor: pointer;
 }
@@ -148,6 +152,13 @@
     border-radius: 12px;
   }
 
+  /* Active/Hover states for mobile links */
+  .top-nav__link--active,
+  .top-nav__link:hover {
+    background: #fcf3cf !important;
+    color: #856404 !important;
+  }
+
   .top-nav__action {
     width: 100%;
     text-align: left;
@@ -180,7 +191,8 @@
 .app-content {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 1.5rem; /* Reduced padding for mobile */
+  padding: 1.5rem;
+  /* Reduced padding for mobile */
 }
 
 @media (min-width: 769px) {
@@ -191,4 +203,70 @@
 
 .app-content--full {
   padding-top: 4rem;
+}
+
+/* =========================================
+   Corporate Component Overrides
+   ========================================= */
+
+/* Buttons */
+.btn-primary,
+.btn-corporate {
+  background-color: var(--corporate-yellow) !important;
+  border-color: var(--corporate-yellow) !important;
+  color: #fff !important;
+  font-weight: 600 !important;
+}
+
+.btn-primary:hover,
+.btn-corporate:hover {
+  background-color: var(--corporate-yellow-hover) !important;
+  border-color: var(--corporate-yellow-hover) !important;
+  color: #fff !important;
+}
+
+.btn-secondary,
+.btn-secondary-corporate {
+  background-color: var(--corporate-grey) !important;
+  border-color: var(--corporate-grey) !important;
+  color: #fff !important;
+}
+
+.btn-outline-primary,
+.btn-outline-corporate {
+  color: var(--corporate-dark) !important;
+  border-color: var(--corporate-yellow) !important;
+}
+
+.btn-outline-primary:hover,
+.btn-outline-corporate:hover {
+  background-color: var(--corporate-yellow) !important;
+  color: #fff !important;
+}
+
+.btn-info {
+  background-color: #17a2b8 !important;
+  /* Keep legacy support or migrate */
+  color: #fff !important;
+}
+
+/* Tables */
+.table-corporate thead th {
+  background-color: var(--corporate-dark) !important;
+  color: #fff !important;
+  vertical-align: middle;
+  text-align: center;
+  border-color: #454d55 !important;
+}
+
+.table-corporate tbody td {
+  vertical-align: middle;
+}
+
+/* Card Headers */
+.card-header-corporate {
+  background-color: var(--corporate-dark) !important;
+  color: #fff !important;
+  font-weight: bold;
+  text-align: center;
 }
