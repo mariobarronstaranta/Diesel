@@ -1,10 +1,18 @@
 import { NavLink } from "react-router-dom";
 import { Dropdown } from "react-bootstrap";
+import logo from "../assets/images/logo.png";
 
 export default function TopNav() {
   return (
     <header className="top-nav">
-      <div className="top-nav__brand">DieselApp</div>
+      <div className="top-nav__brand">
+        <img
+          src={logo}
+          alt="DieselApp Logo"
+          style={{ width: '55px', height: '43px', objectFit: 'contain' }}
+        />
+        <span className="ms-2">DieselApp</span>
+      </div>
       <nav className="top-nav__links" aria-label="Main">
         <NavLink
           className={({ isActive }) =>

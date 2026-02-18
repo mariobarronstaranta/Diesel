@@ -22,6 +22,7 @@ export default function ReporteConsumos() {
         fecha: string;
         ciudad: string;
         tanque: string;
+        idTanque: number;
     } | null>(null);
 
     const {
@@ -62,9 +63,10 @@ export default function ReporteConsumos() {
 
     const abrirDetalle = (consumo: ReporteConsumosData) => {
         setFilaSeleccionada({
-            fecha: formatearFecha(consumo.fecha),
+            fecha: consumo.fecha, // Pasar fecha en formato ISO (yyyy-MM-dd) para Supabase
             ciudad: consumo.ciudad,
-            tanque: consumo.tanque
+            tanque: consumo.tanque,
+            idTanque: consumo.idTanque
         });
         setShowDetalle(true);
     };

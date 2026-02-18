@@ -1,4 +1,6 @@
-import { Modal, Button, Table, Tabs, Tab } from "react-bootstrap";
+import { useState, useEffect } from "react";
+import { Modal, Button, Table, Tabs, Tab, Spinner, Alert } from "react-bootstrap";
+import { supabase } from "../supabaseClient";
 
 interface ReporteConsumosDetalleModalProps {
     show: boolean;
@@ -7,37 +9,119 @@ interface ReporteConsumosDetalleModalProps {
         fecha: string;
         ciudad: string;
         tanque: string;
+        idTanque: number;
     } | null;
 }
 
+interface SalidaDetalle {
+    tanque: string;
+    fecha: string;
+    hora: string;
+    temperatura: number;
+    unidad: string;
+    litros: number;
+    cuenta_litros: number;
+    horometro: number;
+    odometro: number;
+}
+
+interface EntradaDetalle {
+    fecha: string;
+    hora: string;
+    temperatura: number;
+    litros: number;
+    planta: string;
+    tanque: string;
+    cuenta_litros: number;
+}
+
 export default function ReporteConsumosDetalleModal({ show, onHide, datosFila }: ReporteConsumosDetalleModalProps) {
-    if (!datosFila) return null;
+    const [salidas, setSalidas] = useState<SalidaDetalle[]>([]);
+    const [entradas, setEntradas] = useState<EntradaDetalle[]>([]);
+    const [loadingSalidas, setLoadingSalidas] = useState(false);
+    const [loadingEntradas, setLoadingEntradas] = useState(false);
+    const [errorSalidas, setErrorSalidas] = useState<string | null>(null);
+    const [errorEntradas, setErrorEntradas] = useState<string | null>(null);
 
-    // Datos Mock para Entradas
-    const mockEntradas = [
-        { fecha: datosFila.fecha, litros: 5000, planta: "Planta Norte", tanque: datosFila.tanque, cuentaLitros: 125430 },
-        { fecha: datosFila.fecha, litros: 2500, planta: "Planta Norte", tanque: datosFila.tanque, cuentaLitros: 127930 },
-    ];
+    useEffect(() => {
+        if (show && datosFila) {
+            cargarSalidas();
+            cargarEntradas();
+        }
+    }, [show, datosFila]);
 
-    // Datos Mock para Salidas
-    const mockSalidas = [
-        { fecha: datosFila.fecha, hora: "08:30", temperatura: 24, litros: 150, tanque: datosFila.tanque, unidad: "UN-01", cuentaLitros: 128080 },
-        { fecha: datosFila.fecha, hora: "10:15", temperatura: 26, litros: 200, tanque: datosFila.tanque, unidad: "UN-45", cuentaLitros: 128280 },
-        { fecha: datosFila.fecha, hora: "14:45", temperatura: 28, litros: 180, tanque: datosFila.tanque, unidad: "UN-22", cuentaLitros: 128460 },
-    ];
+    const cargarSalidas = async () => {
+        if (!datosFila) return;
+
+        setLoadingSalidas(true);
+        setErrorSalidas(null);
+
+        try {
+            const { data, error: rpcError } = await supabase.rpc('get_salidas_detalle', {
+                p_fecha: datosFila.fecha,
+                p_ciudad: datosFila.ciudad,
+                p_id_tanque: datosFila.idTanque
+            });
+
+            if (rpcError) {
+                console.error('Error al obtener salidas:', rpcError);
+                setErrorSalidas('Error al cargar los datos de salidas');
+                setSalidas([]);
+            } else {
+                setSalidas(data || []);
+            }
+        } catch (err) {
+            console.error('Error inesperado:', err);
+            setErrorSalidas('Error inesperado al cargar los datos');
+            setSalidas([]);
+        } finally {
+            setLoadingSalidas(false);
+        }
+    };
+
+    const cargarEntradas = async () => {
+        if (!datosFila) return;
+
+        setLoadingEntradas(true);
+        setErrorEntradas(null);
+
+        try {
+            const { data, error: rpcError } = await supabase.rpc('get_entradas_detalle', {
+                p_fecha: datosFila.fecha,
+                p_ciudad: datosFila.ciudad,
+                p_id_tanque: datosFila.idTanque
+            });
+
+            if (rpcError) {
+                console.error('Error al obtener entradas:', rpcError);
+                setErrorEntradas('Error al cargar los datos de entradas');
+                setEntradas([]);
+            } else {
+                setEntradas(data || []);
+            }
+        } catch (err) {
+            console.error('Error inesperado:', err);
+            setErrorEntradas('Error inesperado al cargar los datos');
+            setEntradas([]);
+        } finally {
+            setLoadingEntradas(false);
+        }
+    };
 
     const exportarSalidasCSV = () => {
-        const headers = ["Fecha", "Hora", "Temperatura", "Litros", "Tanque", "Unidad", "CuentaLitros"];
+        const headers = ["Tanque", "Fecha", "Hora", "Temperatura", "Unidad", "Litros", "CuentaLitros", "Horometro", "Odometro"];
         const csvContent = [
             headers.join(","),
-            ...mockSalidas.map(s => [
+            ...salidas.map(s => [
+                s.tanque,
                 s.fecha,
                 s.hora,
                 s.temperatura,
-                s.litros,
-                s.tanque,
                 s.unidad,
-                s.cuentaLitros
+                s.litros,
+                s.cuenta_litros,
+                s.horometro,
+                s.odometro
             ].join(","))
         ].join("\n");
 
@@ -45,10 +129,47 @@ export default function ReporteConsumosDetalleModal({ show, onHide, datosFila }:
         const url = URL.createObjectURL(blob);
         const link = document.createElement("a");
         link.href = url;
-        link.setAttribute("download", `detalle_salidas_${datosFila.tanque}_${datosFila.fecha}.csv`);
+        link.setAttribute("download", `detalle_salidas_${datosFila?.tanque}_${datosFila?.fecha}.csv`);
         document.body.appendChild(link);
         link.click();
         document.body.removeChild(link);
+    };
+
+    const exportarEntradasCSV = () => {
+        const headers = ["Fecha", "Hora", "Temperatura", "Litros", "Planta", "Tanque", "CuentaLitros"];
+        const csvContent = [
+            headers.join(","),
+            ...entradas.map(e => [
+                e.fecha,
+                e.hora,
+                e.temperatura,
+                e.litros,
+                e.planta,
+                e.tanque,
+                e.cuenta_litros
+            ].join(","))
+        ].join("\n");
+
+        const blob = new Blob([`\uFEFF${csvContent}`], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement("a");
+        link.href = url;
+        link.setAttribute("download", `detalle_entradas_${datosFila?.tanque}_${datosFila?.fecha}.csv`);
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+    };
+
+    if (!datosFila) return null;
+
+    // Formatear fecha para mostrar en el título del modal
+    const formatearFechaDisplay = (fecha: string) => {
+        const date = new Date(fecha);
+        return date.toLocaleDateString("es-MX", {
+            year: "numeric",
+            month: "2-digit",
+            day: "2-digit",
+        });
     };
 
     return (
@@ -61,7 +182,7 @@ export default function ReporteConsumosDetalleModal({ show, onHide, datosFila }:
         >
             <Modal.Header closeButton className="bg-light">
                 <Modal.Title>
-                    Detalle de Movimientos: {datosFila.tanque} ({datosFila.fecha})
+                    Detalle de Movimientos: {datosFila.tanque} ({formatearFechaDisplay(datosFila.fecha)})
                 </Modal.Title>
             </Modal.Header>
             <Modal.Body className="p-0 position-relative">
@@ -69,65 +190,118 @@ export default function ReporteConsumosDetalleModal({ show, onHide, datosFila }:
                     <Tab eventKey="salidas" title="Salidas">
                         <div className="d-flex justify-content-between align-items-center mb-3">
                             <h6 className="mb-0 text-dark text-center w-100 fw-bold">Movimiento de Salidas de Combustible</h6>
-                            <Button variant="success" size="sm" onClick={exportarSalidasCSV} className="position-absolute end-0 me-3">
+                            <Button variant="success" size="sm" onClick={exportarSalidasCSV} className="position-absolute end-0 me-3" disabled={salidas.length === 0}>
                                 <i className="bi bi-download me-1"></i> Exportar CSV
                             </Button>
                         </div>
-                        <div className="table-responsive">
-                            <Table striped bordered hover size="sm" className="mb-0">
-                                <thead style={{ background: '#6c757d', color: '#fff' }}>
-                                    <tr>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Fecha</th>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Hora</th>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Temp (°C)</th>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Litros</th>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Tanque</th>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Unidad</th>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>CuentaLitros</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {mockSalidas.map((s, i) => (
-                                        <tr key={i}>
-                                            <td className="text-center">{s.fecha}</td>
-                                            <td className="text-center">{s.hora}</td>
-                                            <td className="text-center">{s.temperatura}</td>
-                                            <td className="text-end font-monospace">{s.litros.toLocaleString()}</td>
-                                            <td>{s.tanque}</td>
-                                            <td>{s.unidad}</td>
-                                            <td className="text-end font-monospace">{s.cuentaLitros.toLocaleString()}</td>
+                        {loadingSalidas && (
+                            <div className="text-center py-5">
+                                <Spinner animation="border" role="status">
+                                    <span className="visually-hidden">Cargando...</span>
+                                </Spinner>
+                                <p className="mt-2">Cargando datos de salidas...</p>
+                            </div>
+                        )}
+                        {errorSalidas && (
+                            <Alert variant="danger" className="mb-3">
+                                {errorSalidas}
+                            </Alert>
+                        )}
+                        {!loadingSalidas && !errorSalidas && salidas.length === 0 && (
+                            <Alert variant="info" className="mb-3">
+                                No se encontraron movimientos de salida para esta fecha.
+                            </Alert>
+                        )}
+                        {!loadingSalidas && !errorSalidas && salidas.length > 0 && (
+                            <div className="table-responsive">
+                                <Table striped bordered hover size="sm" className="mb-0">
+                                    <thead style={{ background: '#6c757d', color: '#fff' }}>
+                                        <tr>
+                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Tanque</th>
+                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Fecha</th>
+                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Hora</th>
+                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Temp (°C)</th>
+                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Unidad</th>
+                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Litros</th>
+                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>CuentaLitros</th>
+                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Horómetro</th>
+                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Odómetro</th>
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </Table>
-                        </div>
+                                    </thead>
+                                    <tbody>
+                                        {salidas.map((s: SalidaDetalle, i: number) => (
+                                            <tr key={i}>
+                                                <td>{s.tanque}</td>
+                                                <td className="text-center">{s.fecha}</td>
+                                                <td className="text-center">{s.hora}</td>
+                                                <td className="text-center">{s.temperatura}</td>
+                                                <td>{s.unidad}</td>
+                                                <td className="text-end font-monospace">{s.litros.toLocaleString()}</td>
+                                                <td className="text-end font-monospace">{s.cuenta_litros.toLocaleString()}</td>
+                                                <td className="text-end font-monospace">{s.horometro.toLocaleString()}</td>
+                                                <td className="text-end font-monospace">{s.odometro.toLocaleString()}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </Table>
+                            </div>
+                        )}
                     </Tab>
                     <Tab eventKey="entradas" title="Entradas">
-                        <h6 className="mb-3 text-dark text-center fw-bold">Movimiento de Entras de Combustibles a Tanques</h6>
-                        <div className="table-responsive">
-                            <Table striped bordered hover size="sm" className="mb-0">
-                                <thead style={{ background: '#6c757d', color: '#fff' }}>
-                                    <tr>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Fecha</th>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Litros</th>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Planta</th>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Tanque</th>
-                                        <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>CuentaLitros</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {mockEntradas.map((e, i) => (
-                                        <tr key={i}>
-                                            <td className="text-center">{e.fecha}</td>
-                                            <td className="text-end font-monospace">{e.litros.toLocaleString()}</td>
-                                            <td>{e.planta}</td>
-                                            <td>{e.tanque}</td>
-                                            <td className="text-end font-monospace">{e.cuentaLitros.toLocaleString()}</td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                            </Table>
+                        <div className="d-flex justify-content-between align-items-center mb-3">
+                            <h6 className="mb-0 text-dark text-center w-100 fw-bold">Movimiento de Entradas de Combustibles a Tanques</h6>
+                            <Button variant="success" size="sm" onClick={exportarEntradasCSV} className="position-absolute end-0 me-3" disabled={entradas.length === 0}>
+                                <i className="bi bi-download me-1"></i> Exportar CSV
+                            </Button>
                         </div>
+                        {loadingEntradas && (
+                            <div className="text-center py-5">
+                                <Spinner animation="border" role="status">
+                                    <span className="visually-hidden">Cargando...</span>
+                                </Spinner>
+                                <p className="mt-2">Cargando datos de entradas...</p>
+                            </div>
+                        )}
+                        {errorEntradas && (
+                            <Alert variant="danger" className="mb-3">
+                                {errorEntradas}
+                            </Alert>
+                        )}
+                        {!loadingEntradas && !errorEntradas && entradas.length === 0 && (
+                            <Alert variant="info" className="mb-3">
+                                No se encontraron movimientos de entrada para esta fecha.
+                            </Alert>
+                        )}
+                        {!loadingEntradas && !errorEntradas && entradas.length > 0 && (
+                            <div className="table-responsive">
+                                <Table striped bordered hover size="sm" className="mb-0">
+                                    <thead style={{ background: '#6c757d', color: '#fff' }}>
+                                        <tr>
+                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Fecha</th>
+                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Hora</th>
+                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Temp (°C)</th>
+                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Litros</th>
+                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Planta</th>
+                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>Tanque</th>
+                                            <th className="text-center" style={{ backgroundColor: '#6c757d', color: '#fff' }}>CuentaLitros</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {entradas.map((e: EntradaDetalle, i: number) => (
+                                            <tr key={i}>
+                                                <td className="text-center">{e.fecha}</td>
+                                                <td className="text-center">{e.hora}</td>
+                                                <td className="text-center">{e.temperatura}</td>
+                                                <td className="text-end font-monospace">{e.litros.toLocaleString()}</td>
+                                                <td>{e.planta}</td>
+                                                <td>{e.tanque}</td>
+                                                <td className="text-end font-monospace">{e.cuenta_litros.toLocaleString()}</td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </Table>
+                            </div>
+                        )}
                     </Tab>
                 </Tabs>
             </Modal.Body>
