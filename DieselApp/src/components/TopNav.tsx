@@ -15,13 +15,13 @@ export default function TopNav() {
         <img
           src={logo}
           alt="DieselApp Logo"
-          style={{ width: '55px', height: '43px', objectFit: 'contain' }}
+          style={{ width: "55px", height: "43px", objectFit: "contain" }}
         />
         <span className="ms-2">DieselApp</span>
       </div>
 
       <button
-        className={`top-nav__hamburger ${isMenuOpen ? 'top-nav__hamburger--open' : ''}`}
+        className={`top-nav__hamburger ${isMenuOpen ? "top-nav__hamburger--open" : ""}`}
         onClick={toggleMenu}
         aria-label="Toggle navigation"
       >
@@ -30,7 +30,10 @@ export default function TopNav() {
         <span className="top-nav__hamburger-bar"></span>
       </button>
 
-      <nav className={`top-nav__links ${isMenuOpen ? 'top-nav__links--open' : ''}`} aria-label="Main">
+      <nav
+        className={`top-nav__links ${isMenuOpen ? "top-nav__links--open" : ""}`}
+        aria-label="Main"
+      >
         <NavLink
           className={({ isActive }) =>
             `top-nav__link${isActive ? " top-nav__link--active" : ""}`
@@ -68,18 +71,43 @@ export default function TopNav() {
           Salidas
         </NavLink>
         <Dropdown>
-          <Dropdown.Toggle className="top-nav__action" variant="" id="dropdown-reportes">
+          <Dropdown.Toggle
+            className="top-nav__action"
+            variant=""
+            id="dropdown-reportes"
+          >
             Reportes
           </Dropdown.Toggle>
 
           <Dropdown.Menu>
-            <Dropdown.Item as={NavLink} to="/reportes/lecturas" onClick={closeMenu}>Lecturas</Dropdown.Item>
-            <Dropdown.Item as={NavLink} to="/reportes/consumos" onClick={closeMenu}>Consumos</Dropdown.Item>
+            <Dropdown.Item
+              as={NavLink}
+              to="/reportes/lecturas"
+              onClick={closeMenu}
+            >
+              Lecturas
+            </Dropdown.Item>
+            <Dropdown.Item
+              as={NavLink}
+              to="/reportes/consumos"
+              onClick={closeMenu}
+            >
+              Consumos
+            </Dropdown.Item>
+            <Dropdown.Item
+              as={NavLink}
+              to="/reportes/rendimiento"
+              onClick={closeMenu}
+            >
+              Rendimiento
+            </Dropdown.Item>
           </Dropdown.Menu>
         </Dropdown>
       </nav>
 
-      {isMenuOpen && <div className="top-nav__overlay" onClick={closeMenu}></div>}
+      {isMenuOpen && (
+        <div className="top-nav__overlay" onClick={closeMenu}></div>
+      )}
     </header>
   );
 }

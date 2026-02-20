@@ -4,6 +4,7 @@ import Login from "./auth/Login";
 import CapturaLecturas from "./components/CapturaLecturas";
 import ReporteLecturas from "./components/ReporteLecturas";
 import ReporteConsumos from "./components/ReporteConsumos";
+import ReporteRendimientos from "./components/ReporteRendimientos";
 import EntradasDiesel from "./components/EntradasDiesel";
 import SalidasDiesel from "./components/SalidasDiesel";
 import TopNav from "./components/TopNav";
@@ -23,6 +24,10 @@ function AppLayout() {
           <Route path="/salidas" element={<SalidasDiesel />} />
           <Route path="/reportes/lecturas" element={<ReporteLecturas />} />
           <Route path="/reportes/consumos" element={<ReporteConsumos />} />
+          <Route
+            path="/reportes/rendimiento"
+            element={<ReporteRendimientos />}
+          />
         </Routes>
       </main>
     </div>
@@ -36,7 +41,6 @@ export default function App() {
     </BrowserRouter>
   );
 }
-
 
 //function App() {
 //  return (

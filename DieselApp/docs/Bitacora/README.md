@@ -5,6 +5,7 @@ Esta carpeta contiene documentación histórica importante sobre eventos, decisi
 ## 📋 Propósito
 
 Mantener un registro cronológico de:
+
 - Resolución de problemas críticos
 - Decisiones arquitectónicas importantes
 - Recuperaciones de sistema
@@ -20,7 +21,11 @@ Los archivos siguen el formato: `YYYY-MM-DD_descripcion.md`
 ### 2026
 
 #### Febrero
+
 - **2026-02-16** - [Recovery Summary](./2026-02-16_recovery_summary.md): Recuperación del repositorio a commit estable y análisis de corrupción en TopNav.tsx
+- **2026-02-17** - [Summary](./2026-02-17_summary.md): Estandarización de componentes y optimización de flujos de reportes.
+- **2026-02-18** - [Summary](./2026-02-18_summary.md): Optimización UX móvil y homologación visual corporativa (Amarillo Diesel).
+- **2026-02-19** - [Summary](./2026-02-19_summary.md): Homologación de fuentes en el modal de detalle del reporte de consumos.
 
 ---
 
@@ -35,4 +40,4 @@ Cuando ocurra un evento importante que deba documentarse:
 
 ---
 
-*Última actualización: 2026-02-16*
+_Última actualización: 2026-02-19_

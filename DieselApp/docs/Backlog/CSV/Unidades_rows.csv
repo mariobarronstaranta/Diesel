@@ -1,0 +1,335 @@
+IDUnidad,IDClaveUnidad,ClaveAlterna,Borrado,IDPlanta,Planta,CveCiudad,IDMarca,MarcaCamion,IDTipoCombustible,TipoCombustible,IDTipoPlacas,TipoPlacas,Activo,Modelo,NumSerie,Placas
+1,BP-02,2BA,0,19,M1-Apodaca,MTY,12,Mercedez Benz,3,Diesel,4,Estatal,0,No Registrado,C2121AM0000368,RD-69-029
+2,BP-03,3BA,0,25,MT2-Taller M2,MTY,19,Volvo-White,3,Diesel,4,Estatal,1,No Registrado,1WXDCHBDFN07425,RG-01-502
+3,BP-07,7BA,0,24,"MT1-Taller M1 ",MTY,10,Mack,3,Diesel,-1,No Registrado,1,No Registrado,1M2K166CXFM0010,RE-78-652
+4,BP-10,ABA,0,24,"MT1-Taller M1 ",MTY,10,Mack,3,Diesel,-1,No Registrado,1,No Registrado,1M2K130C8HM0025,RD-69-030
+5,BP-12,CBA,0,24,"MT1-Taller M1 ",MTY,10,Mack,-1,No Registrado,-1,No Registrado,1,No Registrado,1M2K130CXHM002S,RE-62-800
+6,CR-16,GRA,0,19,M1-Apodaca,MTY,10,Mack,-1,No Registrado,-1,No Registrado,1,No Registrado,1M2K189C2NM0029,RE-78-875
+7,BP-23,PBA,0,19,M1-Apodaca,MTY,10,Mack,3,Diesel,13,SPF,1,No Registrado,1M2K189C0SM0066,RG-01-512
+8,CR-244,LRH,0,11,"M4-Centro ",MTY,10,Mack,3,Diesel,4,Estatal,1,1994,1M2K138C5KM006604,RG-6901505
+9,CR-192,0RG,0,30,P1-Coronango,PUE,10,Mack,3,Diesel,4,Estatal,1,No Registrado,1M2K189C7RM0052,RD-69-035
+10,CR-130_D,CR-7RD,1,25,MT2-Taller M2,MTY,12,Mercedez Benz,3,Diesel,4,Estatal,0,No Registrado,BB3753001914,RF-07-295
+11,CR-011_D,CR-BRA,1,15,"M5-Santiago ",MTY,17,Ramirez,-1,No Registrado,-1,No Registrado,0,No Registrado,1672,RE-62-796
+12,CR-118,NRD,0,19,M1-Apodaca,MTY,12,Mercedez Benz,-1,No Registrado,-1,No Registrado,0,No Registrado,3AM68511550032794,RE6826A
+13,CR-020_D,CR-LRA,1,25,MT2-Taller M2,MTY,5,Famsa Internacional,3,Diesel,4,Estatal,0,No Registrado,20493,RE-78-873
+14,CR-032,0RB,0,16,"M6-Juarez ",MTY,4,Dina,3,Diesel,4,Estatal,0,No Registrado,7407725A9,"RE-78-876 "
+15,CR-046,ERB,0,18,"M7-Salinas ",MTY,4,Dina,3,Diesel,-1,No Registrado,0,No Registrado,NH471819,RD-69-284
+16,CR-070_D,CR-6RC,1,15,"M5-Santiago ",MTY,12,Mercedez Benz,3,Diesel,-1,No Registrado,0,No Registrado,3AM685115500311,RE-62-793
+17,CR-084,LRC,0,19,M1-Apodaca,MTY,12,Mercedez Benz,3,Diesel,-1,No Registrado,0,No Registrado,3AM685115500309,RG-01-507
+18,CR-167,7RF,0,19,M1-Apodaca,MTY,2,Freghtliner,3,Diesel,4,Estatal,0,2013,3ALHC3DJEDFX5096,RE6220A
+19,CR-099_D,CR-3RD,1,11,"M4-Centro ",MTY,8,Internacional,-1,No Registrado,-1,No Registrado,0,No Registrado,3HTSCAAN3VG1003,RE-78-863
+20,BP-09,9BA,0,24,"MT1-Taller M1 ",MTY,10,Mack,3,Diesel,-1,No Registrado,0,No Registrado,1M2K189C4TM0085,RE-62-797
+21,BP-14,EBA,0,19,M1-Apodaca,MTY,19,Volvo-White,3,Diesel,-1,No Registrado,1,No Registrado,1WXDCHB6GN11118,RG-01-501
+22,CR-001_D,CR-1RA,1,25,MT2-Taller M2,MTY,17,Ramirez,3,Diesel,-1,No Registrado,0,No Registrado,1738,RE-62-669
+23,CR-006_D,CR-6RA,1,25,MT2-Taller M2,MTY,19,Volvo-White,3,Diesel,-1,No Registrado,0,No Registrado,49641567,RE-62-673
+24,CR-019,KRA,0,16,"M6-Juarez ",MTY,5,Famsa Internacional,3,Diesel,-1,No Registrado,0,No Registrado,20710,RD-69-274
+26,CR-20,LRA,0,19,M1-Apodaca,MTY,9,Kenworth,3,Diesel,4,Estatal,1,No Registrado,463810,RE-78-878
+27,CR-051_D,KRB,1,19,M1-Apodaca,MTY,4,Dina,3,Diesel,-1,No Registrado,0,No Registrado,NH471794,RD-69-285
+28,CR-182,NRF,0,15,"M5-Santiago ",MTY,8,Internacional,3,Diesel,4,Estatal,1,No Registrado,NH471658,RE-62-798
+29,CR-003,3RA,0,15,"M5-Santiago ",MTY,17,Ramirez,3,Diesel,4,Estatal,1,No Registrado,1138,RD-69-037
+30,CR-12,CRA,0,7,M2-Escobedo,MTY,19,Volvo-White,3,Diesel,-1,No Registrado,0,No Registrado,49640939,RD-69-269
+32,CR-030_D,CR-YRA,1,19,M1-Apodaca,MTY,19,Volvo-White,-1,No Registrado,-1,No Registrado,0,No Registrado,49641208,RE-78-671
+33,CR-168,8RF,0,19,M1-Apodaca,MTY,2,Freghtliner,3,Diesel,4,Estatal,1,2013,3ALHC3DJ3EDFX5097,RE6233A
+34,CR-044_D,CR-CRB,1,25,MT2-Taller M2,MTY,17,Ramirez,3,Diesel,-1,No Registrado,0,No Registrado,1675,RE-78-879
+35,CR-051,KRB,0,8,"M3-Santa ",MTY,4,Dina,3,Diesel,-1,No Registrado,1,No Registrado,NH471820,RD-69-286
+36,CR-002_D,CR-2RA,1,25,MT2-Taller M2,MTY,17,Ramirez,3,Diesel,4,Estatal,0,No Registrado,1745,RD-69-036
+37,CR-009_D,CR-9RA,1,25,MT2-Taller M2,MTY,17,Ramirez,3,Diesel,-1,No Registrado,0,No Registrado,1260,RE-78-884
+38,CR-120,RRD,0,7,M2-Escobedo,MTY,12,Mercedez Benz,3,Diesel,4,Estatal,1,No Registrado,3AM685115500329,RE-78-658
+39,CR-018,JRA,0,11,"M4-Centro ",MTY,17,Ramirez,3,Diesel,-1,No Registrado,0,1973,1673,RE6876A
+40,CR-031,ZRA,0,19,M1-Apodaca,MTY,19,Volvo-White,3,Diesel,-1,No Registrado,1,No Registrado,49641281,RH-81-054
+41,CR-033_D,CR-1RB,1,25,MT2-Taller M2,MTY,9,Kenworth,3,Diesel,4,Estatal,0,No Registrado,465054,RD-58-229
+42,CR-139,CR-BRE,0,14,G2-Zapopan,GDL,9,Kenworth,3,Diesel,4,Estatal,0,1996,,
+43,CR-173,DRF,0,11,"M4-Centro ",MTY,2,Freghtliner,3,Diesel,4,Estatal,1,2013,3ALHCDJEDFX5102,RE-02-648
+44,CR-093 XRC,,0,23,"L1-Leon ",LEON,10,Mack,-1,No Registrado,-1,No Registrado,0,No Registrado,NH471802,
+45,CR-055,PRB,0,16,"M6-Juarez ",MTY,4,Dina,3,Diesel,-1,No Registrado,0,No Registrado,BB37530,RE-78-880
+46,CR-061,XRB,0,18,"M7-Salinas ",MTY,4,Dina,-1,No Registrado,-1,No Registrado,1,No Registrado,612C3,RA-65-319
+47,CR-076,CRC,0,19,M1-Apodaca,MTY,12,Mercedez Benz,3,Diesel,-1,No Registrado,0,No Registrado,3AM68511550030949,RE6895A
+48,CR-063 ZRB,ZRB,0,34,A2-San Francisco,AGS,12,Mercedez Benz,3,Diesel,4,Estatal,1,No Registrado,,
+49,KRF,KRF,0,20,"A1-Ojo Caliente ",AGS,4,Dina,3,Diesel,4,Estatal,1,1995,BB3753001843,RD-69-294
+50,CR-008_D,CR-8RA,1,25,MT2-Taller M2,MTY,9,Kenworth,3,Diesel,-1,No Registrado,0,No Registrado,1XKAD29X3HJ3385,RE-62-798
+51,CR-068 4RC,,0,23,"L1-Leon ",LEON,-1,No Registrado,-1,No Registrado,-1,No Registrado,0,No Registrado,31169,
+52,CR-005,5RA,0,8,"M3-Santa ",MTY,17,Ramirez,3,Diesel,4,Estatal,0,No Registrado,1257,RD-69-038
+54,CR-029,XRA,0,32,M8-Pesqueria,MTY,17,Ramirez,3,Diesel,4,Estatal,1,No Registrado,1739,RD-69-040
+55,CR-041_D,CR-9RB,1,25,MT2-Taller M2,MTY,17,Ramirez,3,Diesel,-1,No Registrado,0,No Registrado,1302,RD-69-283
+56,CR-073,9RC,0,11,"M4-Centro ",MTY,12,Mercedez Benz,3,Diesel,4,Estatal,0,No Registrado,3AM685115500311,RE-78-661
+58,CR-079,FRC,0,16,"M6-Juarez ",MTY,12,Mercedez Benz,3,Diesel,13,SPF,1,1996,3AM685115500312,PW3520A
+60,CR-237,DRH,0,11,"M4-Centro ",MTY,17,Ramirez,3,Diesel,-1,No Registrado,1,No Registrado,1070,RE-78-656
+61,CR-104_D,CR-8RD,1,25,MT2-Taller M2,MTY,4,Dina,3,Diesel,-1,No Registrado,0,No Registrado,1913,RA-65-356
+62,CR-066,CR-PRA,0,14,G2-Zapopan,GDL,12,Mercedez Benz,3,Diesel,4,Estatal,1,1996,3AM68511550031301,RE62667
+63,CR-067,3RC,0,7,M2-Escobedo,MTY,12,Mercedez Benz,3,Diesel,-1,No Registrado,0,1996,3AM685115500310,RE6887A
+64,CR-074_D,CR-ARC,1,25,MT2-Taller M2,MTY,12,Mercedez Benz,3,Diesel,4,Estatal,0,No Registrado,31149,RA-65-326
+65,CR-075,BRC,0,19,M1-Apodaca,MTY,12,Mercedez Benz,3,Diesel,-1,No Registrado,1,No Registrado,30882,RA-65-327
+66,BP-04,4BA,0,25,MT2-Taller M2,MTY,19,Volvo-White,3,Diesel,-1,No Registrado,0,No Registrado,49641751,RD-69-267
+67,BP-08,8BA,0,19,M1-Apodaca,MTY,10,Mack,3,Diesel,4,Estatal,1,No Registrado,700656K,RE-62-670
+68,BP-18,JBA,0,19,M1-Apodaca,MTY,10,Mack,3,Diesel,-1,No Registrado,1,No Registrado,4V2DMFJF9JU500547,RG-01-503
+69,BP-21,MBA,0,19,M1-Apodaca,MTY,10,Mack,3,Diesel,-1,No Registrado,1,No Registrado,1M2K189C7SM006628,RE-62-794
+70,CR-035,3RB,0,28,"LT1-Taller L1 ",LEON,9,Kenworth,3,Diesel,4,Estatal,0,No Registrado,463850,RE-78-666
+71,CR-038,6RB,0,19,M1-Apodaca,MTY,4,Dina,3,Diesel,4,Estatal,1,No Registrado,D113256,RD-69-282
+72,CR-087,PRC,0,8,"M3-Santa ",MTY,12,Mercedez Benz,3,Diesel,4,Estatal,0,No Registrado,30944,RA-65-339
+73,BP-05,5BA,0,25,MT2-Taller M2,MTY,19,Volvo-White,3,Diesel,-1,No Registrado,1,No Registrado,49641566,RD-69-268
+74,BP-27,BP-UBA,0,30,P1-Coronango,PUE,10,Mack,3,Diesel,4,Estatal,1,No Registrado,,RG-42-638
+75,BP-28,BP-WBA,0,13,G1- VALLE DE LA MISERICORDIA,GDL,10,Mack,3,Diesel,-1,No Registrado,1,No Registrado,,
+76,BP-29,BP-XBA,0,30,P1-Coronango,PUE,10,Mack,3,Diesel,4,Estatal,0,No Registrado,,RH-17770
+77,CR193-1RG,1RG P1,0,23,"L1-Leon ",LEON,10,Mack,3,Diesel,4,Estatal,1,No Registrado,,
+78,CR-062,YRB,0,11,"M4-Centro ",MTY,4,Dina,3,Diesel,-1,No Registrado,1,No Registrado,BB3753001457,RE-78-882
+79,BP-11,BP-BBA,0,13,G1- VALLE DE LA MISERICORDIA,GDL,10,Mack,3,Diesel,4,Estatal,1,1993,1M2K166C4GM001077,RE-62-672
+80,BP-13,BP-DBA,0,13,G1- VALLE DE LA MISERICORDIA,GDL,10,Mack,3,Diesel,4,Estatal,1,1993,1M2K138C8JM001571,RE-62-674
+81,BP-17,BP-HBA,0,13,G1- VALLE DE LA MISERICORDIA,GDL,10,Mack,3,Diesel,4,Estatal,1,1993,1M2K175CXKM002945,RD-69-032
+82,BP-20,BP-LBA,0,13,G1- VALLE DE LA MISERICORDIA,GDL,10,Mack,3,Diesel,4,Estatal,1,1998,1M2K189C3WM010844,RD-58-230
+83,BP-24,BP-QBA,0,13,G1- VALLE DE LA MISERICORDIA,GDL,10,Mack,3,Diesel,4,Estatal,1,1994,1M2K138C5KM002629,RD-69-034
+84,,CR-6RD,0,13,G1- VALLE DE LA MISERICORDIA,GDL,12,Mercedez Benz,3,Diesel,4,Estatal,1,No Registrado,,
+85,CR-110,CR-ERD,0,13,G1- VALLE DE LA MISERICORDIA,GDL,12,Mercedez Benz,3,Diesel,4,Estatal,1,1996,3AM68511550033642,RD-69-065
+86,CR-049,CR-HRB,0,13,G1- VALLE DE LA MISERICORDIA,GDL,4,Dina,3,Diesel,4,Estatal,1,1993,NH471834,RD-69-043
+87,CR-017,HRA,0,28,"LT1-Taller L1 ",LEON,-1,No Registrado,-1,No Registrado,-1,No Registrado,0,1996,3AM68511550031010,RD-69-059
+88,CR-113,CR-HRD,0,13,G1- VALLE DE LA MISERICORDIA,GDL,12,Mercedez Benz,3,Diesel,4,Estatal,1,1996,3AM68511550033062,RD-69-066
+89,CR-116,CR-PRB,0,14,G2-Zapopan,GDL,12,Mercedez Benz,3,Diesel,4,Estatal,1,1996,3AM68511550032924,RG-01-508
+90,CR-115,CR-PRD,0,14,G2-Zapopan,GDL,12,Mercedez Benz,3,Diesel,4,Estatal,1,1996,3AM68511550031763,RD-69-067
+92,CR-004,CR-4RA,0,14,G2-Zapopan,GDL,19,Volvo-White,3,Diesel,4,Estatal,0,1981,4964193,RE78651
+93,CR-100,CR-4RD,0,26,GT1-Taller G1,GDL,5,Famsa Internacional,3,Diesel,4,Estatal,1,1993,CF257LMEB00288,RD-69-278
+95,CR-089,CR-SRC,0,14,G2-Zapopan,GDL,12,Mercedez Benz,3,Diesel,4,Estatal,0,1996,3AM68511550031000,RD-69-058
+96,CR-114,CR-JRD,0,14,G2-Zapopan,GDL,12,Mercedez Benz,3,Diesel,4,Estatal,0,1997,3AM68511550032059,RD69303
+99,CR-119,CR-PRD,0,13,G1- VALLE DE LA MISERICORDIA,GDL,12,Mercedez Benz,3,Diesel,4,Estatal,1,1996,3AM68511550032984,RD-69-068
+100,CR-096,CR-ORD,0,14,G2-Zapopan,GDL,4,Dina,3,Diesel,-1,No Registrado,0,No Registrado,3AM68511550031301,RE-62-667
+101,CR-071,7RC,0,20,"A1-Ojo Caliente ",AGS,12,Mercedez Benz,3,Diesel,4,Estatal,1,1996,3AM68511550031158,RE-62-661
+104,CR-024,CR-RRA,0,36,Q1-Apaseo,QRO,5,Famsa Internacional,3,Diesel,4,Estatal,1,1981,257LMEB00240,RE78874
+105,CR-50,JRB,0,20,"A1-Ojo Caliente ",AGS,4,Dina,3,Diesel,4,Estatal,1,1996,3AM68511550031161,RE-62-664
+106,CR-157,XRE,0,20,"A1-Ojo Caliente ",AGS,4,Dina,3,Diesel,4,Estatal,1,1993,NH471805,RD-69-042
+107,CR-050,JRB,0,20,"A1-Ojo Caliente ",AGS,12,Mercedez Benz,3,Diesel,4,Estatal,1,1996,NH471814,RD-69-044
+108,CR-098 2RD,2RD,0,34,A2-San Francisco,AGS,-1,No Registrado,3,Diesel,4,Estatal,1,No Registrado,,
+109,CR-106,ARD,0,20,"A1-Ojo Caliente ",AGS,4,Dina,3,Diesel,4,Estatal,1,1993,3AM68511550031846,RD-69-063
+110,1RH,1RH,0,20,"A1-Ojo Caliente ",AGS,4,Dina,3,Diesel,4,Estatal,1,1995,BB3753001623,RD-69-046
+111,0,0,0,23,"L1-Leon ",LEON,4,Dina,3,Diesel,4,Estatal,0,1995,BB3753001090,
+112,CR-154 TRE,TRE,0,34,A2-San Francisco,AGS,-1,No Registrado,3,Diesel,4,Estatal,1,No Registrado,,
+113,CR-140 CRE,CRE,0,34,A2-San Francisco,AGS,12,Mercedez Benz,3,Diesel,4,Estatal,1,1996,3AM68511550031036,RE-62-666
+114,ARD,ARD,0,20,"A1-Ojo Caliente ",AGS,12,Mercedez Benz,3,Diesel,4,Estatal,1,2000,5DH6F3FA1YMG97786,RF-05-893
+115,CR-069,5RC,0,20,"A1-Ojo Caliente ",AGS,12,Mercedez Benz,3,Diesel,4,Estatal,1,1996,3AM68511550030974,RD-69-051
+116,CR-098,2RD,0,20,"A1-Ojo Caliente ",AGS,5,Famsa Internacional,3,Diesel,4,Estatal,1,1997,3HTSCAANXVG100354,RE-78-862
+117,BP-19,BP-KBA,0,23,"L1-Leon ",LEON,10,Mack,-1,No Registrado,-1,No Registrado,0,No Registrado,1M2K166C9GM0011,RB-47-300
+118,BP-22,NBA,0,23,"L1-Leon ",LEON,10,Mack,3,Diesel,4,Estatal,1,No Registrado,1M2K189C7TM0071,RB-24-019
+119,CR-068_D,4RC,1,28,"LT1-Taller L1 ",LEON,-1,No Registrado,-1,No Registrado,-1,No Registrado,0,No Registrado,3AM685115500310,RD-69-052
+120,CR-195 3RG,3RG P2,0,29,L2-Leon,LEON,9,Kenworth,3,Diesel,4,Estatal,1,No Registrado,,RE-6258-A
+122,CR-043-,BRB,0,34,A2-San Francisco,AGS,12,Mercedez Benz,3,Diesel,4,Estatal,1,1996,3AM68511550032997,RD-69-301
+123,"CR-057 ","SRB ",0,29,L2-Leon,LEON,9,Kenworth,3,Diesel,4,Estatal,1,No Registrado,,PZ-2765-A
+124,CR-208_DEL,FRG,1,36,Q1-Apaseo,QRO,12,Mercedez Benz,3,Diesel,4,Estatal,0,No Registrado,3AM685115500309,RD-69-049
+126,CR-083,KRC,0,28,"LT1-Taller L1 ",LEON,12,Mercedez Benz,3,Diesel,4,Estatal,0,No Registrado,3AM685115500312,RD-69-054
+129,BP-01,1BA,0,25,MT2-Taller M2,MTY,19,Volvo-White,-1,No Registrado,4,Estatal,0,1978,49640635,RD-69-266
+130,CR-121_D,CR-SRD,1,25,MT2-Taller M2,MTY,12,Mercedez Benz,3,Diesel,4,Estatal,0,2000,37278,RD-69-263
+132,CR-123_D,CR-URD,1,25,MT2-Taller M2,MTY,12,Mercedez Benz,3,Diesel,-1,No Registrado,0,2000,37281,RD-69-265
+133,CR-124,WRD,0,16,"M6-Juarez ",MTY,12,Mercedez Benz,3,Diesel,-1,No Registrado,1,2000,5DH6F3FA6YMG97282,RE6823A
+134,CR-125,XRD,0,8,"M3-Santa ",MTY,12,Mercedez Benz,3,Diesel,-1,No Registrado,0,2000,37287,RD-69-264
+136,CR-245,MRH,0,7,M2-Escobedo,MTY,5,Famsa Internacional,3,Diesel,4,Estatal,1,1987,20890,RE6941A
+138,CR-028,CR-WRA,0,13,G1- VALLE DE LA MISERICORDIA,GDL,5,Famsa Internacional,3,Diesel,4,Estatal,1,1993,CF257LMEB00282,RD-69-281
+140,CR-022,NRA,0,16,"M6-Juarez ",MTY,5,Famsa Internacional,3,Diesel,-1,No Registrado,0,1987,20603,RD-69-275
+142,CR-045,DRB,0,19,M1-Apodaca,MTY,4,Dina,3,Diesel,4,Estatal,0,1989,"2530445B9 ",RE6862A
+143,CR-082 JRC,,0,23,"L1-Leon ",LEON,-1,No Registrado,3,Diesel,-1,No Registrado,0,1994,5112482C4,
+144,CR-060,WRB,0,19,M1-Apodaca,MTY,4,Dina,3,Diesel,4,Estatal,1,1995,"BB3753001821 ",RE6871A
+145,CR-072_DEL,CR-8RC,1,26,GT1-Taller G1,GDL,12,Mercedez Benz,3,Diesel,-1,No Registrado,0,1996,30956,
+146,GR-01,1GA,0,25,MT2-Taller M2,MTY,21,Ford,2,Gasolina,-1,No Registrado,1,1979,T80JVEB3287,RD-68-944
+147,GR-02,2GA,0,25,MT2-Taller M2,MTY,19,Volvo-White,3,Diesel,-1,No Registrado,1,1981,41846,"RD-58-208 "
+149,CR-102,CR-6RD,0,31,G3-Tlajomulco,GDL,4,Dina,3,Diesel,4,Estatal,1,1995,BB3753001669,RD-69-298
+150,CR-109,CR-TRF,0,31,G3-Tlajomulco,GDL,12,Mercedez Benz,3,Diesel,4,Estatal,1,1996,3AM68511550033044,RD-69-064
+151,CR-086,CR-KRG,0,31,G3-Tlajomulco,GDL,12,Mercedez Benz,3,Diesel,4,Estatal,1,No Registrado,"3AM68511550030983 ",RD-69-056
+152,CR-066_D,CR-2RC,1,26,GT1-Taller G1,GDL,12,Mercedez Benz,3,Diesel,4,Estatal,0,1996,3AM68511550031301,RE-62-667
+153,0,0,0,23,"L1-Leon ",LEON,5,Famsa Internacional,3,Diesel,4,Estatal,0,1993,CF257PMEB00039,RD-69-280
+154,CR-049_D,CR-HRB,1,26,GT1-Taller G1,GDL,4,Dina,3,Diesel,4,Estatal,0,1993,0NH471834,RD69043
+157,CR-079_D,CR-FRC,1,24,"MT1-Taller M1 ",MTY,19,Volvo-White,3,Diesel,-1,No Registrado,0,1985,14385,RE-78653
+158,PD-01,PD-01,0,19,M1-Apodaca,MTY,-1,No Registrado,-1,No Registrado,-1,No Registrado,0,No Registrado,,
+159,CR-73,9RC,0,7,M2-Escobedo,MTY,8,Internacional,3,Diesel,4,Estatal,0,2015,1120073644,RD-68279
+160,PD-03,PD-03,0,8,"M3-Santa ",MTY,-1,No Registrado,-1,No Registrado,-1,No Registrado,1,No Registrado,,
+161,PD-04,PD-04,0,11,"M4-Centro ",MTY,-1,No Registrado,-1,No Registrado,-1,No Registrado,1,No Registrado,,
+162,CR-51,KRB,0,18,"M7-Salinas ",MTY,4,Dina,3,Diesel,-1,No Registrado,0,1993,19,RD-69-286
+164,CR-062_D,YRB,1,18,"M7-Salinas ",MTY,-1,No Registrado,3,Diesel,-1,No Registrado,0,No Registrado,,RE-78-882
+165,CR-207 FRG,FRG P1,0,23,"L1-Leon ",LEON,2,Freghtliner,3,Diesel,4,Estatal,1,2016,926928C1086815,RE-6267-A
+166,PD-08_DEL,PD-08,1,13,G1- VALLE DE LA MISERICORDIA,GDL,-1,No Registrado,-1,No Registrado,-1,No Registrado,0,No Registrado,,
+167,PD-09_DEL,PD-09,1,14,G2-Zapopan,GDL,-1,No Registrado,-1,No Registrado,-1,No Registrado,0,No Registrado,,
+168,CR-181,MRF,0,20,"A1-Ojo Caliente ",AGS,2,Freghtliner,3,Diesel,4,Estatal,1,2014,3ALHC3DJ2EDFX5110,RE-02-653
+170,CR-087_D,PRC,1,25,MT2-Taller M2,MTY,19,Volvo-White,3,Diesel,4,Estatal,0,1995,3AM68511550030944,RE-78883
+171,CR-132_D,CR-4RE,1,25,MT2-Taller M2,MTY,12,Mercedez Benz,3,Diesel,4,Estatal,0,2000,5DH6F3FAXYMG97799,RF-07-292
+173,CR-165,5RF,0,11,"M4-Centro ",MTY,2,Freghtliner,3,Diesel,4,Estatal,1,2013,3ALHC3DJ8EDFX5094,RE-02-644
+175,CR-128_D,CR-0RE,1,25,MT2-Taller M2,MTY,12,Mercedez Benz,-1,No Registrado,4,Estatal,0,2000,5DH6F3FA2YMG84433,RF-07-291
+176,CR-126,YRD,0,19,M1-Apodaca,MTY,12,Mercedez Benz,3,Diesel,4,Estatal,1,2000,5DH6F3FA5YMG97810,RE6836A
+177,CR-141_D,CR-DRE,1,25,MT2-Taller M2,MTY,4,Dina,3,Diesel,4,Estatal,0,1997,RE3953002431,RH-13-945
+178,TRB,TRB,0,20,"A1-Ojo Caliente ",AGS,9,Kenworth,3,Diesel,4,Estatal,1,1997,RE3953002442,RH-13-946
+179,CR-123,CR-URD,0,33,G4-Zapopan 2,GDL,12,Mercedez Benz,3,Diesel,4,Estatal,1,1993,49641943,
+180,CR-131_D,CR-3RE,1,25,MT2-Taller M2,MTY,12,Mercedez Benz,3,Diesel,4,Estatal,0,2000,5DH6F3FAOYMG97269,RF-07-267
+181,CR-145_D,CR-HRE,1,25,MT2-Taller M2,MTY,4,Dina,3,Diesel,4,Estatal,0,1997,RE3953002437,RH-13-950
+183,CR-138_D,CR-ARE,1,25,MT2-Taller M2,MTY,4,Dina,3,Diesel,4,Estatal,0,1997,RE395002363,RH-13-948
+185,CR-142_D,CR-ERE,1,25,MT2-Taller M2,MTY,5,Famsa Internacional,-1,No Registrado,4,Estatal,0,1997,RE36553002429,RH-13-944
+186,CR-143,CR-FRE,0,13,G1- VALLE DE LA MISERICORDIA,GDL,5,Famsa Internacional,-1,No Registrado,4,Estatal,1,1997,RE3953002353,RH-13-943
+187,CR-144,CR-GRE,0,13,G1- VALLE DE LA MISERICORDIA,GDL,4,Dina,-1,No Registrado,4,Estatal,1,1997,RE3953002445,RH-13-951
+188,CR-043,BRB,0,11,"M4-Centro ",MTY,4,Dina,-1,No Registrado,4,Estatal,0,1986,20412,RG-01-506
+189,CR-037_D,CR-5RB,1,25,MT2-Taller M2,MTY,9,Kenworth,3,Diesel,4,Estatal,0,1993,463890,RE78877
+190,CR-081,CR-ZRG,0,31,G3-Tlajomulco,GDL,12,Mercedez Benz,3,Diesel,4,Estatal,1,1996,3AM68511550031175,RD-69-063
+191,CR-111,CR-FRE,0,31,G3-Tlajomulco,GDL,12,Mercedez Benz,3,Diesel,4,Estatal,1,1996,3AM68511550032059,RD-69-302
+192,PD-12,PD-8RH,0,14,G2-Zapopan,GDL,-1,No Registrado,-1,No Registrado,-1,No Registrado,0,No Registrado,,
+193,BP-30,BP-YBA,0,23,"L1-Leon ",LEON,10,Mack,-1,No Registrado,-1,No Registrado,0,1985,,
+194,BP-023,PBA,0,23,"L1-Leon ",LEON,10,Mack,3,Diesel,4,Estatal,1,No Registrado,,
+195,CR-158,CR-YRE,0,30,P1-Coronango,PUE,2,Freghtliner,-1,No Registrado,4,Estatal,1,2014,3ALHC3DJ6EDFR7904,RH-56940
+196,CR-159,CR-ZRE,0,30,P1-Coronango,PUE,2,Freghtliner,3,Diesel,4,Estatal,1,2014,3ALHC3DJ6EDFR7905,RH-56943
+197,CR-160,CR-0RF,0,30,P1-Coronango,PUE,2,Freghtliner,-1,No Registrado,4,Estatal,1,2014,3ALHC3DJ6EDFR7906,RH-56944
+198,CR-161,CR-1RF,0,30,P1-Coronango,PUE,2,Freghtliner,3,Diesel,4,Estatal,1,2014,3ALHC3DJ6EDFR7907,RH-56942
+199,CR-162,CR-2RF,0,30,P1-Coronango,PUE,2,Freghtliner,-1,No Registrado,-1,No Registrado,1,2014,3ALHC3DJ6EDFR7908,RH-56945
+200,CR-163,CR-3RF,0,30,P1-Coronango,PUE,2,Freghtliner,3,Diesel,4,Estatal,1,2014,3ALHC3DJ6EDFR7909,RH-56941
+201,CR-164,CR-4RF,0,30,P1-Coronango,PUE,2,Freghtliner,3,Diesel,4,Estatal,1,2014,3ALHC3DJ6EDFR7910,RH-56946
+202,CR-134_D,CR-7RE,1,25,MT2-Taller M2,MTY,8,Internacional,3,Diesel,4,Estatal,0,2000,5DH6F3FA9YMG97809,RF-07289
+203,CR-60,WRB,0,25,MT2-Taller M2,MTY,8,Internacional,3,Diesel,4,Estatal,0,1,1,
+204,CR-147,KRE,0,19,M1-Apodaca,MTY,4,Dina,3,Diesel,4,Estatal,0,1,1,1
+205,CR-126_D,YRD,1,25,MT2-Taller M2,MTY,4,Dina,3,Diesel,4,Estatal,0,No Registrado,121212122,
+206,CR-174,ERF,0,11,"M4-Centro ",MTY,2,Freghtliner,3,Diesel,4,Estatal,1,2013,3ALHC3DJ5EFX5103,RE-02-649
+207,CR-039,7RB,0,7,M2-Escobedo,MTY,4,Dina,3,Diesel,-1,No Registrado,0,1993,7111669A9,RE-78-872
+208,CR-135_D,CR-7RE,1,25,MT2-Taller M2,MTY,12,Mercedez Benz,3,Diesel,-1,No Registrado,0,2000,5DH6F3FA2YMG97800,RF-07288
+209,CR-169,9RF,0,16,"M6-Juarez ",MTY,2,Freghtliner,3,Diesel,4,Estatal,1,2013,,RE-02-641
+210,CR-166,6RF,0,11,"M4-Centro ",MTY,2,Freghtliner,3,Diesel,4,Estatal,1,2013,3ALHC3DJXEDFX5095,RE-02-643
+211,,,0,32,M8-Pesqueria,MTY,2,Freghtliner,3,Diesel,4,Estatal,0,No Registrado,,
+212,CR-172,CRF,0,11,"M4-Centro ",MTY,2,Freghtliner,3,Diesel,4,Estatal,1,2013,3ALHC3DJ1EDFX5101,RE-02-647
+213,CR-171,BRF,0,11,"M4-Centro ",MTY,2,Freghtliner,3,Diesel,4,Estatal,1,2013,3ALHC3DJXEDFX5100,RE-02-646
+214,CR-170,ARF,0,11,"M4-Centro ",MTY,2,Freghtliner,3,Diesel,4,Estatal,1,2013,3ALHC3DJ1EDFX5099,RE-02-645
+215,CR-097,1RD,0,32,M8-Pesqueria,MTY,8,Internacional,3,Diesel,4,Estatal,1,No Registrado,,
+216,CR-227,3RH,0,15,"M5-Santiago ",MTY,4,Dina,3,Diesel,4,Estatal,1,No Registrado,,RF-07-293
+218,BP-EX,BP-EX,0,13,G1- VALLE DE LA MISERICORDIA,GDL,-1,No Registrado,3,Diesel,13,SPF,1,No Registrado,,
+220,CR-154,TRE,0,7,M2-Escobedo,MTY,12,Mercedez Benz,3,Diesel,-1,No Registrado,0,2001,5DHAA3CNX1MJ29135,RE6838A
+222,CR-091_DEL,CR-URC,1,26,GT1-Taller G1,GDL,4,Dina,3,Diesel,-1,No Registrado,0,1995,BB3753001845,RD-69-060
+223,CR-072_D,8RC,1,26,GT1-Taller G1,GDL,12,Mercedez Benz,3,Diesel,-1,No Registrado,0,1996,3AM68511550030956,RD-69-289
+225,CR-141,DRE,0,28,"LT1-Taller L1 ",LEON,-1,No Registrado,-1,No Registrado,-1,No Registrado,0,No Registrado,,
+226,CR-017_D,HRA,1,28,"LT1-Taller L1 ",LEON,-1,No Registrado,-1,No Registrado,-1,No Registrado,0,No Registrado,,
+227,CR-059,URB,0,28,"LT1-Taller L1 ",LEON,-1,No Registrado,-1,No Registrado,-1,No Registrado,0,No Registrado,,
+228,CR-224,0RH,0,16,"M6-Juarez ",MTY,2,Freghtliner,3,Diesel,4,Estatal,1,2016,3ALHC3DJ7GDHA4005,RE6280A
+229,CR-003_D,CR-3RA,1,25,MT2-Taller M2,MTY,2,Freghtliner,3,Diesel,4,Estatal,0,No Registrado,,
+230,CR-021_D,CR-MRA,1,25,MT2-Taller M2,MTY,5,Famsa Internacional,3,Diesel,-1,No Registrado,0,No Registrado,,
+231,CR-151,PRE,0,16,"M6-Juarez ",MTY,12,Mercedez Benz,3,Diesel,-1,No Registrado,1,2001,5DHAA3CN81MJ29120,RE6799A
+232,CR-157_D,CR-XRE,1,25,MT2-Taller M2,MTY,8,Internacional,3,Diesel,-1,No Registrado,0,No Registrado,53329,RD-69666
+233,CR-152,RRE,0,19,M1-Apodaca,MTY,12,Mercedez Benz,3,Diesel,4,Estatal,1,No Registrado,5DHAA3CN01MJ29130,RE6800A
+234,CR-148,LRE,0,16,"M6-Juarez ",MTY,12,Mercedez Benz,-1,No Registrado,13,SPF,1,2001,5DHAA3CN81MJ29120,RE6799A
+236,CR-038_D,6RB,1,25,MT2-Taller M2,MTY,8,Internacional,-1,No Registrado,-1,No Registrado,0,No Registrado,,
+237,CR-078,ERC,0,7,M2-Escobedo,MTY,12,Mercedez Benz,3,Diesel,4,Estatal,0,1996,3AM68511550031163,RE6897A
+238,CR-103_D,CR-7RD,1,25,MT2-Taller M2,MTY,-1,No Registrado,-1,No Registrado,-1,No Registrado,0,No Registrado,,
+239,CR-182_D,CR-NRF,1,25,MT2-Taller M2,MTY,-1,No Registrado,-1,No Registrado,-1,No Registrado,0,No Registrado,,
+240,CR-216_D,CR-RRG,1,25,MT2-Taller M2,MTY,-1,No Registrado,3,Diesel,4,Estatal,0,No Registrado,,
+241,CR-016_D,CR-GRA,1,25,MT2-Taller M2,MTY,-1,No Registrado,-1,No Registrado,-1,No Registrado,0,No Registrado,,
+242,CR - 150,NRE,0,18,"M7-Salinas ",MTY,5,Famsa Internacional,3,Diesel,-1,No Registrado,1,No Registrado,,
+243,CR-034,2RB,0,7,M2-Escobedo,MTY,4,Dina,-1,No Registrado,-1,No Registrado,1,No Registrado,,
+244,CR-ARA01_D,CR-ARA1,1,25,MT2-Taller M2,MTY,4,Dina,3,Diesel,-1,No Registrado,0,123,abc123,xyz123
+245,CR-ARA02_D,CR-ARA2,1,25,MT2-Taller M2,MTY,4,Dina,3,Diesel,-1,No Registrado,0,123,abc123,xyz123
+246,CR-ARA03_D,CR-ARA3,1,25,MT2-Taller M2,MTY,4,Dina,3,Diesel,-1,No Registrado,0,123,abc123,xyz123
+247,CR-ARA04_D,CR-ARA4,1,25,MT2-Taller M2,MTY,4,Dina,3,Diesel,-1,No Registrado,0,123,abc123,xyz123
+248,CR-ARA05_D,CR-ARA5,1,25,MT2-Taller M2,MTY,4,Dina,3,Diesel,-1,No Registrado,0,123,abc123,xyz123
+249,CR-175,CR-FRF,0,30,P1-Coronango,PUE,2,Freghtliner,3,Diesel,4,Estatal,1,2000,A1,RE-02654
+250,CR-180,CR-LRF,0,30,P1-Coronango,PUE,2,Freghtliner,3,Diesel,4,Estatal,1,No Registrado,,RE-02655
+251,CR-183,CR-PRF,0,30,P1-Coronango,PUE,2,Freghtliner,3,Diesel,4,Estatal,1,No Registrado,,RJ-59053
+252,CR-184,CR-RRF,0,30,P1-Coronango,PUE,2,Freghtliner,3,Diesel,4,Estatal,1,No Registrado,,RH-93609
+253,CR-185,CR-SRF,0,30,P1-Coronango,PUE,2,Freghtliner,3,Diesel,4,Estatal,1,No Registrado,,RH-93611
+254,CR-187,CR-URF,0,30,P1-Coronango,PUE,2,Freghtliner,3,Diesel,4,Estatal,1,No Registrado,,RH-93608
+255,PD-P01,PD-01,0,30,P1-Coronango,PUE,-1,No Registrado,-1,No Registrado,-1,No Registrado,1,No Registrado,,
+256,PD-GP2,PD-9RE,0,14,G2-Zapopan,GDL,-1,No Registrado,-1,No Registrado,-1,No Registrado,0,No Registrado,,
+257,CR-035_D,CR-3RB,1,25,MT2-Taller M2,MTY,9,Kenworth,3,Diesel,4,Estatal,0,1989,463850,RE-78-666
+258,CR-92,WRC,0,32,M8-Pesqueria,MTY,4,Dina,3,Diesel,4,Estatal,1,1984,,PJ-96-69
+259,CR-155,URE,0,11,"M4-Centro ",MTY,12,Mercedez Benz,3,Diesel,4,Estatal,1,2000,5DH6F3FA8YMG48990,RF-25-742
+260,CR-206,ERG,0,36,Q1-Apaseo,QRO,2,Freghtliner,3,Diesel,4,Estatal,1,2015,3ALHC3DJ4FTHA3988,PV7337A
+261,CR-213,MRG,0,19,M1-Apodaca,MTY,2,Freghtliner,-1,No Registrado,-1,No Registrado,1,2015,3ALHC3DJ3GDHA3997,PX4274A
+262,CR-022_D,NRA,1,25,MT2-Taller M2,MTY,4,Dina,3,Diesel,-1,No Registrado,0,No Registrado,,
+264,CR-133,5RE,0,27,AT1-Taller A1,AGS,12,Mercedez Benz,3,Diesel,13,SPF,1,2000,5DH6F3FA1YMG74475,RF-07-290
+266,CR-136,8RE,0,36,Q1-Apaseo,QRO,4,Dina,3,Diesel,4,Estatal,1,1998,3ADREKCN2WS003103,RH13941
+268,CR-137,9RE,0,36,Q1-Apaseo,QRO,4,Dina,3,Diesel,4,Estatal,1,1997,RE3953002371,RE6807A
+271,PD-06,PD-06,0,16,"M6-Juarez ",MTY,-1,No Registrado,-1,No Registrado,-1,No Registrado,1,No Registrado,,
+273,CR-243,KRH,0,7,M2-Escobedo,MTY,12,Mercedez Benz,3,Diesel,4,Estatal,1,2001,5DHAA3CNX1MJ29118,RE6798A
+274,CR-208,GRG,0,36,Q1-Apaseo,QRO,2,Freghtliner,3,Diesel,4,Estatal,1,2015,3ALHC3DJXFDHA3994,RE6268A
+275,CR-209,HRG,0,36,Q1-Apaseo,QRO,2,Freghtliner,3,Diesel,4,Estatal,1,2015,3ALHC3DJ2FDHA3990,RE6269A
+276,CR-212,LRG,0,36,Q1-Apaseo,QRO,2,Freghtliner,3,Diesel,-1,No Registrado,1,2016,3ALHC3DJ1GDHA3996,PV7335A
+277,CR-214,NRG,0,36,Q1-Apaseo,QRO,2,Freghtliner,3,Diesel,4,Estatal,0,2015,3ALHC3DJ6FDHA3992,RE6272A
+278,CR-218,TRG,0,36,Q1-Apaseo,QRO,2,Freghtliner,3,Diesel,4,Estatal,1,2016,3ALHC3DJ0GDHA4007,RE6276A
+279,CR-228,4RH,0,36,Q1-Apaseo,QRO,2,Freghtliner,3,Diesel,4,Estatal,1,2016,3ALHC3DJ0GDHA4010,RE6284A
+280,BP-36,BP-4BB,0,36,Q1-Apaseo,QRO,10,Mack,3,Diesel,4,Estatal,0,No Registrado,,
+281,BP-38_DEL,BP-5BB,1,36,Q1-Apaseo,QRO,10,Mack,3,Diesel,4,Estatal,0,No Registrado,,
+283,CR-000,0,0,28,"LT1-Taller L1 ",LEON,2,Freghtliner,-1,No Registrado,-1,No Registrado,0,2015,1253496312,
+284,CR-100 PL2,4RD PL2,0,29,L2-Leon,LEON,-1,No Registrado,3,Diesel,4,Estatal,1,No Registrado,,RE-6840-A
+290,CR-215 PRG,PRG P1,0,23,"L1-Leon ",LEON,2,Freghtliner,3,Diesel,-1,No Registrado,1,2015,,
+291,CR-205 DRG,DRG P2,0,29,L2-Leon,LEON,2,Freghtliner,3,Diesel,4,Estatal,1,2015,,
+292,CR-210 JRG,JRG P1,0,23,"L1-Leon ",LEON,2,Freghtliner,3,Diesel,4,Estatal,1,2015,926928C1086912,RE-6270-A
+293,CR-207,,0,28,"LT1-Taller L1 ",LEON,2,Freghtliner,3,Diesel,-1,No Registrado,0,2015,,
+295,CR-065,1RC,0,20,"A1-Ojo Caliente ",AGS,4,Dina,3,Diesel,4,Estatal,1,1996,3AM68511550031177,RD-69-050
+296,CR-027,URA,0,29,L2-Leon,LEON,5,Famsa Internacional,3,Diesel,4,Estatal,1,1995,,
+297,CR-216 RRG,RRG P2,0,29,L2-Leon,LEON,2,Freghtliner,3,Diesel,4,Estatal,1,No Registrado,,RE-6274-A
+298,CR-081 HRC,HRC P2,0,29,L2-Leon,LEON,9,Kenworth,3,Diesel,4,Estatal,0,No Registrado,,
+299,CR-090,TRC,0,28,"LT1-Taller L1 ",LEON,12,Mercedez Benz,3,Diesel,4,Estatal,0,No Registrado,,
+301,CR-052,LRB,0,36,Q1-Apaseo,QRO,4,Dina,3,Diesel,4,Estatal,0,1993,NH471847,RE6867A
+302,CR-088,RRC,0,36,Q1-Apaseo,QRO,12,Mercedez Benz,3,Diesel,4,Estatal,0,1996,3AM68511550032137,RE6813A
+304,CR-146,JRE,0,19,M1-Apodaca,MTY,-1,No Registrado,-1,No Registrado,-1,No Registrado,1,No Registrado,,
+305,CR-149,MRE,0,16,"M6-Juarez ",MTY,-1,No Registrado,-1,No Registrado,-1,No Registrado,0,No Registrado,,
+306,CR-197,5RG,0,18,"M7-Salinas ",MTY,-1,No Registrado,3,Diesel,4,Estatal,1,No Registrado,,
+307,CR-156,WRE,0,7,M2-Escobedo,MTY,8,Internacional,3,Diesel,-1,No Registrado,0,2010,1120073643,VI-68-862
+308,CR-230,5RH,0,8,"M3-Santa ",MTY,2,Freghtliner,3,Diesel,4,Estatal,0,2016,3ALHC3DJ4GDHA4012,RE6225A
+309,CR-117,MRD,0,7,M2-Escobedo,MTY,12,Mercedez Benz,3,Diesel,-1,No Registrado,1,1996,3AM68511550032037,RE6849A
+310,CR-048,GRB,0,8,"M3-Santa ",MTY,-1,No Registrado,-1,No Registrado,-1,No Registrado,0,No Registrado,,
+311,CR-194,2RG,0,16,"M6-Juarez ",MTY,-1,No Registrado,-1,No Registrado,-1,No Registrado,0,No Registrado,,
+312,CR-220,WRG,0,18,"M7-Salinas ",MTY,2,Freghtliner,-1,No Registrado,-1,No Registrado,0,2015,,
+313,CR-225,1RH,0,18,"M7-Salinas ",MTY,2,Freghtliner,-1,No Registrado,-1,No Registrado,0,No Registrado,,
+314,CR-229,5RH,0,19,M1-Apodaca,MTY,2,Freghtliner,3,Diesel,4,Estatal,1,2015,3ALHC3DJ2GDHA4011,RE6285A
+315,CR-232,8RH,0,18,"M7-Salinas ",MTY,2,Freghtliner,3,Diesel,4,Estatal,1,No Registrado,,RJ-54-070
+316,CR-013,CR-YRF,0,31,G3-Tlajomulco,GDL,10,Mack,3,Diesel,4,Estatal,1,No Registrado,,
+317,CR-023,CR-PRA,0,13,G1- VALLE DE LA MISERICORDIA,GDL,10,Mack,3,Diesel,4,Estatal,1,No Registrado,,
+318,CR-025,CR-SRA,0,14,G2-Zapopan,GDL,10,Mack,3,Diesel,4,Estatal,0,No Registrado,,
+319,CR-040,CR-8RB,0,13,G1- VALLE DE LA MISERICORDIA,GDL,10,Mack,-1,No Registrado,4,Estatal,1,No Registrado,,
+320,CR-131,CR-3RE,0,31,G3-Tlajomulco,GDL,-1,No Registrado,-1,No Registrado,-1,No Registrado,1,No Registrado,,
+321,CR-138,CR-ARE,0,31,G3-Tlajomulco,GDL,-1,No Registrado,-1,No Registrado,-1,No Registrado,1,No Registrado,,
+322,CR-145,CR-HRE,0,13,G1- VALLE DE LA MISERICORDIA,GDL,-1,No Registrado,-1,No Registrado,-1,No Registrado,1,No Registrado,,
+323,CR-176,CR-GRF,0,31,G3-Tlajomulco,GDL,-1,No Registrado,-1,No Registrado,-1,No Registrado,1,No Registrado,,
+324,CR-177,CR-HRF,0,13,G1- VALLE DE LA MISERICORDIA,GDL,-1,No Registrado,-1,No Registrado,-1,No Registrado,1,No Registrado,,
+325,CR-186,CR-TRF,0,13,G1- VALLE DE LA MISERICORDIA,GDL,-1,No Registrado,-1,No Registrado,-1,No Registrado,1,No Registrado,,
+326,CR-211,CR-KRG,0,13,G1- VALLE DE LA MISERICORDIA,GDL,-1,No Registrado,-1,No Registrado,-1,No Registrado,1,No Registrado,,
+327,CR-201 9RG,9RG,0,34,A2-San Francisco,AGS,-1,No Registrado,-1,No Registrado,-1,No Registrado,1,No Registrado,,
+328,CR-178,JRF,0,34,A2-San Francisco,AGS,2,Freghtliner,3,Diesel,4,Estatal,1,2014,3ALHC3DJ2EDFX5107,RE-02-657
+329,CR-179,KRF,0,20,"A1-Ojo Caliente ",AGS,2,Freghtliner,3,Diesel,4,Estatal,1,2014,3ALHC3DJ4EDFX5108,RE-02-656
+330,5RC,5RC,0,20,"A1-Ojo Caliente ",AGS,-1,No Registrado,-1,No Registrado,-1,No Registrado,1,No Registrado,,
+331,CR-140-,CRE,0,20,"A1-Ojo Caliente ",AGS,2,Freghtliner,3,Diesel,4,Estatal,1,1997,RE3953002442,RJ-53-003
+332,CR-026,TRA,0,19,M1-Apodaca,MTY,-1,No Registrado,3,Diesel,4,Estatal,1,No Registrado,,RE6877A
+333,PD-05,PD-05,0,15,"M5-Santiago ",MTY,-1,No Registrado,-1,No Registrado,-1,No Registrado,1,No Registrado,,
+334,CR-101,CR-101,0,32,M8-Pesqueria,MTY,17,Ramirez,3,Diesel,4,Estatal,1,No Registrado,,
+335,PD-09,PD-09,0,35,M9-Apodaca,MTY,-1,No Registrado,-1,No Registrado,-1,No Registrado,1,No Registrado,,
+336,MRD,117,0,18,"M7-Salinas ",MTY,4,Dina,3,Diesel,4,Estatal,0,No Registrado,,
+337,CR-200,8RG,0,8,"M3-Santa ",MTY,8,Internacional,3,Diesel,4,Estatal,1,2000,4UZ6CFAA1YCG09151,RJ-34-386
+338,CR-204,CRG,0,16,"M6-Juarez ",MTY,2,Freghtliner,3,Diesel,4,Estatal,1,2015,3ALHC3DJ0FDHA3986,RE6265A
+339,CR- 243,KRH,0,7,M2-Escobedo,MTY,2,Freghtliner,3,Diesel,4,Estatal,1,1980,49641338,RE6875A
+340,CR-219,URG,0,7,M2-Escobedo,MTY,2,Freghtliner,3,Diesel,4,Estatal,1,2015,3ALHC3DJ6FDHA3989,RE6224A
+341,CR-09,9RA,0,8,"M3-Santa ",MTY,4,Dina,3,Diesel,4,Estatal,1,1995,BB3753001620,PJ9669A
+342,CR-223,ZRG,0,16,"M6-Juarez ",MTY,2,Freghtliner,3,Diesel,4,Estatal,1,2016,3ALHC3DJ5GDHA4004,RE6279A
+343,CR-191,ZRF,0,7,M2-Escobedo,MTY,8,Internacional,3,Diesel,4,Estatal,0,1995,1120073645,GP-68-685
+344,CR-196,4RG,0,19,M1-Apodaca,MTY,-1,No Registrado,3,Diesel,4,Estatal,0,No Registrado,,
+345,CR-231,7RH,0,19,M1-Apodaca,MTY,2,Freghtliner,3,Diesel,-1,No Registrado,1,2016,3ALHC3DJ6GDHA4013,RE6286A
+346,CR-020,LRA,0,7,M2-Escobedo,MTY,-1,No Registrado,-1,No Registrado,-1,No Registrado,1,No Registrado,,
+347,CR-099,3RD,0,16,"M6-Juarez ",MTY,8,Internacional,3,Diesel,4,Estatal,1,1997,3HTSCAAN3VG100356,PX2032A
+348,CR-070,6RC,0,19,M1-Apodaca,MTY,12,Mercedez Benz,3,Diesel,4,Estatal,1,1996,3AM68511550031186,RE6891A
+349,PD-07,PD-07,0,18,"M7-Salinas ",MTY,-1,No Registrado,-1,No Registrado,-1,No Registrado,0,No Registrado,,
+350,CR-047,FRB,0,34,A2-San Francisco,AGS,9,Kenworth,3,Diesel,4,Estatal,1,1997,RE3953002442,RH-13-946
+351,CR-101 WRF,WRF,0,23,"L1-Leon ",LEON,5,Famsa Internacional,3,Diesel,4,Estatal,1,1995,,RE-6253-A
+352,CR-145 HRE,HRE P1,0,23,"L1-Leon ",LEON,4,Dina,3,Diesel,4,Estatal,1,1997,*1WM17468*,RH-3796-A
+353,CR-221 XRG,XRG P1,0,23,"L1-Leon ",LEON,2,Freghtliner,3,Diesel,4,Estatal,1,2016,926928C1088946,RJ-54-083
+354,CR-226 2RH,2RH P1,0,23,"L1-Leon ",LEON,2,Freghtliner,-1,No Registrado,-1,No Registrado,1,No Registrado,,
+355,CR-233 9RH,9RH P2,0,29,L2-Leon,LEON,2,Freghtliner,3,Diesel,4,Estatal,1,No Registrado,,
+356,CR-7RA,7RA-P2,0,29,L2-Leon,LEON,4,Dina,3,Diesel,4,Estatal,1,No Registrado,,
+357,BP-38,6BB,0,23,"L1-Leon ",LEON,-1,No Registrado,-1,No Registrado,-1,No Registrado,0,No Registrado,,
+358,CR-220 WRG,WRG,0,20,"A1-Ojo Caliente ",AGS,2,Freghtliner,3,Diesel,4,Estatal,1,2017,,
+359,CR-25,1RH,0,20,"A1-Ojo Caliente ",AGS,2,Freghtliner,3,Diesel,4,Estatal,1,2017,,
+360,YRD,CR-126,0,7,M2-Escobedo,MTY,4,Dina,3,Diesel,-1,No Registrado,0,1996,3AM68511550031163,E-2165G
+361,XRF,189,0,19,M1-Apodaca,MTY,-1,No Registrado,3,Diesel,4,Estatal,0,No Registrado,,
+362,134,6RE,0,7,M2-Escobedo,MTY,-1,No Registrado,3,Diesel,4,Estatal,0,No Registrado,,
+363,170,ARF,0,11,"M4-Centro ",MTY,-1,No Registrado,3,Diesel,4,Estatal,0,No Registrado,,
+364,132,4RE,0,11,"M4-Centro ",MTY,12,Mercedez Benz,3,Diesel,4,Estatal,0,2000,,RE6811A
+365,16,GRAA,0,11,"M4-Centro ",MTY,-1,No Registrado,3,Diesel,4,Estatal,1,No Registrado,,
+366,CR-235,BRH,0,11,"M4-Centro ",MTY,-1,No Registrado,3,Diesel,4,Estatal,1,No Registrado,,
+367,198,6RG,0,18,"M7-Salinas ",MTY,8,Internacional,3,Diesel,4,Estatal,1,No Registrado,,
+368,130,2RE,0,16,"M6-Juarez ",MTY,12,Mercedez Benz,3,Diesel,4,Estatal,0,2000,5DH6F3FA6YMG97802,RE6809A
+369,CR-199,7RG,0,7,M2-Escobedo,MTY,12,Mercedez Benz,3,Diesel,4,Estatal,1,2000,4UZ6CFAAXYCG09147,RE6261A
+370,CR-203,BRG,0,7,M2-Escobedo,MTY,12,Mercedez Benz,3,Diesel,4,Estatal,1,1999,4UZ6CJAA5XCB53472,RE6223A
+371,CR-008,8RA,0,16,"M6-Juarez ",MTY,9,Kenworth,3,Diesel,4,Estatal,1,1997,1XKAD29X3HJ338541,
+372,CR-234,ARH,0,7,M2-Escobedo,MTY,12,Mercedez Benz,3,Diesel,-1,No Registrado,1,1979,49640939,RE6835A
+373,CR-134,6RE,0,7,M2-Escobedo,MTY,12,Mercedez Benz,3,Diesel,-1,No Registrado,0,2000,5DH6F3FA9YMG97809,RE6837A
+374,CR-189,XRF,0,7,M2-Escobedo,MTY,12,Mercedez Benz,3,Diesel,-1,No Registrado,1,2000,4UZ6CFAA11CG99844,RE6221A
+375,CR-121,SRD,0,7,M2-Escobedo,MTY,-1,No Registrado,3,Diesel,4,Estatal,1,No Registrado,,
+376,CR-247,PRH,0,11,"M4-Centro ",MTY,-1,No Registrado,3,Diesel,4,Estatal,1,No Registrado,,
+377,CR-35,3RB,0,19,M1-Apodaca,MTY,4,Dina,3,Diesel,4,Estatal,1,No Registrado,,
+378,CR-104,8RD,0,19,M1-Apodaca,MTY,-1,No Registrado,3,Diesel,4,Estatal,1,No Registrado,,
+379,CR-011,BRA,0,19,M1-Apodaca,MTY,4,Dina,3,Diesel,4,Estatal,1,No Registrado,,
+380,CR-132,4RE,0,11,"M4-Centro ",MTY,12,Mercedez Benz,3,Diesel,4,Estatal,1,No Registrado,,RE6811A
+381,KRH,243,0,15,"M5-Santiago ",MTY,-1,No Registrado,3,Diesel,4,Estatal,1,No Registrado,,
+382,CR-9RH,APOYO LEON,0,36,Q1-Apaseo,QRO,2,Freghtliner,3,Diesel,4,Estatal,1,2014,,RE6288A
+383,CR-188,WRF,0,36,Q1-Apaseo,QRO,2,Freghtliner,3,Diesel,4,Estatal,1,2000,4UZ6CFAA3YCG09149,RE6253A

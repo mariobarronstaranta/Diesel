@@ -1,0 +1,18 @@
+IDTanque,Nombre,CveCiudad,IDPlanta,Capacidad,IDTipoCombustible,TipoCombustible,Forma,DiametroA,Largo,idciudad
+1,Apodaca (M1),MTY,19,13839,3,Diesel,C,191,4830,MTY
+2,Centro (M4),MTY,11,14784,3,Diesel,C,197,490,MTY
+3,Coronango(P1),PUE,30,14155,3,Diesel,C,269,250,PUE
+4,Apaseo El Grande(Q1),QRO,36,12849,3,Diesel,C,189,458,QRO
+5,De Los Romos(A2),AGS,34,11258,3,Diesel,C,179,449,AGS
+6,Ojo Caliente(A1),AGS,20,14174,3,Diesel,C,269,249,AGS
+7,La Laborcita(L1),LEON,23,14609,3,Diesel,C,268,260,LEON
+8,Tlajomulco(G3),GDL,31,13674,3,Diesel,C,267,2,GDL
+9,Zapopan(G2),GDL,14,14871,3,Diesel,C,193,510,GDL
+10,Tlaquepaque(G1),GDL,13,12833,3,Diesel,C,190,459,GDL
+11,Escobedo(M2),MTY,7,14258,3,Diesel,C,193,489,MTY
+12,Santa(M3),MTY,8,13616,3,Diesel,C,189,487,MTY
+13,Santiago(M5),MTY,15,12998,3,Diesel,C,190,460,MTY
+14,Juarez(M6),MTY,16,12969,3,Diesel,C,190,459,MTY
+15,Salinas(M7),MTY,18,14124,3,Diesel,C,269,249,MTY
+16,Pesqueria,MTY,32,14059,3,Diesel,C,268,250,MTY
+17,Lagunillas,LEON,29,14609,3,Diesel,C,268,260,LEON
