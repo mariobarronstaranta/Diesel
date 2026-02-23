@@ -22,6 +22,7 @@ CREATE OR REPLACE FUNCTION public.reporte_rendimientos(
 RETURNS TABLE (
     "Tanque" text,
     "Unidad" text,
+    "IDUnidad" bigint,
     "Carga Total" bigint,
     "Kms Recorridos" bigint,
     "Hrs Recorridos" bigint,
@@ -35,6 +36,7 @@ BEGIN
     SELECT
         t."Nombre"::text AS "Tanque",
         (u."IDClaveUnidad" || '(' || u."ClaveAlterna" || ')')::text AS "Unidad",
+        u."IDUnidad" AS "IDUnidad",
         COALESCE(SUM(tm."LitrosCarga"), 0)::bigint AS "Carga Total",
         COALESCE(MAX(tm."Odometro") - MIN(tm."Odometro"), 0)::bigint AS "Kms Recorridos",
         COALESCE(MAX(tm."Horimetro") - MIN(tm."Horimetro"), 0)::bigint AS "Hrs Recorridos",
@@ -60,6 +62,7 @@ BEGIN
 
     GROUP BY
         t."Nombre",
+        u."IDUnidad",
         u."IDClaveUnidad",
         u."ClaveAlterna"
 

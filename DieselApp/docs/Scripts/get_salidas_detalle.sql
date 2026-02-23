@@ -6,12 +6,15 @@
 --   p_id_tanque: ID del tanque
 -- Retorna: Tabla con los movimientos de salida ordenados por hora
 
+DROP FUNCTION IF EXISTS get_salidas_detalle(DATE, VARCHAR, BIGINT);
+
 CREATE OR REPLACE FUNCTION get_salidas_detalle(
     p_fecha DATE,
     p_ciudad VARCHAR,
     p_id_tanque BIGINT
 )
 RETURNS TABLE (
+    id_tanque_movimiento BIGINT,
     tanque TEXT,
     fecha DATE,
     hora TIME,
@@ -27,6 +30,7 @@ AS $$
 BEGIN
     RETURN QUERY
     SELECT 
+        tm."IdTanqueMovimiento" AS id_tanque_movimiento,
         t."Nombre"::TEXT AS tanque,
         tm."FechaCarga" AS fecha,
         tm."HoraCarga" AS hora,

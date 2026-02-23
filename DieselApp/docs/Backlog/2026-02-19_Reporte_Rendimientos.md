@@ -120,3 +120,28 @@ TanqueMovimiento.IDUnidad = Unidades.IDUnidad
 
 1. Ejecutar `docs/Scripts/Rendimientos.sql` en Supabase para crear la función RPC.
 2. Validar en producción que los campos `Odometro` y `Horimetro` tengan datos correctos en `TanqueMovimiento`.
+
+---
+
+## Actualización: Modal de Detalle (2026-02-22)
+
+### Objetivo
+Agregar un modal de detalle que muestre los movimientos individuales (`TanqueMovimiento`) que conforman cada renglón acumulado del Reporte de Rendimientos.
+
+### Cambios Realizados
+
+#### SQL (Supabase)
+1. **`docs/Scripts/Rendimientos.sql`**: Se agregó la columna `IDUnidad BIGINT` al `RETURNS TABLE` y al `SELECT`, y se incluyó `u."IDUnidad"` en el `GROUP BY`. Esto permite pasar el ID exacto de la unidad al abrir el modal.
+
+2. **`docs/Scripts/get_rendimientos_detalle.sql`** [NEW]: Nueva función `get_rendimientos_detalle(p_fecha_inicio, p_fecha_fin, p_cve_ciudad, p_id_tanque, p_id_unidad)` que retorna los movimientos individuales filtrados por Tanque, Unidad y rango de fechas.
+
+> **Nota:** Ambos scripts deben ejecutarse en el SQL Editor de Supabase.
+
+#### Frontend
+- **`src/types/reportes.types.ts`**: Se agregó `IDUnidad: number` a `ReporteRendimientosData` y se creó la interfaz `RendimientoDetalleItem`.
+- **`src/components/ReporteRendimientosDetalleModal.tsx`** [NEW]: Nuevo modal que carga y muestra la tabla de movimientos individuales con columnas: ID Movimiento, Fecha, Hora, Litros, Cuenta Litros, Horómetro, Odómetro. Incluye fila de totales y exportación CSV.
+- **`src/components/ReporteRendimientos.tsx`**: Se agregó la columna **Acción** con botón **Detalle**, los estados `showDetalle` y `filaSeleccionada`, y se incorporó el modal al final del JSX.
+
+### Estado
+- ✓ Frontend compila sin errores (`npm run build`).
+- ⏳ **Pendiente**: Ejecutar `Rendimientos.sql` actualizado y `get_rendimientos_detalle.sql` en Supabase.

@@ -21,6 +21,7 @@ export interface ReporteConsumosForm {
 export interface ReporteRendimientosData {
   Tanque: string;
   Unidad: string;
+  IDUnidad: number;
   "Carga Total": number;
   "Kms Recorridos": number;
   "Hrs Recorridos": number;
@@ -33,4 +34,14 @@ export interface ReporteRendimientosForm {
   IDTanque: string;
   FechaInicial: string;
   FechaFinal: string;
+}
+
+export interface RendimientoDetalleItem {
+  id_tanque_movimiento: number;
+  fecha: string;
+  hora: string;
+  litros: number;
+  cuenta_litros: number;
+  horometro: number;
+  odometro: number;
 }

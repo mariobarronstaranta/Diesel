@@ -18,6 +18,7 @@ import type {
   ReporteRendimientosData,
   ReporteRendimientosForm,
 } from "../types/reportes.types";
+import ReporteRendimientosDetalleModal from "./ReporteRendimientosDetalleModal";
 
 export default function ReporteRendimientos() {
   const [isLoading, setIsLoading] = useState(false);
@@ -30,6 +31,20 @@ export default function ReporteRendimientos() {
   );
   const [cveCiudadSeleccionada, setCveCiudadSeleccionada] =
     useState<string>("");
+
+  // Estados para el modal de detalle
+  const [showDetalle, setShowDetalle] = useState(false);
+  const [filaSeleccionada, setFilaSeleccionada] = useState<{
+    fechaInicio: string;
+    fechaFin: string;
+    cveCiudad: string;
+    idTanque: number;
+    idUnidad: number;
+    tanque: string;
+    unidad: string;
+  } | null>(null);
+  const [lastQueryParams, setLastQueryParams] =
+    useState<ReporteRendimientosForm | null>(null);
 
   const {
     register,
@@ -58,10 +73,27 @@ export default function ReporteRendimientos() {
     });
   };
 
+  const abrirDetalle = (r: ReporteRendimientosData) => {
+    if (!lastQueryParams) return;
+    setFilaSeleccionada({
+      fechaInicio: lastQueryParams.FechaInicial,
+      fechaFin: lastQueryParams.FechaFinal,
+      cveCiudad: lastQueryParams.CveCiudad,
+      idTanque: lastQueryParams.IDTanque
+        ? parseInt(lastQueryParams.IDTanque)
+        : 0,
+      idUnidad: r.IDUnidad,
+      tanque: r.Tanque,
+      unidad: r.Unidad,
+    });
+    setShowDetalle(true);
+  };
+
   const onSubmit = async (data: ReporteRendimientosForm) => {
     try {
       setIsLoading(true);
       setAlertMessage(null);
+      setLastQueryParams(data);
 
       const { data: result, error } = await supabase.rpc(
         "reporte_rendimientos",
@@ -272,6 +304,7 @@ export default function ReporteRendimientos() {
                     <th className="text-center">Hrs Recorridos</th>
                     <th className="text-center">Kms/Lts</th>
                     <th className="text-center">Hrs/Lts</th>
+                    <th className="text-center">Acción</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -294,6 +327,15 @@ export default function ReporteRendimientos() {
                       <td className="text-end">
                         {formatearNumero(r["Hrs/Lts"])}
                       </td>
+                      <td className="text-center">
+                        <Button
+                          variant="outline-corporate"
+                          size="sm"
+                          onClick={() => abrirDetalle(r)}
+                        >
+                          Detalle
+                        </Button>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -302,6 +344,12 @@ export default function ReporteRendimientos() {
           </Card.Body>
         </Card>
       )}
+
+      <ReporteRendimientosDetalleModal
+        show={showDetalle}
+        onHide={() => setShowDetalle(false)}
+        datosFila={filaSeleccionada}
+      />
     </Container>
   );
 }

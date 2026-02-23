@@ -7,6 +7,7 @@ import {
   Tab,
   Spinner,
   Alert,
+  Form,
 } from "react-bootstrap";
 import { supabase } from "../supabaseClient";
 
@@ -22,6 +23,7 @@ interface ReporteConsumosDetalleModalProps {
 }
 
 interface SalidaDetalle {
+  id_tanque_movimiento: number;
   tanque: string;
   fecha: string;
   hora: string;
@@ -54,6 +56,16 @@ export default function ReporteConsumosDetalleModal({
   const [loadingEntradas, setLoadingEntradas] = useState(false);
   const [errorSalidas, setErrorSalidas] = useState<string | null>(null);
   const [errorEntradas, setErrorEntradas] = useState<string | null>(null);
+
+  // Estados para edición
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editForm, setEditForm] = useState({
+    litros: 0,
+    cuenta_litros: 0,
+    horometro: 0,
+    odometro: 0,
+  });
+  const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
     if (show && datosFila) {
@@ -123,6 +135,67 @@ export default function ReporteConsumosDetalleModal({
       setEntradas([]);
     } finally {
       setLoadingEntradas(false);
+    }
+  };
+
+  const handleEditStart = (s: SalidaDetalle) => {
+    if (!s.id_tanque_movimiento) {
+      alert(
+        "Error: No se encontró el ID del movimiento. Por favor compila y asegúrate de haber actualizado la función 'get_salidas_detalle' en el SQL Editor de Supabase.",
+      );
+      return;
+    }
+
+    setEditingId(s.id_tanque_movimiento);
+    setEditForm({
+      litros: s.litros,
+      cuenta_litros: s.cuenta_litros,
+      horometro: s.horometro,
+      odometro: s.odometro,
+    });
+  };
+
+  const handleUpdate = async (id: number) => {
+    if (
+      editForm.litros === null ||
+      editForm.cuenta_litros === null ||
+      editForm.horometro === null ||
+      editForm.odometro === null
+    ) {
+      alert(
+        "Todos los campos numéricos son obligatorios y no pueden ir en blanco",
+      );
+      return;
+    }
+
+    try {
+      setIsUpdating(true);
+      setErrorSalidas(null);
+
+      const { error } = await supabase
+        .from("TanqueMovimiento")
+        .update({
+          LitrosCarga: editForm.litros,
+          CuentaLitros: editForm.cuenta_litros,
+          Horimetro: editForm.horometro,
+          Odometro: editForm.odometro,
+        })
+        .eq("IdTanqueMovimiento", id);
+
+      if (error) throw error;
+
+      setEditingId(null);
+
+      // Recargar datos para ver los cambios
+      cargarSalidas();
+    } catch (err: unknown) {
+      console.error("Error al actualizar:", err);
+      alert(
+        "Error al actualizar el registro: " +
+          (err instanceof Error ? err.message : "Error desconocido"),
+      );
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -270,6 +343,15 @@ export default function ReporteConsumosDetalleModal({
                 {errorSalidas}
               </Alert>
             )}
+            {isUpdating && (
+              <Alert
+                variant="warning"
+                className="mb-3 d-flex align-items-center"
+              >
+                <Spinner animation="border" size="sm" className="me-2" />
+                Actualizando registro...
+              </Alert>
+            )}
             {!loadingSalidas && !errorSalidas && salidas.length === 0 && (
               <Alert variant="info" className="mb-3">
                 No se encontraron movimientos de salida para esta fecha.
@@ -292,9 +374,10 @@ export default function ReporteConsumosDetalleModal({
                       <th className="text-center">Temp (°C)</th>
                       <th className="text-center">Unidad</th>
                       <th className="text-center">Litros</th>
-                      <th className="text-center">CuentaLitros</th>
+                      <th className="text-center">Cuenta Litros</th>
                       <th className="text-center">Horómetro</th>
                       <th className="text-center">Odómetro</th>
+                      <th className="text-center">Acción</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -305,17 +388,108 @@ export default function ReporteConsumosDetalleModal({
                         <td className="text-center">{s.hora}</td>
                         <td className="text-center">{s.temperatura}</td>
                         <td>{s.unidad}</td>
-                        <td className="text-end">
-                          {s.litros.toLocaleString()}
+                        <td className="text-end" style={{ minWidth: "100px" }}>
+                          {editingId === s.id_tanque_movimiento ? (
+                            <Form.Control
+                              type="number"
+                              size="sm"
+                              value={editForm.litros}
+                              onChange={(e) =>
+                                setEditForm((prev) => ({
+                                  ...prev,
+                                  litros: Number(e.target.value),
+                                }))
+                              }
+                            />
+                          ) : (
+                            s.litros.toLocaleString()
+                          )}
                         </td>
-                        <td className="text-end">
-                          {s.cuenta_litros.toLocaleString()}
+                        <td className="text-end" style={{ minWidth: "110px" }}>
+                          {editingId === s.id_tanque_movimiento ? (
+                            <Form.Control
+                              type="number"
+                              size="sm"
+                              value={editForm.cuenta_litros}
+                              onChange={(e) =>
+                                setEditForm((prev) => ({
+                                  ...prev,
+                                  cuenta_litros: Number(e.target.value),
+                                }))
+                              }
+                            />
+                          ) : (
+                            s.cuenta_litros.toLocaleString()
+                          )}
                         </td>
-                        <td className="text-end">
-                          {s.horometro.toLocaleString()}
+                        <td className="text-end" style={{ minWidth: "100px" }}>
+                          {editingId === s.id_tanque_movimiento ? (
+                            <Form.Control
+                              type="number"
+                              size="sm"
+                              value={editForm.horometro}
+                              onChange={(e) =>
+                                setEditForm((prev) => ({
+                                  ...prev,
+                                  horometro: Number(e.target.value),
+                                }))
+                              }
+                            />
+                          ) : (
+                            s.horometro.toLocaleString()
+                          )}
                         </td>
-                        <td className="text-end">
-                          {s.odometro.toLocaleString()}
+                        <td className="text-end" style={{ minWidth: "100px" }}>
+                          {editingId === s.id_tanque_movimiento ? (
+                            <Form.Control
+                              type="number"
+                              size="sm"
+                              value={editForm.odometro}
+                              onChange={(e) =>
+                                setEditForm((prev) => ({
+                                  ...prev,
+                                  odometro: Number(e.target.value),
+                                }))
+                              }
+                            />
+                          ) : (
+                            s.odometro.toLocaleString()
+                          )}
+                        </td>
+                        <td className="text-center">
+                          {editingId === s.id_tanque_movimiento ? (
+                            <div className="d-flex gap-1 justify-content-center">
+                              <Button
+                                variant="success"
+                                size="sm"
+                                onClick={() =>
+                                  handleUpdate(s.id_tanque_movimiento)
+                                }
+                                disabled={isUpdating}
+                              >
+                                Ok
+                              </Button>
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => setEditingId(null)}
+                                disabled={isUpdating}
+                              >
+                                X
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              variant="outline-corporate"
+                              size="sm"
+                              onClick={() => handleEditStart(s)}
+                              disabled={
+                                isUpdating || (isUpdating && editingId !== null)
+                              }
+                            >
+                              Editar
+                            </Button>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -374,7 +548,7 @@ export default function ReporteConsumosDetalleModal({
                       <th className="text-center">Litros</th>
                       <th className="text-center">Planta</th>
                       <th className="text-center">Tanque</th>
-                      <th className="text-center">CuentaLitros</th>
+                      <th className="text-center">Cuenta Litros</th>
                     </tr>
                   </thead>
                   <tbody>
