@@ -1,0 +1,6 @@
+# .gitignore — TransaccionalSync
+# Nunca subir credenciales al repositorio
+
+config/sync.config.json
+*.config.json
+*.log
