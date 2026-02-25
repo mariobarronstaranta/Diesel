@@ -43,6 +43,7 @@ export default function TopNav() {
         >
           Inicio
         </NavLink>
+
         <NavLink
           className={({ isActive }) =>
             `top-nav__link${isActive ? " top-nav__link--active" : ""}`
@@ -80,6 +81,10 @@ export default function TopNav() {
           </Dropdown.Toggle>
 
           <Dropdown.Menu>
+            <Dropdown.Item as={NavLink} to="/dashboard" onClick={closeMenu}>
+              📊 Dashboard
+            </Dropdown.Item>
+            <Dropdown.Divider />
             <Dropdown.Item
               as={NavLink}
               to="/reportes/lecturas"

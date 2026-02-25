@@ -4,78 +4,91 @@ import { supabase } from "../supabase/client";
 import type { UseFormRegister } from "react-hook-form";
 
 type Tanque = {
-    IDTanque: number;
-    Nombre: string;
+  IDTanque: number;
+  Nombre: string;
 };
 
 interface ComboTanquePorCiudadProps {
-    cveCiudad: string | null;
-    register: UseFormRegister<any>;
-    error?: {
-        message?: string;
-    };
+  cveCiudad: string | null;
+  register: UseFormRegister<any>;
+  error?: {
+    message?: string;
+  };
+  optional?: boolean;
 }
 
-export default function ComboTanquePorCiudad({ cveCiudad, register, error }: ComboTanquePorCiudadProps) {
-    const [tanques, setTanques] = useState<Tanque[]>([]);
-    const [loading, setLoading] = useState<boolean>(false);
+export default function ComboTanquePorCiudad({
+  cveCiudad,
+  register,
+  error,
+  optional = false,
+}: ComboTanquePorCiudadProps) {
+  const [tanques, setTanques] = useState<Tanque[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
 
-    useEffect(() => {
-        if (!cveCiudad) {
-            setTanques([]);
-            return;
-        }
+  useEffect(() => {
+    if (!cveCiudad) {
+      setTanques([]);
+      return;
+    }
 
-        const cargarTanques = async () => {
-            setLoading(true);
-            setTanques([]);
+    const cargarTanques = async () => {
+      setLoading(true);
+      setTanques([]);
 
-            // Filtramos por CveCiudad en lugar de IDPlanta
-            const { data, error } = await supabase
-                .from("Tanque")
-                .select("IDTanque, Nombre")
-                .eq("CveCiudad", cveCiudad)
-                .order("Nombre", { ascending: true });
+      // Filtramos por CveCiudad en lugar de IDPlanta
+      const { data, error } = await supabase
+        .from("Tanque")
+        .select("IDTanque, Nombre")
+        .eq("CveCiudad", cveCiudad)
+        .order("Nombre", { ascending: true });
 
-            if (error) {
-                console.error("Error cargando tanques por ciudad:", error);
-            } else if (data) {
-                setTanques(data);
-            }
+      if (error) {
+        console.error("Error cargando tanques por ciudad:", error);
+      } else if (data) {
+        setTanques(data);
+      }
 
-            setLoading(false);
-        };
+      setLoading(false);
+    };
 
-        cargarTanques();
-    }, [cveCiudad]);
+    cargarTanques();
+  }, [cveCiudad]);
 
-    return (
-        <Form.Group className="mb-3">
-            <Form.Label>Tanque</Form.Label>
-            <Form.Select
-                {...register("IDTanque", {
-                    required: "Seleccione un tanque",
-                })}
-                isInvalid={!!error}
-                disabled={!cveCiudad || loading}
-            >
-                <option value="">
-                    {!cveCiudad
-                        ? "Seleccione una ciudad"
-                        : loading
-                            ? "Cargando..."
-                            : "Seleccione"}
-                </option>
-                {tanques.map((t) => (
-                    <option key={t.IDTanque} value={t.IDTanque}>
-                        {t.Nombre}
-                    </option>
-                ))}
-            </Form.Select>
-            {loading && <Spinner animation="border" size="sm" className="mt-1" />}
-            <Form.Control.Feedback type="invalid">
-                {error?.message}
-            </Form.Control.Feedback>
-        </Form.Group>
-    );
+  return (
+    <Form.Group className="mb-3">
+      <Form.Label>Tanque</Form.Label>
+      <Form.Select
+        {...register(
+          "IDTanque",
+          optional
+            ? {}
+            : {
+                required: "Seleccione un tanque",
+              },
+        )}
+        isInvalid={!!error}
+        disabled={!optional && (!cveCiudad || loading)}
+      >
+        <option value="">
+          {!cveCiudad && !optional
+            ? "Seleccione una ciudad"
+            : loading
+              ? "Cargando..."
+              : optional
+                ? "(Todos)"
+                : "Seleccione"}
+        </option>
+        {tanques.map((t) => (
+          <option key={t.IDTanque} value={t.IDTanque}>
+            {t.Nombre}
+          </option>
+        ))}
+      </Form.Select>
+      {loading && <Spinner animation="border" size="sm" className="mt-1" />}
+      <Form.Control.Feedback type="invalid">
+        {error?.message}
+      </Form.Control.Feedback>
+    </Form.Group>
+  );
 }

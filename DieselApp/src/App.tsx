@@ -7,6 +7,7 @@ import ReporteConsumos from "./components/ReporteConsumos";
 import ReporteRendimientos from "./components/ReporteRendimientos";
 import EntradasDiesel from "./components/EntradasDiesel";
 import SalidasDiesel from "./components/SalidasDiesel";
+import Dashboard from "./components/Dashboard";
 import TopNav from "./components/TopNav";
 
 function AppLayout() {
@@ -19,6 +20,7 @@ function AppLayout() {
       <main className={`app-content${showNav ? "" : " app-content--full"}`}>
         <Routes>
           <Route path="/" element={<Login />} />
+          <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/captura" element={<CapturaLecturas />} />
           <Route path="/entradas" element={<EntradasDiesel />} />
           <Route path="/salidas" element={<SalidasDiesel />} />

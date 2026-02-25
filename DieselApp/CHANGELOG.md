@@ -17,10 +17,12 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es/1.1.
 - Entrada **Rendimiento** en el menú desplegable de Reportes (`TopNav.tsx`).
 - Tipos TypeScript `ReporteRendimientosData` y `ReporteRendimientosForm` en `reportes.types.ts`.
 - Documentación técnica del componente en `docs/components/ReporteRendimientos.md`.
+- **Edición inline en modal de detalle de Rendimientos** (`ReporteRendimientosDetalleModal.tsx`): campos Litros, CuentaLitros, Horómetro y Odómetro editables con update directo a `TanqueMovimiento`.
 
 ### Changed
 
 - Homologación de tipografía en `ReporteConsumosDetalleModal.tsx`: eliminación de clase `font-monospace` en tablas de Salidas y Entradas.
+- **Dashboard movido** de link directo en TopNav al dropdown de **Reportes** como primer item, con separador visual (`TopNav.tsx`).
 
 ---
 

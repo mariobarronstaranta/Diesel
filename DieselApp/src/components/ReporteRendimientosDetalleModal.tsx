@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Modal, Button, Table, Spinner, Alert } from "react-bootstrap";
+import { Modal, Button, Table, Spinner, Alert, Form } from "react-bootstrap";
 import { supabase } from "../supabase/client";
 import type { RendimientoDetalleItem } from "../types/reportes.types";
 
@@ -26,8 +26,19 @@ export default function ReporteRendimientosDetalleModal({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  // Estados para edición
+  const [editingId, setEditingId] = useState<number | null>(null);
+  const [editForm, setEditForm] = useState({
+    litros: 0,
+    cuenta_litros: 0,
+    horometro: 0,
+    odometro: 0,
+  });
+  const [isUpdating, setIsUpdating] = useState(false);
+
   useEffect(() => {
     if (show && datosFila) {
+      setEditingId(null);
       cargarMovimientos();
     }
   }, [show, datosFila]);
@@ -63,6 +74,67 @@ export default function ReporteRendimientosDetalleModal({
       setMovimientos([]);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleEditStart = (m: RendimientoDetalleItem) => {
+    if (!m.id_tanque_movimiento) {
+      alert(
+        "Error: No se encontró el ID del movimiento. Verifique que la función 'get_rendimientos_detalle' retorne id_tanque_movimiento.",
+      );
+      return;
+    }
+
+    setEditingId(m.id_tanque_movimiento);
+    setEditForm({
+      litros: m.litros,
+      cuenta_litros: m.cuenta_litros,
+      horometro: m.horometro,
+      odometro: m.odometro,
+    });
+  };
+
+  const handleUpdate = async (id: number) => {
+    if (
+      editForm.litros === null ||
+      editForm.cuenta_litros === null ||
+      editForm.horometro === null ||
+      editForm.odometro === null
+    ) {
+      alert(
+        "Todos los campos numéricos son obligatorios y no pueden ir en blanco",
+      );
+      return;
+    }
+
+    try {
+      setIsUpdating(true);
+      setError(null);
+
+      const { error } = await supabase
+        .from("TanqueMovimiento")
+        .update({
+          LitrosCarga: editForm.litros,
+          CuentaLitros: editForm.cuenta_litros,
+          Horimetro: editForm.horometro,
+          Odometro: editForm.odometro,
+        })
+        .eq("IdTanqueMovimiento", id);
+
+      if (error) throw error;
+
+      setEditingId(null);
+
+      // Recargar datos para ver los cambios
+      cargarMovimientos();
+    } catch (err: unknown) {
+      console.error("Error al actualizar:", err);
+      alert(
+        "Error al actualizar el registro: " +
+          (err instanceof Error ? err.message : "Error desconocido"),
+      );
+    } finally {
+      setIsUpdating(false);
     }
   };
 
@@ -168,6 +240,13 @@ export default function ReporteRendimientosDetalleModal({
           </Alert>
         )}
 
+        {isUpdating && (
+          <Alert variant="warning" className="mb-3 d-flex align-items-center">
+            <Spinner animation="border" size="sm" className="me-2" />
+            Actualizando registro...
+          </Alert>
+        )}
+
         {!loading && !error && movimientos.length === 0 && (
           <Alert variant="info" className="mb-3">
             No se encontraron movimientos para esta combinación de filtros.
@@ -192,6 +271,7 @@ export default function ReporteRendimientosDetalleModal({
                   <th className="text-center">Cuenta Litros</th>
                   <th className="text-center">Horómetro</th>
                   <th className="text-center">Odómetro</th>
+                  <th className="text-center">Acción</th>
                 </tr>
               </thead>
               <tbody>
@@ -200,15 +280,106 @@ export default function ReporteRendimientosDetalleModal({
                     <td className="text-center">{m.id_tanque_movimiento}</td>
                     <td className="text-center">{formatearFecha(m.fecha)}</td>
                     <td className="text-center">{m.hora}</td>
-                    <td className="text-end">{m.litros.toLocaleString()}</td>
-                    <td className="text-end">
-                      {(m.cuenta_litros ?? 0).toLocaleString()}
+                    <td className="text-end" style={{ minWidth: "100px" }}>
+                      {editingId === m.id_tanque_movimiento ? (
+                        <Form.Control
+                          type="number"
+                          size="sm"
+                          value={editForm.litros}
+                          onChange={(e) =>
+                            setEditForm((prev) => ({
+                              ...prev,
+                              litros: Number(e.target.value),
+                            }))
+                          }
+                        />
+                      ) : (
+                        m.litros.toLocaleString()
+                      )}
                     </td>
-                    <td className="text-end">
-                      {(m.horometro ?? 0).toLocaleString()}
+                    <td className="text-end" style={{ minWidth: "110px" }}>
+                      {editingId === m.id_tanque_movimiento ? (
+                        <Form.Control
+                          type="number"
+                          size="sm"
+                          value={editForm.cuenta_litros}
+                          onChange={(e) =>
+                            setEditForm((prev) => ({
+                              ...prev,
+                              cuenta_litros: Number(e.target.value),
+                            }))
+                          }
+                        />
+                      ) : (
+                        (m.cuenta_litros ?? 0).toLocaleString()
+                      )}
                     </td>
-                    <td className="text-end">
-                      {(m.odometro ?? 0).toLocaleString()}
+                    <td className="text-end" style={{ minWidth: "100px" }}>
+                      {editingId === m.id_tanque_movimiento ? (
+                        <Form.Control
+                          type="number"
+                          size="sm"
+                          value={editForm.horometro}
+                          onChange={(e) =>
+                            setEditForm((prev) => ({
+                              ...prev,
+                              horometro: Number(e.target.value),
+                            }))
+                          }
+                        />
+                      ) : (
+                        (m.horometro ?? 0).toLocaleString()
+                      )}
+                    </td>
+                    <td className="text-end" style={{ minWidth: "100px" }}>
+                      {editingId === m.id_tanque_movimiento ? (
+                        <Form.Control
+                          type="number"
+                          size="sm"
+                          value={editForm.odometro}
+                          onChange={(e) =>
+                            setEditForm((prev) => ({
+                              ...prev,
+                              odometro: Number(e.target.value),
+                            }))
+                          }
+                        />
+                      ) : (
+                        (m.odometro ?? 0).toLocaleString()
+                      )}
+                    </td>
+                    <td className="text-center">
+                      {editingId === m.id_tanque_movimiento ? (
+                        <div className="d-flex gap-1 justify-content-center">
+                          <Button
+                            variant="success"
+                            size="sm"
+                            onClick={() => handleUpdate(m.id_tanque_movimiento)}
+                            disabled={isUpdating}
+                          >
+                            Ok
+                          </Button>
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => setEditingId(null)}
+                            disabled={isUpdating}
+                          >
+                            X
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button
+                          variant="outline-corporate"
+                          size="sm"
+                          onClick={() => handleEditStart(m)}
+                          disabled={
+                            isUpdating || (isUpdating && editingId !== null)
+                          }
+                        >
+                          Editar
+                        </Button>
+                      )}
                     </td>
                   </tr>
                 ))}
@@ -223,7 +394,7 @@ export default function ReporteRendimientosDetalleModal({
                       .reduce((sum, m) => sum + (m.litros ?? 0), 0)
                       .toLocaleString()}
                   </td>
-                  <td colSpan={3}></td>
+                  <td colSpan={4}></td>
                 </tr>
               </tfoot>
             </Table>

@@ -7,75 +7,89 @@ import type { UseFormRegister } from "react-hook-form";
  * Estructura de la tabla Ciudad
  */
 type Ciudad = {
-    IDCiudad: number;
-    CveCiudad: string;
-    Descripcion: string;
+  IDCiudad: number;
+  CveCiudad: string;
+  Descripcion: string;
 };
 
 /**
  * Props que recibe el componente desde react-hook-form
  */
 interface ComboCveCiudadProps {
-    register: UseFormRegister<any>;
-    error?: {
-        message?: string;
-    };
+  register: UseFormRegister<any>;
+  error?: {
+    message?: string;
+  };
+  optional?: boolean;
 }
 
-export default function ComboCveCiudad({ register, error }: ComboCveCiudadProps) {
-    const [ciudades, setCiudades] = useState<Ciudad[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
+export default function ComboCveCiudad({
+  register,
+  error,
+  optional = false,
+}: ComboCveCiudadProps) {
+  const [ciudades, setCiudades] = useState<Ciudad[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
 
-    useEffect(() => {
-        const cargarCiudades = async () => {
-            setLoading(true);
+  useEffect(() => {
+    const cargarCiudades = async () => {
+      setLoading(true);
 
-            const { data, error } = await supabase
-                .from("Ciudad")
-                .select("IDCiudad, CveCiudad, Descripcion")
-                .order("Descripcion", { ascending: true });
+      const { data, error } = await supabase
+        .from("Ciudad")
+        .select("IDCiudad, CveCiudad, Descripcion")
+        .order("Descripcion", { ascending: true });
 
-            if (!error && data) {
-                setCiudades(data);
-            }
+      if (!error && data) {
+        setCiudades(data);
+      }
 
-            setLoading(false);
-        };
+      setLoading(false);
+    };
 
-        cargarCiudades();
-    }, []);
+    cargarCiudades();
+  }, []);
 
-    return (
-        <Form.Group>
-            <Form.Label>Ciudad</Form.Label>
+  return (
+    <Form.Group>
+      <Form.Label>Ciudad</Form.Label>
 
-            <Form.Select
-                {...register("CveCiudad", {
-                    required: "Seleccione",
-                })}
-                isInvalid={!!error}
-                disabled={loading}
-            >
-                <option value="">
-                    {loading ? "Cargando ciudades..." : "Seleccione"}
-                </option>
+      <Form.Select
+        {...register(
+          "CveCiudad",
+          optional
+            ? {}
+            : {
+                required: "Seleccione",
+              },
+        )}
+        isInvalid={!!error}
+        disabled={loading}
+      >
+        <option value="">
+          {loading
+            ? "Cargando ciudades..."
+            : optional
+              ? "(Todas)"
+              : "Seleccione"}
+        </option>
 
-                {ciudades.map((ciudad) => (
-                    <option key={ciudad.CveCiudad} value={ciudad.CveCiudad}>
-                        {ciudad.Descripcion} ({ciudad.CveCiudad})
-                    </option>
-                ))}
-            </Form.Select>
+        {ciudades.map((ciudad) => (
+          <option key={ciudad.CveCiudad} value={ciudad.CveCiudad}>
+            {ciudad.Descripcion} ({ciudad.CveCiudad})
+          </option>
+        ))}
+      </Form.Select>
 
-            {loading && (
-                <div className="mt-2">
-                    <Spinner animation="border" size="sm" />
-                </div>
-            )}
+      {loading && (
+        <div className="mt-2">
+          <Spinner animation="border" size="sm" />
+        </div>
+      )}
 
-            <Form.Control.Feedback type="invalid">
-                {error?.message}
-            </Form.Control.Feedback>
-        </Form.Group>
-    );
+      <Form.Control.Feedback type="invalid">
+        {error?.message}
+      </Form.Control.Feedback>
+    </Form.Group>
+  );
 }

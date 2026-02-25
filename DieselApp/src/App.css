@@ -270,3 +270,145 @@
   font-weight: bold;
   text-align: center;
 }
+
+/* =========================================
+   Dashboard Styles
+   ========================================= */
+
+/* KPI Cards */
+.dash-kpi {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 1.25rem 1.5rem;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+  border-left: 4px solid #e5e7eb;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease;
+  height: 100%;
+}
+
+.dash-kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(15, 23, 42, 0.1);
+}
+
+.dash-kpi__icon {
+  font-size: 2rem;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.dash-kpi__body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.dash-kpi__label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.dash-kpi__value {
+  font-size: 1.65rem;
+  font-weight: 800;
+  color: var(--corporate-dark);
+  line-height: 1.15;
+}
+
+.dash-kpi__unit {
+  font-size: 0.75rem;
+  color: #9ca3af;
+  font-weight: 500;
+}
+
+/* KPI color variants */
+.dash-kpi--entradas {
+  border-left-color: #f0ad4e;
+  background: linear-gradient(135deg, #fffdf5 0%, #ffffff 100%);
+}
+
+.dash-kpi--salidas {
+  border-left-color: #343a40;
+  background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+}
+
+.dash-kpi--rendimiento {
+  border-left-color: #17a2b8;
+  background: linear-gradient(135deg, #f0fbff 0%, #ffffff 100%);
+}
+
+.dash-kpi--balance-pos {
+  border-left-color: #28a745;
+  background: linear-gradient(135deg, #f0fff4 0%, #ffffff 100%);
+}
+
+.dash-kpi--balance-neg {
+  border-left-color: #dc3545;
+  background: linear-gradient(135deg, #fff5f5 0%, #ffffff 100%);
+}
+
+/* Chart Cards */
+.dash-chart-card {
+  border: none;
+  border-radius: 14px;
+  box-shadow: 0 2px 12px rgba(15, 23, 42, 0.06);
+  overflow: hidden;
+}
+
+.dash-chart-card .card-header-corporate {
+  border-radius: 14px 14px 0 0;
+  font-size: 0.9rem;
+  padding: 0.75rem 1.25rem;
+  letter-spacing: 0.02em;
+}
+
+.dash-chart-card .card-body {
+  padding: 1.25rem;
+}
+
+/* Custom Legend */
+.dash-legend {
+  display: flex;
+  justify-content: center;
+  gap: 1.5rem;
+  margin-top: 0.75rem;
+}
+
+.dash-legend__item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.dash-legend__dot {
+  display: inline-block;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .dash-kpi {
+    padding: 1rem;
+  }
+
+  .dash-kpi__value {
+    font-size: 1.35rem;
+  }
+
+  .dash-kpi__icon {
+    font-size: 1.6rem;
+  }
+}
