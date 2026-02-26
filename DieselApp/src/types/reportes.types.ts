@@ -45,3 +45,27 @@ export interface RendimientoDetalleItem {
   horometro: number;
   odometro: number;
 }
+
+// Tipos para el Reporte de Productividad y Rentabilidad
+
+export interface ReporteProductividadData {
+  EstadoRegistro: string;
+  Tanque: string;
+  Unidad: string;
+  IDUnidad: number;
+  Viajes: number;
+  MetrosCubicos: number;
+  "Kms Totales": number;
+  "Hrs Totales": number;
+  "Litros Consumidos": number;
+  "Lts/M3": number;
+  "Km/Lts": number;
+  "M3/Viaje": number;
+}
+
+export interface ReporteProductividadForm {
+  CveCiudad: string;
+  IDTanque: string;
+  FechaInicial: string;
+  FechaFinal: string;
+}
