@@ -1,11 +1,5 @@
 import { useState } from "react";
-import {
-  Container,
-  Card,
-  Form,
-  Button,
-  Alert,
-} from "react-bootstrap";
+import { Container, Card, Form, Button, Alert } from "react-bootstrap";
 import { supabase } from "../supabase/client";
 import { useNavigate } from "react-router-dom";
 
@@ -26,7 +20,21 @@ export default function Login() {
       .eq("Password", password)
       .limit(1);
 
-    if (error || !data || data.length === 0) {
+    const loginExitoso = !error && data && data.length > 0;
+
+    // Registrar intento de login en bitácora (fire-and-forget)
+    supabase
+      .from("LoginBitacora")
+      .insert({
+        CveUsuario: usuario,
+        UserAgent: navigator.userAgent,
+        Exitoso: loginExitoso,
+      })
+      .then(({ error: logError }) => {
+        if (logError) console.error("Error al registrar login:", logError);
+      });
+
+    if (!loginExitoso) {
       setError("Usuario o contraseña incorrectos");
       return;
     }
@@ -44,14 +52,13 @@ export default function Login() {
         left: 0,
         width: "100%",
         height: "100%",
-        overflow: "auto"
+        overflow: "auto",
       }}
     >
       <Container style={{ maxWidth: "500px" }}>
         <Card className="shadow-lg border-0 rounded-4">
           <Card.Body className="p-5">
             <div className="text-center mb-4">
-
               <h2 className="fw-bold text-dark">Admon. de Combustibles</h2>
               <h3 className="fw-bold text-dark">Bienvenido</h3>
             </div>
@@ -64,7 +71,9 @@ export default function Login() {
 
             <Form onSubmit={onLogin}>
               <Form.Group className="mb-3" controlId="formBasicEmail">
-                <Form.Label className="fw-bold medium text-secondary">USUARIO</Form.Label>
+                <Form.Label className="fw-bold medium text-secondary">
+                  USUARIO
+                </Form.Label>
                 <Form.Control
                   size="lg"
                   type="text"
@@ -78,7 +87,9 @@ export default function Login() {
               </Form.Group>
 
               <Form.Group className="mb-4" controlId="formBasicPassword">
-                <Form.Label className="fw-bold medium text-secondary">CONTRASEÑA</Form.Label>
+                <Form.Label className="fw-bold medium text-secondary">
+                  CONTRASEÑA
+                </Form.Label>
                 <Form.Control
                   size="lg"
                   type="password"
@@ -96,7 +107,11 @@ export default function Login() {
                   size="lg"
                   type="submit"
                   className="fw-bold shadow-sm"
-                  style={{ background: "#f0ad4e", border: "none", color: "white" }} // Keeping the warning color feel but custom styled if needed, or just use variant="warning"
+                  style={{
+                    background: "#f0ad4e",
+                    border: "none",
+                    color: "white",
+                  }} // Keeping the warning color feel but custom styled if needed, or just use variant="warning"
                 >
                   INGRESAR
                 </Button>
@@ -108,6 +123,6 @@ export default function Login() {
           </Card.Footer>
         </Card>
       </Container>
-    </div >
+    </div>
   );
 }
