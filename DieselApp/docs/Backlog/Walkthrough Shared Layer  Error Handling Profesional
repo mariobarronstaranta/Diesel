@@ -1,0 +1,61 @@
+# ✅ Shared Layer + Error Handling Profesional
+
+## Qué se hizo
+
+Se creó una capa `shared/` centralizada y se refactorizaron todos los componentes de formulario y combos para usarla.
+
+## Estructura creada
+
+```
+src/shared/
+├── errors/
+│   └── supabaseErrorHandler.ts   ← Traduce PostgrestError → mensaje amigable en español
+├── hooks/
+│   ├── useFormAlert.ts           ← Estado de alerta unificado para formularios
+│   └── useComboLoader.ts         ← Carga de catálogos con errores visibles
+└── types/
+    └── errors.types.ts           ← Tipos centralizados (FormAlert, AsyncState)
+```
+
+## Cambios por componente
+
+### Formularios refactorizados (3)
+
+| Componente            | Antes                                                                                                                                    | Después                                                                         |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| `CapturaLecturas.tsx` | `useState<{type,text}>`, `catch (error: unknown)` con `instanceof Error` (incorrecto para Supabase), **IDUsuarioRegistro hardcoded a 1** | `useFormAlert()`, `handleSupabaseError()`, campo hardcodeado eliminado con TODO |
+| `EntradasDiesel.tsx`  | `useState`, `catch (err: any)`, mensaje técnico crudo                                                                                    | `useFormAlert()`, `handleSupabaseError()`, `catch (err: unknown)`               |
+| `SalidasDiesel.tsx`   | `useState`, `catch (err: any)`, mensaje técnico crudo                                                                                    | `useFormAlert()`, `handleSupabaseError()`, `catch (err: unknown)`               |
+
+### Combos refactorizados (7)
+
+| Componente             | Problema anterior                       | Con `useComboLoader` |
+| ---------------------- | --------------------------------------- | -------------------- |
+| `ComboCiudad`          | Error silencioso, combo vacío sin aviso | Error visible en UI  |
+| `ComboCveCiudad`       | Igual                                   | Igual                |
+| `ComboPlanta`          | Igual                                   | Igual                |
+| `ComboTanque`          | Igual                                   | Igual                |
+| `ComboTanquePorCiudad` | Igual                                   | Igual                |
+| `ComboProveedores`     | Igual                                   | Igual                |
+| `ComboUnidades`        | Catch silencioso                        | Error visible        |
+| `ComboOperadores`      | Catch silencioso                        | Error visible        |
+
+## Ejemplo: antes vs después de un error
+
+**Antes** (mensaje técnico que veía el usuario):
+
+```
+Error al guardar: new row violates row-level security policy for table TanqueMovimiento
+```
+
+**Después** (mensaje amigable):
+
+```
+No tiene permisos para realizar esta operación.
+```
+
+## Verificación
+
+- ✅ `tsc --noEmit` → 0 errores TypeScript
+- ✅ Todos los componentes compilan correctamente
+- ✅ Ningún `catch (err: any)` — todo usa `unknown` con tipado seguro

@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
 import type { UseFormRegister } from "react-hook-form";
 import { supabase } from "../supabase/client";
 import { Spinner } from "react-bootstrap";
+import { useComboLoader } from "../shared/hooks/useComboLoader";
 
 interface Tanque {
   IDTanque: number;
@@ -14,36 +14,35 @@ interface ComboTanqueProps {
 }
 
 export default function ComboTanque({ idPlanta, register }: ComboTanqueProps) {
-  const [tanques, setTanques] = useState<Tanque[]>([]);
-  const [loading, setLoading] = useState(false);
-
-  useEffect(() => {
-    if (!idPlanta) {
-      setTanques([]);
-      return;
-    }
-
-    const fetchTanques = async () => {
-      setLoading(true);
-
-      const { data, error } = await supabase
+  const {
+    data: tanques,
+    loading,
+    error,
+  } = useComboLoader<Tanque>(
+    async () =>
+      supabase
         .from("Tanque")
         .select("IDTanque, Nombre")
         .eq("IDPlanta", Number(idPlanta))
-        .order("Nombre");
+        .order("Nombre"),
+    [idPlanta],
+    !!idPlanta, // no disparar query si no hay planta seleccionada
+  );
 
-      if (error) {
-        console.error("Error cargando tanques:", error);
-        setTanques([]);
-      } else {
-        setTanques(data ?? []);
-      }
-
-      setLoading(false);
-    };
-
-    fetchTanques();
-  }, [idPlanta]);
+  if (!idPlanta) {
+    return (
+      <div className="mb-3">
+        <label className="form-label">Tanque</label>
+        <select
+          className="form-select"
+          disabled
+          {...register("IDTanque", { required: true })}
+        >
+          <option value="">Seleccione una planta</option>
+        </select>
+      </div>
+    );
+  }
 
   return (
     <div className="mb-3">
@@ -51,26 +50,21 @@ export default function ComboTanque({ idPlanta, register }: ComboTanqueProps) {
         Tanque
         {loading && <Spinner animation="border" size="sm" />}
       </label>
-
       <select
-        className="form-select"
-        disabled={!idPlanta || loading}
+        className={`form-select${error ? " is-invalid" : ""}`}
+        disabled={loading}
         {...register("IDTanque", { required: true })}
       >
         <option value="">
-          {!idPlanta
-            ? "Seleccione una planta"
-            : loading
-              ? "Cargando tanques..."
-              : "Seleccione un tanque"}
+          {loading ? "Cargando tanques..." : "Seleccione un tanque"}
         </option>
-
         {tanques.map((tanque) => (
           <option key={tanque.IDTanque} value={tanque.IDTanque}>
             {tanque.Nombre}
           </option>
         ))}
       </select>
+      {error && <div className="invalid-feedback d-block">{error}</div>}
     </div>
   );
 }

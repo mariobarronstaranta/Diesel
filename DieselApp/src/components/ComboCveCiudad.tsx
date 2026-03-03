@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
 import { Form, Spinner } from "react-bootstrap";
 import { supabase } from "../supabase/client";
 import type { UseFormRegister } from "react-hook-form";
+import { useComboLoader } from "../shared/hooks/useComboLoader";
 
 /**
  * Estructura de la tabla Ciudad
@@ -28,42 +28,24 @@ export default function ComboCveCiudad({
   error,
   optional = false,
 }: ComboCveCiudadProps) {
-  const [ciudades, setCiudades] = useState<Ciudad[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
-
-  useEffect(() => {
-    const cargarCiudades = async () => {
-      setLoading(true);
-
-      const { data, error } = await supabase
-        .from("Ciudad")
-        .select("IDCiudad, CveCiudad, Descripcion")
-        .order("Descripcion", { ascending: true });
-
-      if (!error && data) {
-        setCiudades(data);
-      }
-
-      setLoading(false);
-    };
-
-    cargarCiudades();
-  }, []);
+  const {
+    data: ciudades,
+    loading,
+    error: loadError,
+  } = useComboLoader<Ciudad>(() =>
+    supabase
+      .from("Ciudad")
+      .select("IDCiudad, CveCiudad, Descripcion")
+      .order("Descripcion", { ascending: true }),
+  );
 
   return (
     <Form.Group>
       <Form.Label>Ciudad</Form.Label>
 
       <Form.Select
-        {...register(
-          "CveCiudad",
-          optional
-            ? {}
-            : {
-                required: "Seleccione",
-              },
-        )}
-        isInvalid={!!error}
+        {...register("CveCiudad", optional ? {} : { required: "Seleccione" })}
+        isInvalid={!!error || !!loadError}
         disabled={loading}
       >
         <option value="">
@@ -88,7 +70,7 @@ export default function ComboCveCiudad({
       )}
 
       <Form.Control.Feedback type="invalid">
-        {error?.message}
+        {loadError ?? error?.message}
       </Form.Control.Feedback>
     </Form.Group>
   );

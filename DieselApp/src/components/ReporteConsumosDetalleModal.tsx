@@ -9,7 +9,7 @@ import {
   Alert,
   Form,
 } from "react-bootstrap";
-import { supabase } from "../supabaseClient";
+import { supabase } from "../supabase/client";
 
 interface ReporteConsumosDetalleModalProps {
   show: boolean;

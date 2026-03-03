@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
 import { Form, Spinner } from "react-bootstrap";
 import { supabase } from "../supabase/client";
 import type { UseFormRegister } from "react-hook-form";
+import { useComboLoader } from "../shared/hooks/useComboLoader";
 
 type Tanque = {
   IDTanque: number;
@@ -23,37 +23,21 @@ export default function ComboTanquePorCiudad({
   error,
   optional = false,
 }: ComboTanquePorCiudadProps) {
-  const [tanques, setTanques] = useState<Tanque[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (!cveCiudad) {
-      setTanques([]);
-      return;
-    }
-
-    const cargarTanques = async () => {
-      setLoading(true);
-      setTanques([]);
-
-      // Filtramos por CveCiudad en lugar de IDPlanta
-      const { data, error } = await supabase
+  const {
+    data: tanques,
+    loading,
+    error: loadError,
+  } = useComboLoader<Tanque>(
+    () =>
+      supabase
         .from("Tanque")
         .select("IDTanque, Nombre")
-        .eq("CveCiudad", cveCiudad)
-        .order("Nombre", { ascending: true });
+        .eq("CveCiudad", cveCiudad ?? "")
+        .order("Nombre", { ascending: true }),
+    [cveCiudad],
+  );
 
-      if (error) {
-        console.error("Error cargando tanques por ciudad:", error);
-      } else if (data) {
-        setTanques(data);
-      }
-
-      setLoading(false);
-    };
-
-    cargarTanques();
-  }, [cveCiudad]);
+  const isDisabled = !optional && (!cveCiudad || loading);
 
   return (
     <Form.Group className="mb-3">
@@ -61,14 +45,10 @@ export default function ComboTanquePorCiudad({
       <Form.Select
         {...register(
           "IDTanque",
-          optional
-            ? {}
-            : {
-                required: "Seleccione un tanque",
-              },
+          optional ? {} : { required: "Seleccione un tanque" },
         )}
-        isInvalid={!!error}
-        disabled={!optional && (!cveCiudad || loading)}
+        isInvalid={!!error || !!loadError}
+        disabled={isDisabled}
       >
         <option value="">
           {!cveCiudad && !optional
@@ -87,7 +67,7 @@ export default function ComboTanquePorCiudad({
       </Form.Select>
       {loading && <Spinner animation="border" size="sm" className="mt-1" />}
       <Form.Control.Feedback type="invalid">
-        {error?.message}
+        {loadError ?? error?.message}
       </Form.Control.Feedback>
     </Form.Group>
   );

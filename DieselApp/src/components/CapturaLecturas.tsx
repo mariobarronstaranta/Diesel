@@ -1,10 +1,20 @@
-import { Container, Card, Form, Button, Row, Col, Alert } from "react-bootstrap";
+import {
+  Container,
+  Card,
+  Form,
+  Button,
+  Row,
+  Col,
+  Alert,
+} from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { useEffect, useState } from "react";
 import ComboCiudad from "./ComboCiudad";
 import ComboPlanta from "./ComboPlanta";
 import ComboTanque from "./ComboTanque";
 import { supabase } from "../supabase/client";
+import { useFormAlert } from "../shared/hooks/useFormAlert";
+import { handleSupabaseError } from "../shared/errors/supabaseErrorHandler";
 
 interface CapturaLecturasForm {
   IDCiudad: string;
@@ -19,10 +29,12 @@ interface CapturaLecturasForm {
 
 export default function CapturaLecturas() {
   const [isLoading, setIsLoading] = useState(false);
-  const [alertMessage, setAlertMessage] = useState<{
-    type: "success" | "danger";
-    text: string;
-  } | null>(null);
+  const {
+    alert: alertMessage,
+    showSuccess,
+    showError,
+    clearAlert,
+  } = useFormAlert();
 
   const {
     register,
@@ -53,8 +65,8 @@ export default function CapturaLecturas() {
   const setDefaults = () => {
     setValue("Fecha", todayStr);
     const now = new Date();
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const hours = String(now.getHours()).padStart(2, "0");
+    const minutes = String(now.getMinutes()).padStart(2, "0");
     setValue("Hora", `${hours}:${minutes}`);
   };
 
@@ -76,53 +88,39 @@ export default function CapturaLecturas() {
   const onSubmit = async (data: CapturaLecturasForm) => {
     try {
       setIsLoading(true);
-      setAlertMessage(null);
+      clearAlert();
 
       // Formatear hora a HH:MM:SS (si solo tiene HH:MM, agregar :00)
       const horaFormateada = data.Hora.includes(":00:")
         ? data.Hora
         : `${data.Hora}:00`;
 
-      const { error } = await supabase
-        .from("TanqueLecturas")
-        .insert([
-          {
-            IDTanque: Number(data.IDTanque),
-            Fecha: data.Fecha,
-            Hora: horaFormateada,
-            LecturaCms: Number(data.AlturaCms),
-            Temperatura: Number(data.Temperatura),
-            VolActualTA: 0,
-            VolActual15C: 0,
-            CuentaLitros: Number(data.CuentaLitros),
-            FechaRegistro: new Date(),
-            IDUsuarioRegistro: 1,
-          },
-        ]);
+      const { error } = await supabase.from("TanqueLecturas").insert([
+        {
+          IDTanque: Number(data.IDTanque),
+          Fecha: data.Fecha,
+          Hora: horaFormateada,
+          LecturaCms: Number(data.AlturaCms),
+          Temperatura: Number(data.Temperatura),
+          VolActualTA: 0,
+          VolActual15C: 0,
+          CuentaLitros: Number(data.CuentaLitros),
+          // TODO: reemplazar con el ID del usuario autenticado (auth.uid())
+          // IDUsuarioRegistro: session?.user.id
+        },
+      ]);
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
-      setAlertMessage({
-        type: "success",
-        text: "Lectura registrada de manera exitosa",
-      });
-
+      showSuccess("Lectura registrada de manera exitosa");
       handleClean();
     } catch (error: unknown) {
-      console.error("Error al enviar datos:", error);
-      const errorMessage = error instanceof Error ? error.message : "Error de conexión con el servidor";
-      setAlertMessage({
-        type: "danger",
-        text: errorMessage,
-      });
+      console.error("[CapturaLecturas] Error al enviar datos:", error);
+      showError(handleSupabaseError(error));
     } finally {
       setIsLoading(false);
     }
   };
-
-
 
   const handleClean = () => {
     reset({
@@ -147,7 +145,7 @@ export default function CapturaLecturas() {
         <Alert
           variant={alertMessage.type}
           dismissible
-          onClose={() => setAlertMessage(null)}
+          onClose={clearAlert}
           className="mb-3"
         >
           {alertMessage.text}
@@ -156,7 +154,9 @@ export default function CapturaLecturas() {
 
       <Form noValidate onSubmit={handleSubmit(onSubmit)}>
         <Card className="mb-4">
-          <Card.Header className="card-header-corporate text-white text-center fw-bold">DATOS DEL TANQUE</Card.Header>
+          <Card.Header className="card-header-corporate text-white text-center fw-bold">
+            DATOS DEL TANQUE
+          </Card.Header>
           <Card.Body>
             <Row>
               <Col md={4}>
@@ -185,7 +185,9 @@ export default function CapturaLecturas() {
                   register={register}
                 />
                 {errors.IDTanque && (
-                  <div className="text-danger small mb-2">Seleccione un tanque</div>
+                  <div className="text-danger small mb-2">
+                    Seleccione un tanque
+                  </div>
                 )}
               </Col>
             </Row>
@@ -193,7 +195,9 @@ export default function CapturaLecturas() {
         </Card>
 
         <Card className="mb-3">
-          <Card.Header className="card-header-corporate text-white text-center fw-bold">DATOS DE LECTURA</Card.Header>
+          <Card.Header className="card-header-corporate text-white text-center fw-bold">
+            DATOS DE LECTURA
+          </Card.Header>
           <Card.Body>
             <Row className="mb-3">
               <Col md={4}>
@@ -310,7 +314,7 @@ export default function CapturaLecturas() {
             type="button"
             onClick={() => {
               handleClean();
-              setAlertMessage(null);
+              clearAlert();
             }}
             disabled={isLoading}
           >
