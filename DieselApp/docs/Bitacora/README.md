@@ -28,6 +28,10 @@ Los archivos siguen el formato: `YYYY-MM-DD_descripcion.md`
 - **2026-02-19** - [Summary](./2026-02-19_summary.md): Homologación de fuentes en el modal de detalle del reporte de consumos.
 - **2026-02-26** - [Summary](./2026-02-26_summary.md): Implementación del Reporte de Productividad y Rentabilidad cruzando datos transaccionales.
 
+#### Marzo
+
+- **2026-03-03** - [Summary](./2026-03-03_summary.md): Corrección bug UTC en fechas (4 componentes), migración credenciales a variables de entorno, combos con búsqueda predictiva en SalidasDiesel.
+
 ---
 
 ## 💡 Guía de Uso
@@ -41,4 +45,4 @@ Cuando ocurra un evento importante que deba documentarse:
 
 ---
 
-_Última actualización: 2026-02-26_
+_Última actualización: 2026-03-03_

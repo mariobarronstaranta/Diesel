@@ -1,0 +1,219 @@
+# Code Review — DieselApp
+
+## Diagnóstico General
+
+El proyecto es una aplicación React + TypeScript que consume Supabase directamente desde los componentes. Tiene señales claras de buena intención: hooks reutilizables, error handler centralizado, separación por carpetas. Pero la arquitectura de fondo tiene violaciones estructurales que la hacen frágil para escalar y difícil de testear.
+
+---
+
+## Hallazgos Críticos
+
+### 1. 🔴 Sin capa de repositorio — La UI habla directamente con la base de datos
+
+Cada componente de formulario (`EntradasDiesel`, `CapturaLecturas`, `SalidasDiesel`, etc.) importa y llama `supabase` directamente:
+
+```ts
+// EntradasDiesel.tsx — línea 101
+const { error } = await supabase.from("TanqueMovimiento").insert([{ ... }]);
+```
+
+Esto significa que la **lógica de persistencia vive en la UI**. No hay repositorios, no hay servicios, no hay casos de uso. Si mañana cambias de Supabase a otro backend, tienes que tocar cada componente.
+
+---
+
+### 2. 🔴 Autenticación custom e insegura
+
+El login compara usuario y contraseña en texto plano contra una tabla `Usuarios`:
+
+```ts
+// Login.tsx — línea 16
+const { data, error } = await supabase
+  .from("Usuarios")
+  .select("CveUsuario")
+  .eq("CveUsuario", usuario)
+  .eq("Password", password) // ← contraseña en texto claro
+  .limit(1);
+```
+
+**Problemas concretos:**
+
+- La contraseña viaja como parámetro de filtro de Supabase (no como auth nativo).
+- Supabase Auth (GoTrue) existe exactamente para evitar esto. No se usa.
+- No hay sesión, no hay token, no hay expiración. Cualquiera que llegue a `/captura` entra sin autenticar.
+- No hay rutas protegidas. `App.tsx` no valida si hay sesión activa.
+
+---
+
+### 3. 🔴 Credenciales hardcodeadas en el código fuente
+
+```ts
+// supabase/client.ts — líneas 8-11
+export const supabase = createClient(
+  "https://ecnasowhigllrhkbvphr.supabase.co",
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...", // ← anon key expuesta
+);
+```
+
+El código comentado muestra que se intentó usar `import.meta.env` pero se dejó hardcodeado. Esta clave está en el repositorio. Aunque sea una `anon key`, cualquier persona con acceso al repo puede hacer queries directas a tu base de datos con ella.
+
+---
+
+### 4. 🟠 El contrato de errores no distingue dominio de infraestructura
+
+`handleSupabaseError` retorna `string`:
+
+```ts
+export function handleSupabaseError(error: unknown): string;
+```
+
+Problemas:
+
+- La capa de presentación recibe un string opaco. No puede saber si el error es recuperable, si debe reintentar, si debe redirigir al login.
+- No hay `ErrorCode` tipado. No se puede hacer `switch(error.code)` en la UI para distintos flows.
+- Mezcla errores de dominio (`23505` = duplicado) con errores de infra (`network`), todos colapsados al mismo tipo: `string`.
+- `AsyncState<T>` tiene `error: string | null` — mismo problema. Pierdes la capacidad de reaccionar programáticamente al error.
+
+---
+
+### 5. 🟠 `ReporteConsumos` ignora el error handler centralizado
+
+```ts
+// ReporteConsumos.tsx — línea 121
+const errorMessage =
+  error instanceof Error ? error.message : "Error de conexión...";
+```
+
+No usa `handleSupabaseError`. Es inconsistente con el resto del proyecto. El mensaje técnico de Supabase puede llegar al usuario.
+
+---
+
+### 6. 🟠 Construcción manual de datetime local (patrón repetido 3+ veces)
+
+```ts
+// EntradasDiesel.tsx — líneas 91-98
+const year = now.getFullYear();
+const month = String(now.getMonth() + 1).padStart(2, "0");
+// ... etc
+const localDateTime = `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+```
+
+Este bloque existe en `EntradasDiesel`, `CapturaLecturas` (variante), y potencialmente `SalidasDiesel`. No está extraído a una función utilitaria. Viola DRY y genera inconsistencias (uno incluye segundos, otro no).
+
+---
+
+### 7. 🟡 `console.log` de datos de negocio en producción
+
+```ts
+// ReporteConsumos.tsx — línea 79
+console.log("Consultando consumos:", { p_fecha_inicio, p_fecha_fin, ... });
+// línea 98
+console.log("Resultado de Supabase RPC:", result);
+```
+
+Datos de la operación (fechas, IDs, resultados) visibles en la consola del navegador para cualquier usuario.
+
+---
+
+### 8. 🟡 Código muerto en `App.tsx` y `client.ts`
+
+```ts
+// App.tsx — líneas 52-60: función comentada
+// client.ts — líneas 3-6 y 13-14: código y credenciales comentadas
+```
+
+Código muerto que no fue removido. Contamina la lectura y contiene credenciales en comentarios.
+
+---
+
+### 9. 🟡 Indentación inconsistente entre componentes
+
+`EntradasDiesel.tsx`, `CapturaLecturas.tsx` usan 2 espacios. `ReporteConsumos.tsx` usa 4 espacios. No hay Prettier configurado o no se respeta.
+
+---
+
+### 10. 🟡 `key={index}` en listas de tabla
+
+```ts
+// ReporteConsumos.tsx — línea 299
+{consumos.map((consumo, index) => (
+  <tr key={index}>
+```
+
+Usar el índice como key rompe la reconciliación de React ante reordenamientos o filtros. Debe usarse un ID de negocio.
+
+---
+
+## Riesgos Ocultos
+
+| Riesgo                                           | Descripción                                                                                                                                                       |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Sesión fantasma**                              | El usuario navega a `/dashboard` sin haber hecho login. No hay guard de ruta.                                                                                     |
+| **Swallow error silencioso**                     | En `useComboLoader`, si `queryFn` lanza pero `cancelled = true`, el error se descarta silenciosamente.                                                            |
+| **Race condition en combos encadenados**         | Si el usuario cambia ciudad rápido, pueden llegar respuestas fuera de orden. `cancelled` mitiga esto, pero no completamente si hay múltiples `enabled` cambiando. |
+| **`VolActualTA: 0` hardcodeado**                 | `CapturaLecturas` línea 105: `VolActualTA: 0`. Hay un TODO que lleva tiempo sin resolverse. Dato de negocio corrupto.                                             |
+| **Sin validación de rango numérico en entradas** | `Temperatura`, `LitrosCarga`, `Altura` no tienen validación `min/max` en el form. Un usuario puede enviar `-9999`.                                                |
+
+---
+
+## Mejoras Recomendadas
+
+### Prioritarias (seguridad y correctividad)
+
+1. **Migrar a Supabase Auth.** Eliminar tabla `Usuarios` con passwords. Usar `supabase.auth.signInWithPassword()`. Añadir rutas protegidas con un `PrivateRoute` que verifique `supabase.auth.getSession()`.
+
+2. **Mover credenciales a `.env`.** Usar `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY`. El código comentado ya lo mostraba — solo hay que descomentar y borrar lo hardcodeado.
+
+3. **Extraer capa de repositorio.** Crear `src/repositories/tanqueMovimientoRepository.ts`, etc. Los componentes solo deben llamar `await tanqueRepo.insertar(data)`, sin saber qué hay debajo.
+
+### Importantes (arquitectura)
+
+4. **Tipar el contrato de errores.** Cambiar `handleSupabaseError` para retornar un objeto estructurado:
+
+   ```ts
+   type AppError = { code: AppErrorCode; message: string; retryable: boolean };
+   ```
+
+5. **Extraer `formatLocalDateTime()` a un util compartido** en `src/shared/utils/date.ts`.
+
+6. **Eliminar `console.log` de datos de negocio.** Si necesitas debugging, usa una flag de entorno.
+
+### Buenas prácticas
+
+7. Configurar Prettier con regla de indentación uniforme.
+8. Usar IDs de negocio como `key` en listas (no índices).
+9. Eliminar código comentado de `App.tsx` y `client.ts`.
+10. Agregar validación `min/max` a campos numéricos.
+
+---
+
+## Score Arquitectónico
+
+| Dimensión               | Score | Nota                                                        |
+| ----------------------- | ----- | ----------------------------------------------------------- |
+| Separación de capas     | 3/10  | La UI contiene lógica de persistencia                       |
+| Contrato de errores     | 5/10  | Existe pero es opaco (string)                               |
+| Acoplamiento a Supabase | 3/10  | Dependencia directa en casi todos los componentes           |
+| Seguridad               | 2/10  | Auth custom insegura, credenciales en código                |
+| Robustez                | 5/10  | Hay manejo de errores, pero con huecos                      |
+| Reutilización           | 6/10  | Los hooks y combos son un buen patrón                       |
+| Escalabilidad           | 3/10  | Sin repositorios, agregar módulos replica el mismo problema |
+| Consistencia            | 5/10  | El error handler no se usa en todos lados                   |
+
+**Score global: 4/10**
+
+---
+
+## Conclusión Directa
+
+La capa `shared/` (hooks, error handler, tipos) representa un buen instinto de diseño y es lo mejor del proyecto. Pero el resto de la aplicación no lo aprovecha correctamente.
+
+El problema central es que **no existe separación entre UI e infraestructura**. Los componentes son formularios que insertan datos directamente en Supabase. Eso no es una arquitectura de capas — es un CRUD script con React encima.
+
+El nivel técnico actual es: **junior-mid con buenas intenciones pero sin arquitectura**. El código funciona, está razonablemente organizado visualmente, y tiene algunos patrones correctos. Pero los problemas de seguridad (auth custom + credenciales expuestas) y la ausencia de capa de repositorio lo alejan significativamente de producción real.
+
+Para llevarlo a nivel senior y producción-ready, el orden sería:
+
+1. Supabase Auth nativo + rutas protegidas
+2. Variables de entorno
+3. Capa de repositorios
+4. Contrato de error tipado

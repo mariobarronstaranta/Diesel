@@ -181,13 +181,10 @@ export default function ReporteRendimientosDetalleModal({
     document.body.removeChild(link);
   };
 
+  // Reordena "YYYY-MM-DD" → "DD/MM/YYYY" sin tocar zona horaria
   const formatearFecha = (fecha: string) => {
-    const date = new Date(fecha);
-    return date.toLocaleDateString("es-MX", {
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    });
+    const [y, m, d] = fecha.split("-");
+    return `${d}/${m}/${y}`;
   };
 
   if (!datosFila) return null;

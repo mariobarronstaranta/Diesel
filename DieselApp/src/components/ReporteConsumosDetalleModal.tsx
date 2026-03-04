@@ -287,7 +287,8 @@ export default function ReporteConsumosDetalleModal({
 
   // Formatear fecha para mostrar en el título del modal
   const formatearFechaDisplay = (fecha: string) => {
-    const date = new Date(fecha);
+    // Parsear como hora local (sin Z) para evitar el desfase UTC→CST
+    const date = new Date(fecha + "T00:00:00");
     return date.toLocaleDateString("es-MX", {
       year: "numeric",
       month: "2-digit",
@@ -384,7 +385,9 @@ export default function ReporteConsumosDetalleModal({
                     {salidas.map((s: SalidaDetalle, i: number) => (
                       <tr key={i}>
                         <td>{s.tanque}</td>
-                        <td className="text-center">{s.fecha}</td>
+                        <td className="text-center">
+                          {formatearFechaDisplay(s.fecha)}
+                        </td>
                         <td className="text-center">{s.hora}</td>
                         <td className="text-center">{s.temperatura}</td>
                         <td>{s.unidad}</td>
@@ -554,7 +557,9 @@ export default function ReporteConsumosDetalleModal({
                   <tbody>
                     {entradas.map((e: EntradaDetalle, i: number) => (
                       <tr key={i}>
-                        <td className="text-center">{e.fecha}</td>
+                        <td className="text-center">
+                          {formatearFechaDisplay(e.fecha)}
+                        </td>
                         <td className="text-center">{e.hora}</td>
                         <td className="text-center">{e.temperatura}</td>
                         <td className="text-end">

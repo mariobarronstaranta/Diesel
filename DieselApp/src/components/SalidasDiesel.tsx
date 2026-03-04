@@ -12,8 +12,8 @@ import { useForm } from "react-hook-form";
 import { useState, useEffect } from "react";
 import ComboCveCiudad from "./ComboCveCiudad";
 import ComboTanquePorCiudad from "./ComboTanquePorCiudad";
-import ComboUnidades from "./ComboUnidades";
-import ComboOperadores from "./ComboOperadores";
+import ComboUnidadesSearchable from "./ComboUnidadesSearchable";
+import ComboOperadoresSearchable from "./ComboOperadoresSearchable";
 import { supabase } from "../supabase/client";
 import { useFormAlert } from "../shared/hooks/useFormAlert";
 import { handleSupabaseError } from "../shared/errors/supabaseErrorHandler";
@@ -46,6 +46,7 @@ export default function SalidasDiesel() {
     watch,
     reset,
     setValue,
+    control,
   } = useForm<SalidasForm>({
     mode: "onSubmit",
     reValidateMode: "onChange",
@@ -229,15 +230,17 @@ export default function SalidasDiesel() {
           <Card.Body>
             <Row>
               <Col md={6}>
-                <ComboUnidades
-                  register={register}
+                <ComboUnidadesSearchable
+                  control={control}
+                  name="IDUnidad"
                   error={errors.IDUnidad}
                   cveCiudad={cveCiudad}
                 />
               </Col>
               <Col md={6}>
-                <ComboOperadores
-                  register={register}
+                <ComboOperadoresSearchable
+                  control={control}
+                  name="IdOperador"
                   error={errors.IdOperador}
                   cveCiudad={cveCiudad}
                 />
