@@ -17,6 +17,7 @@ import { useState, useEffect } from "react";
 import ComboCveCiudad from "./ComboCveCiudad";
 import ComboTanquePorCiudad from "./ComboTanquePorCiudad";
 import { supabase } from "../supabase/client";
+import ReporteProductividadDetalleModal from "./ReporteProductividadDetalleModal";
 import type {
   ReporteProductividadData,
   ReporteProductividadForm,
@@ -35,6 +36,28 @@ export default function ReporteProductividad() {
     useState<string>("");
   const [lastQueryParams, setLastQueryParams] =
     useState<ReporteProductividadForm | null>(null);
+
+  // Estados para el modal de detalle
+  const [showModal, setShowModal] = useState(false);
+  const [filaSeleccionada, setFilaSeleccionada] = useState<{
+    idUnidad: number;
+    unidad: string;
+    tanque: string;
+    fechaInicio: string;
+    fechaFin: string;
+  } | null>(null);
+
+  const handleVerDetalle = (r: ReporteProductividadData) => {
+    if (!lastQueryParams) return;
+    setFilaSeleccionada({
+      idUnidad: r.IDUnidad,
+      unidad: r.Unidad,
+      tanque: r.Tanque,
+      fechaInicio: lastQueryParams.FechaInicial,
+      fechaFin: lastQueryParams.FechaFinal,
+    });
+    setShowModal(true);
+  };
 
   const {
     register,
@@ -340,6 +363,7 @@ export default function ReporteProductividad() {
                     >
                       Km / Lts
                     </th>
+                    <th className="text-center">Detalle</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -405,6 +429,15 @@ export default function ReporteProductividad() {
                         >
                           {noRegistrada ? "-" : formatearNumero(r["Km/Lts"])}
                         </td>
+                        <td className="text-center align-middle">
+                          <Button
+                            variant="outline-corporate"
+                            size="sm"
+                            onClick={() => handleVerDetalle(r)}
+                          >
+                            Detalle
+                          </Button>
+                        </td>
                       </tr>
                     );
                   })}
@@ -419,6 +452,13 @@ export default function ReporteProductividad() {
           </Card.Body>
         </Card>
       )}
+
+      {/* Modal de Detalle */}
+      <ReporteProductividadDetalleModal
+        show={showModal}
+        onHide={() => setShowModal(false)}
+        datosFila={filaSeleccionada}
+      />
     </Container>
   );
 }

@@ -42,6 +42,12 @@ Este requerimiento nace de la necesidad de cruzar la información de la operaci�
   - **Semáforo Verde**: $L/m^3 < 3.5$
   - **Identificación de Unidades**: Badge rojo para unidades no registradas en DieselApp pero con actividad en báscula.
 
+- **Modal de Detalle (`ReporteProductividadDetalleModal`)**:
+  - Pestañas separadas para detallar movimientos de `TanqueMovimiento` (Mov. Diesel) e `InformacionGeneral_Cierres` (Mov. SP) a nivel de viaje individual.
+  - **Cálculo de Consumo de Viaje**: A falta de captura de origen de la unidad que no registró Diésel, se permite ver los movimientos y remisiones asociadas de forma cruda con su carga asociada en $m^3$.
+  - **Cálculo de Dinámica de Odómetro/Horómetro**: Resta automática del último evento al primero del periodo seleccionado para identificar el avance puro.
+  - **Prevención de Errores Vía Nulls**: Filtros adaptados para no chocar con las _Unidades No Registradas_ y conversión en memoria de las fechas de `InformacionGeneral_Cierres` dadas por formato incompatible con PostgREST (`M/D/YYYY`).
+
 ## ✅ Estado: Completado
 
 ---

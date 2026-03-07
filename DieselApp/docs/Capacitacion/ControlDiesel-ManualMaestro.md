@@ -96,6 +96,10 @@ La normalización consolida que el portal protege sobre todo el Inventario real 
   - `Odometro` y `Horimetro`: Sus valores rigen métricas sancionadoras, impidiendo tipeado irracional o retroactivo negativo.
   - `FechaRegistro / FechaHoraMovimiento`: Pilares absolutos contra robos temporales in-situ.
   - `IDUsuarioRegistro`: Ente inmutable atado al responsable legal de cada manipuleo de base.
+- **Gotchas Técnicos y Detalles de Esquema:**
+  - La tabla `TanqueMovimiento` **NO** posee una columna `Activo`. No intentar filtrarla por este campo vía PostgREST o RPCs, causará un error HTTP 400.
+  - La vista `InformacionGeneral_Cierres` devuelve la columna `FechaInicio` como tipo String/Texto en formato `M/D/YYYY Hora` o `MM/DD/YYYY Hora` (ej. `3/6/2026 12:00:00 AM`). Las consultas PostgREST con `.gte()` o `.lte()` sobre esta columna fallarán por ordenamiento alfabético; el filtrado cronológico debe hacerse en memoria (JavaScript/Frontend) procesando la cadena adecuadamente.
+  - Al relacionar datos operativos con `InformacionGeneral_Cierres` (ej. Reporte Productividad), las unidades que existen operativamente pero no en el catálogo de DieselApp devolverán un `IDUnidad` `null`. Componentes y RPCs deben manejar silenciosamente este caso para evitar colapsos.
 
 ---
 

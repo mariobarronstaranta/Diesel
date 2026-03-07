@@ -69,3 +69,21 @@ export interface ReporteProductividadForm {
   FechaInicial: string;
   FechaFinal: string;
 }
+
+// Tipos para el modal de detalle del Reporte de Productividad
+
+export interface ProductividadMovDiesel {
+  FechaCarga: string;
+  LitrosCarga: number;
+  Horimetro: number | null;
+  Odometro: number | null;
+}
+
+export interface ProductividadMovSP {
+  FechaInicio: string;
+  NombreUnidad: string;
+  CargaViaje: number;
+  Remision: string;
+  NombreProducto: string;
+  NombreCliente: string;
+}
