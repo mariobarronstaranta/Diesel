@@ -562,7 +562,7 @@ export default function ReporteLecturas() {
                               onChange={(e) =>
                                 setEditForm({
                                   ...editForm,
-                                  LecturaCms: parseInt(e.target.value) || 0,
+                                  LecturaCms: parseFloat(e.target.value) || 0,
                                 })
                               }
                             />
