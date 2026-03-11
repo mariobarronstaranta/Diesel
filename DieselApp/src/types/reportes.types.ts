@@ -32,6 +32,7 @@ export interface ReporteRendimientosData {
 export interface ReporteRendimientosForm {
   CveCiudad: string;
   IDTanque: string;
+  IDUnidad: string;
   FechaInicial: string;
   FechaFinal: string;
 }

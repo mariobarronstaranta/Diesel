@@ -256,3 +256,16 @@ $insertHeaders["Prefer"] = "return=minimal,resolution=ignore-duplicates"
 | SQL Server Agent Job | ✅ Creado, ejecuta 06:00 AM diario       |
 | Datos en Supabase    | ✅ 2,248 registros (Feb 3-21)            |
 | Logs                 | ✅ En `C:\Concretec\logs\`               |
+
+---
+
+## Actualización: Reprocesamiento Histórico (Backfill)
+
+**Fecha**: 2026-03-11  
+**Motivo**: Se detectó una corrección en los datos de origen (base de datos SQL Server), por lo que fue necesario volver a enviar la información histórica hacia Supabase para actualizar los registros.
+
+**Acción Tomada**:
+1. Se creó un nuevo script dedidaco para esta tarea: `Sync-ViajesSupabase-Backfill.ps1`.
+2. Este script permite recibir un parámetro de `-FechaInicio` y `-FechaFin` para cargar bloques históricos.
+3. Utilizó la lógica `on_conflict=Id_Viaje,Remision` con `resolution=ignore-duplicates` de Supabase para evitar colisiones de IDs durante el reprocesamiento.
+4. **Resultado**: Se ejecutó exitosamente el backfill recargando toda la información corregida en Supabase sin afectar el job de sincronización diario (`Sync-ViajesSupabase.ps1`), el cual permanece operando de manera normal.

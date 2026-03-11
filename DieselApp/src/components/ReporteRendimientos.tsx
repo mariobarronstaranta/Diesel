@@ -13,6 +13,7 @@ import { useForm } from "react-hook-form";
 import { useState, useEffect } from "react";
 import ComboCveCiudad from "./ComboCveCiudad";
 import ComboTanquePorCiudad from "./ComboTanquePorCiudad";
+import ComboUnidades from "./ComboUnidades";
 import { supabase } from "../supabase/client";
 import type {
   ReporteRendimientosData,
@@ -50,6 +51,7 @@ export default function ReporteRendimientos() {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<ReporteRendimientosForm>({
     mode: "onSubmit",
@@ -57,10 +59,19 @@ export default function ReporteRendimientos() {
   });
 
   const cveCiudad = watch("CveCiudad");
+  const idTanqueWatch = watch("IDTanque");
 
+  // Al cambiar la ciudad: resetear Tanque y Unidad para que los combos se recarguen
   useEffect(() => {
     setCveCiudadSeleccionada(cveCiudad || "");
+    setValue("IDTanque", "");
+    setValue("IDUnidad", "");
   }, [cveCiudad]);
+
+  // Al cambiar el tanque: resetear Unidad para que se recargue con las del nuevo tanque
+  useEffect(() => {
+    setValue("IDUnidad", "");
+  }, [idTanqueWatch]);
 
   const formatearNumero = (
     numero: number | null | undefined,
@@ -102,6 +113,7 @@ export default function ReporteRendimientos() {
           p_fecha_fin: data.FechaFinal,
           p_cve_ciudad: data.CveCiudad || null,
           p_id_tanque: data.IDTanque ? parseInt(data.IDTanque) : null,
+          p_id_unidad: data.IDUnidad ? parseInt(data.IDUnidad) : null,
         },
       );
 
@@ -205,15 +217,26 @@ export default function ReporteRendimientos() {
         <Card className="mb-3">
           <Card.Body>
             <Row className="align-items-start">
-              <Col lg={3} md={6} className="mb-3 mb-lg-0">
+              <Col lg={2} md={6} className="mb-3 mb-lg-0">
                 <ComboCveCiudad register={register} error={errors.CveCiudad} />
               </Col>
 
-              <Col lg={3} md={6} className="mb-3 mb-lg-0">
+              <Col lg={2} md={6} className="mb-3 mb-lg-0">
                 <ComboTanquePorCiudad
                   cveCiudad={cveCiudadSeleccionada || null}
                   register={register}
                   error={errors.IDTanque}
+                  optional={true}
+                />
+              </Col>
+
+              <Col lg={2} md={6} className="mb-3 mb-lg-0">
+                <ComboUnidades
+                  cveCiudad={cveCiudadSeleccionada}
+                  register={register}
+                  error={errors.IDUnidad}
+                  optional={true}
+                  idTanque={idTanqueWatch || null}
                 />
               </Col>
 
@@ -223,7 +246,9 @@ export default function ReporteRendimientos() {
                   <Form.Control
                     type="date"
                     isInvalid={!!errors.FechaInicial}
-                    {...register("FechaInicial")}
+                    {...register("FechaInicial", {
+                      required: "La fecha inicial es obligatoria",
+                    })}
                   />
                   <Form.Control.Feedback type="invalid">
                     {errors.FechaInicial?.message as string}
@@ -238,6 +263,7 @@ export default function ReporteRendimientos() {
                     type="date"
                     isInvalid={!!errors.FechaFinal}
                     {...register("FechaFinal", {
+                      required: "La fecha final es obligatoria",
                       validate: (value, formValues) => {
                         if (
                           formValues.FechaInicial &&

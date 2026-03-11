@@ -1,96 +1,97 @@
 # Requerimiento de Negocio
 
-## Análisis de Rendimiento de Diésel vs. Producción
-
 **Proyecto**: DieselApp  
-**Módulo**: TransaccionalSync  
-**Fecha**: 2026-02-23  
-**Versión**: 1.0  
-**Estatus**: En desarrollo
+**Módulo**: TransaccionalSync (Integración Operación-Diésel)  
+**Fecha**: 2026-03-09  
+**Versión**: 1.1  
+**Estatus**: En desarrollo  
+**Clasificación**: Documento de Producto (Orientado a Product Owner / Stakeholders y Soporte Técnico)
 
 ---
 
-## 1. Contexto del Negocio
+## 1. Visión del Producto y Objetivo de Negocio (Valor Añadido)
 
-La empresa opera una flota de **camiones revolvedores** cuyo core de negocio es el **transporte y entrega de cemento** a obras y clientes. La operación diaria genera dos flujos de información en sistemas distintos:
+**Objetivo Estratégico:**  
+Dotar a la Gerencia de Operaciones de una única fuente de la verdad que fusione el gasto de combustible con el output logístico. Este módulo (TransaccionalSync) es el "motor invisible" que alimenta el Reporte de Productividad, extrayendo de forma silenciosa y segura la producción de viajes de la base de datos central (SQL Server) para inyectarla en el ecosistema DieselApp (Supabase).
 
-| Sistema                   | Plataforma                            | Información                                                   |
-| ------------------------- | ------------------------------------- | ------------------------------------------------------------- |
-| **DieselApp**             | Supabase (PostgreSQL en la nube)      | Registro de entradas y salidas de diésel por unidad y tanque  |
-| **Sistema Transaccional** | SQL Server 2018 (VM AWS Windows 2022) | Viajes realizados, pedidos de cemento, remisiones, operadores |
+**Valor para el Negocio (ROI):**
 
-Hoy en día, **ambos sistemas operan de forma aislada**, lo que impide responder preguntas clave para la operación:
-
-- ¿Cuántos m³ de cemento entregó cada camión por litro de diésel consumido?
-- ¿Cuántos viajes realizó cada unidad en el período evaluado?
-- ¿Cuál camión tiene el mejor rendimiento productivo?
-- ¿Hay unidades con consumo anómalo de diésel en relación a su producción?
+- **Fin del Silo de Datos:** Elimina la necesidad de cruzar "Exceles" manualmente entre el Departamento de Transporte y el de Despacho Logístico.
+- **Detección Ágil de Fugas:** Permite al Reporte de Productividad calcular métricas vitales como el Costo Energético ($L/m^3$) de manera automatizada.
+- **Operación Desatendida:** Ahorra decenas de horas-hombre al mes al automatizar la consolidación de datos durante la madrugada (06:00 AM).
 
 ---
 
-## 2. Objetivo del Requerimiento
+## 2. Contexto del Negocio y Problema a Resolver
 
-> Integrar la información de viajes del sistema transaccional con los registros de consumo de diésel de DieselApp, para generar un **Reporte de Rendimiento** que permita evaluar la eficiencia productiva de cada unidad (camión revolvedor).
+La empresa opera una flota de **camiones revolvedores** cuyo core de negocio es el **transporte y entrega de concreto** a obras. La operación diaria genera dos flujos de información históricamente aislados:
 
----
+| Sistema Fuente                     | Plataforma Técnica              | Tipo de Información que Resguarda                                                              |
+| :--------------------------------- | :------------------------------ | :--------------------------------------------------------------------------------------------- |
+| **DieselApp (Destino)**            | Supabase (PostgreSQL Cloud)     | Registro de entradas y salidas de diésel por unidad, tanque, operador y horómetros/odómetros.  |
+| **Sistema de Producción (Origen)** | SQL Server 2018 (VM On-Premise) | Viajes realizados, números de remisión, metros cúbicos ($m^3$) cargados, y clientes atendidos. |
 
-## 3. Requerimientos Funcionales
+**El dolor del negocio:**  
+Sin este puente automatizado, es imposible para la Gerencia responder preguntas clave del día a día, como:
 
-| ID    | Descripción                                                                                                                                    | Prioridad |
-| ----- | ---------------------------------------------------------------------------------------------------------------------------------------------- | --------- |
-| RF-01 | Sincronizar diariamente los viajes cerrados con remisión confirmada hacia Supabase                                                             | Alta      |
-| RF-02 | La información sincronizada debe ser de la jornada del día anterior                                                                            | Alta      |
-| RF-03 | El reporte de rendimiento debe mostrar: litros consumidos, viajes realizados, m³ cargados, km recorridos, horas operadas, y métricas derivadas | Alta      |
-| RF-04 | Si un viaje ya existe en Supabase y se vuelve a sincronizar, el registro del sistema transaccional siempre prevalece                           | Alta      |
-| RF-05 | El proceso debe registrar una bitácora de ejecución con estatus, conteo de registros y errores                                                 | Media     |
-| RF-06 | En caso de error, el sistema debe registrar el detalle del error para diagnóstico posterior                                                    | Media     |
-| RF-07 | El proceso debe poder ejecutarse manualmente para una fecha específica (backfill)                                                              | Media     |
+- _¿Están cargando diésel unidades que ayer no hicieron ni un solo viaje de concreto?_
+- _¿Cuántos viajes de concreto le sacamos de provecho a esa unidad por los 200 litros que se le inyectaron ayer?_
 
 ---
 
-## 4. Requerimientos No Funcionales
+## 3. Requerimientos Funcionales y Criterios de Aceptación (User Stories)
 
-| ID     | Descripción                                                                                                                         |
-| ------ | ----------------------------------------------------------------------------------------------------------------------------------- |
-| RNF-01 | El proceso debe usar tecnología exclusivamente Microsoft (sin Python, sin software adicional) para facilitar aprobación del cliente |
-| RNF-02 | Las credenciales de conexión no deben estar hardcodeadas en el código                                                               |
-| RNF-03 | El proceso debe completarse en menos de 5 minutos para los ~150-200 registros diarios esperados                                     |
-| RNF-04 | La información histórica de sincronizaciones debe conservarse en SQL Server por al menos 90 días                                    |
-| RNF-05 | El proceso no debe afectar el rendimiento del sistema transaccional durante horas de operación                                      |
-
----
-
-## 5. Alcance
-
-### Incluido en este requerimiento
-
-- Proceso ETL de sincronización diaria (SQL Server → Supabase)
-- Tablas de control y bitácora en SQL Server
-- Job automatizado con SQL Server Agent
-- Reporte de Rendimiento en DieselApp con datos cruzados
-
-### Fuera de alcance
-
-- Modificación del sistema transaccional de SQL Server
-- Sincronización en tiempo real (la operación no lo requiere)
-- Sincronización de datos históricos anteriores a la fecha de instalación (puede hacerse como backfill manual)
+| ID        | User Story / Descripción                                                                                                             | Criterio de Aceptación                                                                                              |
+| :-------- | :----------------------------------------------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------ |
+| **RF-01** | _Como Gerente, quiero que los viajes confirmados del día anterior aparezcan en DieselApp para auditar el rendimiento._               | Sincronización diaria exitosa de la jornada previa hacia Supabase.                                                  |
+| **RF-02** | _Como Analista de Datos, necesito tener garantizado que los datos del sistema de Producción mandan sobre cualquier copia local._     | (Upsert) Si un viaje existente se resincroniza, el dato de SQL Server prevalece siempre sobrescribiendo a Supabase. |
+| **RF-03** | _Como Soporte TI, quiero poder consultar si la sincronización nocturna falló sin tener que entrar a la base de datos de producción._ | Creación de Bitácora de Ejecución detallando estatus, conteo y mensajes de error exactos en SQL Server.             |
+| **RF-04** | _Como Administrador de Sistema, requiero correr el proceso a demanda para fechas pasadas si hubo un apagón._                         | El script/proceso debe permitir ejecución manual parametrizada (Backfill de fechas).                                |
 
 ---
 
-## 6. Usuarios y Stakeholders
+## 4. Requerimientos No Funcionales (Lineamientos Técnicos Core)
 
-| Rol                     | Interés                                                     |
-| ----------------------- | ----------------------------------------------------------- |
-| Gerencia de Operaciones | Ver el rendimiento global de la flota                       |
-| Jefe de Patio           | Identificar unidades con bajo rendimiento o consumo anómalo |
-| Área de TI del cliente  | Aprobar e instalar el proceso en el servidor VM             |
+| ID         | Regla Arquitectónica                                                                                                                | Justificación de Negocio / Riesgo Mitigado                                                                      |
+| :--------- | :---------------------------------------------------------------------------------------------------------------------------------- | :-------------------------------------------------------------------------------------------------------------- |
+| **RNF-01** | **Ecosistema Nativo:** Uso exclusivo de T-SQL y herramientas de Windows (Powershell/SQL Agent). No dependencias como Python/NodeJS. | Facilita la certificación y aprobación rápida por parte del corporativo de TI del cliente en sus VM On-Premise. |
+| **RNF-02** | **Seguridad Estricta:** Credenciales inyectadas vía variables de entorno o almacén seguro, cero claves expuestas en código duro.    | Evita brechas de seguridad y robo de accesos a la Nube (Supabase) desde el código fuente local.                 |
+| **RNF-03** | **Carga Ligera:** Ejecución inferior a 5 minutos (150-200 registros promedio).                                                      | No impacta, ni compite por recursos con el Facturador del sistema transaccional durante horarios hábiles.       |
+| **RNF-04** | **Retención de Logs:** Conservación histórica de bitácoras por 90 días.                                                             | Suficiente ventana temporal para auditorías de sistemas sin inflar la base de datos de producción.              |
 
 ---
 
-## 7. Criterios de Aceptación
+## 5. User Journey y Flujo de Operación (Cómo se vive el proceso)
 
-- [ ] El proceso corre automáticamente a las 06:00 AM todos los días sin intervención manual
-- [ ] Los registros en Supabase reflejan los viajes del día anterior antes de las 07:00 AM
-- [ ] La tabla `Sync_Ejecucion` muestra `Estatus = 'EXITOSO'` al día siguiente de la instalación
-- [ ] El Reporte de Rendimientos en DieselApp muestra columnas de viajes y m³ cargados por unidad
-- [ ] En caso de error, el registro de la falla queda en `Sync_Ejecucion.MensajeError`
+1. **La Noche Anterior:** Los camiones terminan su jornada entregando remisiones de concreto. El despachador consolida los registros en el Sistema Transaccional.
+2. **Madrugada (06:00 AM):** Mientras el personal duerme, el SQL Server Agent despierta e invoca a **TransaccionalSync**.
+3. **El Puente de Datos:** El proceso empaqueta exclusivamente los despachos válidos de la jornada de ayer y los viaja mediante API segura hacia la nube de DieselApp.
+4. **La Mañana Temprano (07:00 AM):** La sincronización concluye. Deja un ticket en verde (`EXITOSO`) en la tabla de bitácoras del servidor.
+5. **Consumo por Negocio (08:00 AM):** El Product Owner y los Auditores abren el _Reporte de Productividad_ en su navegador y mágicamente ven el cruce semaforizado de Diésel vs Concreto ($L/m^3$) listo para tomar decisiones.
+
+---
+
+## 6. Alcance del Proyecto
+
+**Qué SÍ Construimos:**
+
+- Proceso ETL nativo de SQL Server (Procedimientos Almacenados).
+- Invocación HTTPS nativa desde T-SQL hacia la API REST de Supabase.
+- Estructuras de Bitácora y Control de Errores integradas al servidor local.
+- Job automatizado en SQL Server Agent.
+
+**Qué NO Hacemos (Fuera de Alcance):**
+
+- Prohibido modificar estructuras, tablas o lógica nativa del sistema transaccional (Solo lectura).
+- Sincronización en Tiempo Real (Streaming/Webhooks). La operación maneja cortes diarios.
+- Migración histórica masiva automática (Backfill de años anteriores es manual a demanda).
+
+---
+
+## 7. Responsabilidades y Stakeholders
+
+| Rol / Perfil                         | Interés Principal                                       | Métrica de Éxito                                                                           |
+| :----------------------------------- | :------------------------------------------------------ | :----------------------------------------------------------------------------------------- |
+| **Product Owner / Dirección**        | Rentabilizar el modelo de negocio.                      | Reducción del Costo Energético Operativo usando el Reporte final.                          |
+| **Jefe de Flota / Taller**           | Hallar unidades defectuosas o con ordeña comprobada.    | Discrepancias evidentes (Mucho Diésel inyectado vs Cero Viajes trasladados).               |
+| **TI Corporativo (Infraestructura)** | No romper su servidor de producción y asegurar puertos. | Aprobación de firewall saliente hacia Supabase y cero caídas de CPU provocadas por el Job. |
