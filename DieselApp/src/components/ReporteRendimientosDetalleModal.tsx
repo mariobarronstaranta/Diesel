@@ -10,7 +10,7 @@ interface ReporteRendimientosDetalleModalProps {
     fechaInicio: string;
     fechaFin: string;
     cveCiudad: string;
-    idTanque: number;
+    idTanque: number | null;
     idUnidad: number;
     tanque: string;
     unidad: string;

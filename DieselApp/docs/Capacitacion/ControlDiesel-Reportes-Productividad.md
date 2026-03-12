@@ -1,7 +1,7 @@
 # Reporte de Productividad y Rentabilidad
 
-Versión: 1.0  
-Fecha: 2026-03-09  
+Versión: 1.1  
+Fecha: 2026-03-11  
 Sistema: Control de Diésel  
 Clasificación: Documento de Producto, Capacitación y Control Interno (Orientado a Product Owner / Usuarios Finales)
 
@@ -73,6 +73,17 @@ Muestra cada gota de diésel cargada entre la fecha de inicio y fin, detallando 
 Muestra cada viaje o remisión que la unidad le entregó a un cliente. Contiene el número de remisión, el estatus de la entrega y el volumen ($m^3$) de concreto transportado en ese momento.
 
 - **Valor Agregado:** Permite al auditor validar si un alto consumo de diésel está correlacionado con una agenda saturada de viajes largos de concreto, o si por el contrario, la revolvedora gastó 300 litros de diésel pero solo realizó un solo viaje de $3m^3$ en toda la semana (indicativo de ordeña o fuga mecánica grave).
+
+### Pestaña C: Productividad por Carga (Correlación Automática)
+
+Muestra el cruce analítico entre las recargas de Diésel registradas en la *Pestaña A* y los viajes realizados en la *Pestaña B*. Esta funcionalidad toma cada recarga de combustible como un "punto de inicio" y evalúa la productividad generada hasta la siguiente recarga.
+
+- **Métricas Analizadas:**
+  - Cantidad de Viajes realizados con esos litros específicos.
+  - Sumatoria del Volumen ($m^3$) de concreto transportado gracias a esa carga.
+  - Resta de Odómetros (Kms recorridos) y Horómetros (Hrs trabajadas) entre una recarga y la siguiente.
+  - Indicadores de Rendimiento Puros: **Kms/Lts** y **Hrs/Lts** por cada carga individual.
+- **Valor Agregado:** Transforma el análisis cualitativo en un KPI cuantitativo por ticket de carga. Permite determinar exactamente con qué recarga de combustible el camión fue rentable y en qué momento preciso ocurrió una baja repentina de rendimiento de $Kms$ por Litro (posible falla mecánica u ordeña focalizada), calculado mediante las marcas de fecha y hora exacta de cada evento.
 
 ## 8. Riesgos Operativos de Negocio si no se Utiliza Correctamente
 

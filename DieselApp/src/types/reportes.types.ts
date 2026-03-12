@@ -75,6 +75,7 @@ export interface ReporteProductividadForm {
 
 export interface ProductividadMovDiesel {
   FechaCarga: string;
+  HoraCarga?: string;
   LitrosCarga: number;
   Horimetro: number | null;
   Odometro: number | null;
@@ -82,6 +83,7 @@ export interface ProductividadMovDiesel {
 
 export interface ProductividadMovSP {
   FechaInicio: string;
+  HoraInicio?: string;
   NombreUnidad: string;
   CargaViaje: number;
   Remision: string;

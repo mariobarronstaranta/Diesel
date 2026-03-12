@@ -1,8 +1,8 @@
 ----- INICIO ARCHIVO: docs/ControlDiesel-ManualMaestro.md -----
 # Manual Maestro del Sistema Control de Diésel
 
-Versión: 1.0  
-Fecha: 2026-03-04  
+Versión: 1.1  
+Fecha: 2026-03-11
 Tipo: Documento Consolidado para Capacitación, Auditoría y Contexto IA  
 
 ---
@@ -21,7 +21,7 @@ Tipo: Documento Consolidado para Capacitación, Auditoría y Contexto IA
   - **Inventario Físico (Lecturas):** Tomas de aforo (Corte) con regla/cinta y cuenta litros estático de forma fotográfica.
   - **Reportes (Consumos y Rendimientos):** Consolidación analítica y métrica de la rentabilidad del suministro.
 - **Relación entre módulos:** "Recepción" aumenta el inventario y "Operación" lo disminuye, registrándose en el mismo histórico atómico. Paralelamente, "Inventario Físico" permite cotejar el volumen con la realidad. Finalmente, "Reportes" aglutina ambos universos y provee inteligencia directiva y ajustes finales justificados.
-- **Flujo general operativo:** El diésel es recepcionado en tanque físico por un despachador ingresando captura de entrada; posteriormente, el despachador surte diariamente litros a operadores/vehículos capturando kilometraje y el tanque se reduce; a intervalos determinados de turno, se capta la "fotografía" con el "Inventario" de la regla métrica. Gerencia o Control Interno extrae reportes consolidados cada semana o mes para evaluar eficiencias o auditar el flujo.
+- **Flujo general operativo:** El diésel es recepcionado en tanque físico por un despachador ingresando captura de entrada; posteriormente, el despachador surte diariamente litros a operadores/vehículos capturando kilometraje y el tanque se reduce; a intervalos determinados de turno, se capta la "fotografía" con el "Inventario" de la regla métrica. Paralelamente, el sistema sincroniza automáticamente los viajes desde el Sistema de Producción (SP). Gerencia o Control Interno extrae reportes consolidados cada semana o mes para evaluar eficiencias o auditar el flujo.
 
 # 3. Matriz de Pantallas
 
@@ -32,6 +32,7 @@ Tipo: Documento Consolidado para Capacitación, Auditoría y Contexto IA
 | Inventario | Captura de Lecturas Diarias      | Crear un corte de caja físico del tanque con su regla metrológica y cuenta litros.            | Supervisor de Patio           | Faltantes indocumentados (fugas o robo nocturno) cubiertos a toro pasado por atraso.             |
 | Reportes   | Reporte de Consumos              | Sumar e inspeccionar Entradas y Salidas cruzadas por fechas consolidando.                     | Auditoría / Control Interno   | Cuadraturas falsas hechas en Excel aislando los registros duros en BD.                           |
 | Reportes   | Reporte de Rendimientos          | Medir ineficiencia o fugas vehiculares exponiendo la métrica de kilómetros u horas por litro. | Gerencia de Flota / Taller    | Vehículos "ordeñados" silenciosamente que figuran devorando cantidades irreales por kilometraje. |
+| Reportes   | Productividad por Carga          | Correlacionar cada recarga de diésel con los viajes de concreto realizados inmediatamente después. | Auditoría / Gerencia          | Identifica exactamente cuándo y con qué carga una unidad dejó de ser rentable (precisión horaria). |
 
 # 4. Reglas de Negocio Consolidadas
 
@@ -41,6 +42,7 @@ Tipo: Documento Consolidado para Capacitación, Auditoría y Contexto IA
   - La Altura (Cms) capturada en Lecturas debe ser siempre positiva. En las _Salidas_, la altura física se registra ciegamente como 0.
 - **Rendimiento:**
   - El sistema extrae el Odómetro/Horómetro mayor restándole el menor en un periodo para deducir consumos cruzando _sólo despachos (Salidas 'S')_.
+  - **Precisión Temporal:** Para el cruce de eventos se utiliza la Fecha y Hora exacta (minutos) tanto de la carga como del viaje para garantizar una correlación inequívoca.
   - Las operaciones de división para métricas están protegidas contra divisiones entre ceros (NULLIF).
 - **Unidades:**
   - En la salida, las Unidades mostradas están filtradas y atadas férreamente a la Ciudad seleccionada. Cambiar la ciudad borra la unidad para evitar "teletransportaciones".
@@ -60,7 +62,8 @@ Tipo: Documento Consolidado para Capacitación, Auditoría y Contexto IA
 - **Registro de carga (Recepción):** Llega una Pipa; el capturista asienta físicamente el surtimiento conectando la Remisión, Proveedor y el incremento de aforo (_Altura_ y _Temperatura_).
 - **Registro de despacho (Salidas):** Vehículo operativo llega a la bomba. El operador del patio asienta el _Vale físico_, pide lectura de Odómetro, carga el tanque utilitario y registra el volumen gastado conectándolo al Chofer.
 - **Impacto en inventario:** El movimiento consolida una merma y el odómetro sube; el jefe de piso, al turno perimetral, clava la "Captura Diaria" con su propia comprobación visual con la regla.
-- **Generación de reportes:** A final de semana, Finanzas extrae "Consumos" visualizando el cuadre del gasto de Entradas vs Salidas; simultáneamente Taller extrae "Rendimientos" para auditar Kms/Lts.
+- **Sincronización SP:** Un componente ETL automatizado transfiere los cierres de viajes desde SQL Server a Supabase diariamente, permitiendo el cruce de datos sin intervención manual.
+- **Generación de reportes:** A final de semana, Finanzas extrae "Consumos" visualizando el cuadre del gasto de Entradas vs Salidas; simultáneamente Taller extrae "Rendimientos" y "Productividad" para auditar Kms/Lts y M3/Lt.
 - **Cierre y conciliación:** Con los informes descargables (CSV de la plataforma), Finanzas aprueba facturas correctas que matchen con los CSV de Entrada; y Taller cita a correctivos disciplinarios o mecánicos a vehículos rezagados según el CSV de "Rendimientos".
 
 # 6. Controles Internos y Segregación de Funciones
@@ -100,6 +103,7 @@ La normalización consolida que el portal protege sobre todo el Inventario real 
   - La tabla `TanqueMovimiento` **NO** posee una columna `Activo`. No intentar filtrarla por este campo vía PostgREST o RPCs, causará un error HTTP 400.
   - La vista `InformacionGeneral_Cierres` devuelve la columna `FechaInicio` como tipo String/Texto en formato `M/D/YYYY Hora` o `MM/DD/YYYY Hora` (ej. `3/6/2026 12:00:00 AM`). Las consultas PostgREST con `.gte()` o `.lte()` sobre esta columna fallarán por ordenamiento alfabético; el filtrado cronológico debe hacerse en memoria (JavaScript/Frontend) procesando la cadena adecuadamente.
   - Al relacionar datos operativos con `InformacionGeneral_Cierres` (ej. Reporte Productividad), las unidades que existen operativamente pero no en el catálogo de DieselApp devolverán un `IDUnidad` `null`. Componentes y RPCs deben manejar silenciosamente este caso para evitar colapsos.
+- **Sincronización Transaccional:** Existe un directorio `TransaccionalSync/` con scripts de PowerShell que gestionan la carga de viajes. El monitoreo de fallos de sincronización se realiza en las tablas `Sync_Ejecucion` y `Sync_Detalle` de la base de datos SQL Server.
 
 ---
 

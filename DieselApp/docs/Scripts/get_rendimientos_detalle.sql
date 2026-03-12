@@ -6,7 +6,7 @@
 --   - p_fecha_inicio: Fecha de inicio del rango (YYYY-MM-DD)
 --   - p_fecha_fin: Fecha de fin del rango (YYYY-MM-DD)
 --   - p_cve_ciudad: Clave de ciudad como texto
---   - p_id_tanque: ID del tanque
+--   - p_id_tanque: ID del tanque (opcional, NULL = todos los tanques)
 --   - p_id_unidad: ID de la unidad
 -- Retorna: TABLE con cada movimiento individual de salida
 -- =====================================================
@@ -17,8 +17,8 @@ CREATE OR REPLACE FUNCTION public.get_rendimientos_detalle(
     p_fecha_inicio date,
     p_fecha_fin date,
     p_cve_ciudad text,
-    p_id_tanque bigint,
-    p_id_unidad bigint
+    p_id_tanque bigint DEFAULT NULL,
+    p_id_unidad bigint DEFAULT NULL
 )
 RETURNS TABLE (
     id_tanque_movimiento bigint,
@@ -46,7 +46,7 @@ BEGIN
         tm."TipoMovimiento" = 'S'
         AND tm."FechaCarga" BETWEEN p_fecha_inicio AND p_fecha_fin
         AND tm."CveCiudad" = p_cve_ciudad
-        AND tm."IdTanque" = p_id_tanque
+        AND (p_id_tanque IS NULL OR tm."IdTanque" = p_id_tanque)
         AND tm."IdUnidad" = p_id_unidad
     ORDER BY
         tm."FechaCarga" ASC,
@@ -57,4 +57,8 @@ $$;
 -- =====================================================
 -- Ejemplo de uso
 -- =====================================================
+-- 1. Con tanque específico:
 -- SELECT * FROM get_rendimientos_detalle('2026-02-01', '2026-02-28', 'MTY', 1, 42);
+
+-- 2. Con Tanque = (Todos), p_id_tanque = NULL:
+-- SELECT * FROM get_rendimientos_detalle('2026-02-01', '2026-02-28', 'GDL', NULL, 62);

@@ -39,7 +39,7 @@ export default function ReporteRendimientos() {
     fechaInicio: string;
     fechaFin: string;
     cveCiudad: string;
-    idTanque: number;
+    idTanque: number | null;
     idUnidad: number;
     tanque: string;
     unidad: string;
@@ -90,9 +90,10 @@ export default function ReporteRendimientos() {
       fechaInicio: lastQueryParams.FechaInicial,
       fechaFin: lastQueryParams.FechaFinal,
       cveCiudad: lastQueryParams.CveCiudad,
+      // Si IDTanque está vacío (Todos), pasar null para que el RPC no filtre por tanque
       idTanque: lastQueryParams.IDTanque
         ? parseInt(lastQueryParams.IDTanque)
-        : 0,
+        : null,
       idUnidad: r.IDUnidad,
       tanque: r.Tanque,
       unidad: r.Unidad,

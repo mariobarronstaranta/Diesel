@@ -5,8 +5,8 @@
 > refactorización o documentación **sin fricción ni suposiciones incorrectas**.
 > Mantener este archivo actualizado tras cada cambio estructural significativo.
 
-**Última actualización:** 2026-03-08
-**Versión:** 1.1
+**Última actualización:** 2026-03-11
+**Versión:** 1.2
 
 ---
 
@@ -87,6 +87,9 @@ DieselApp/
 │   │   └── ControlDiesel-ManualMaestro.md   # Documento maestro consolidado
 │   ├── Backlog/                   # Historias de usuario y deuda técnica
 │   └── Scripts/                   # DDL/DML de RPCs en Supabase
+├── TransaccionalSync/             # Componente ETL (SQL Server → Supabase)
+│   ├── config/                    # Configuración de conexiones
+│   └── scripts/                   # Scripts PowerShell y SQL de sincronización
 └── vite.config.ts
 ```
 
@@ -259,6 +262,7 @@ Al cambiar `CveCiudad` en cualquier formulario, **todos los combos descendientes
 - Unidades con actividad en báscula (SP) pero **no registradas en DieselApp** retornan `IDUnidad = null`. Se muestran con badge rojo "No Registrada".
 - `InformacionGeneral_Cierres.FechaInicio` es un **string** en formato `M/D/YYYY HH:MM:SS AM/PM`. Filtrar **siempre en memoria (JavaScript)**, nunca con PostgREST `.gte()`/`.lte()`.
 - El cálculo de Horómetro/Odómetro total = `MAX(valor) - MIN(valor)` en el periodo, no suma acumulativa.
+- **Precisión Temporal (Productividad por Carga):** Se utilizan los campos `HoraCarga` (en `TanqueMovimiento`) y `HoraInicio` (en `InformacionGeneral_Cierres`) para correlacionar eventos con precisión de minutos, evitando solapamientos en días con múltiples recargas.
 
 ---
 
@@ -327,3 +331,19 @@ Antes de implementar un nuevo componente o modificar uno existente, verificar:
 | Scripts SQL           | `docs/Scripts/*.sql`                                              | DDL de todas las RPCs de Supabase                               |
 | API Config            | `docs/API_CONFIG_GUIDE.md`                                        | Guía de configuración de variables de entorno                   |
 | Bitácora              | `docs/Bitacora/`                                                  | Log de cambios y decisiones de arquitectura                     |
+| Sincronización SP     | `TransaccionalSync/scripts/`                                      | Scripts de integración con sistema de producción                |
+
+---
+
+## 14. Componente de Sincronización (TransaccionalSync)
+
+Este componente es un proceso ETL externo (PowerShell + T-SQL) que alimenta la vista `InformacionGeneral_Cierres` en Supabase con datos reales del sistema de producción local.
+
+### 14.1 Scripts Principales
+- **`Sync-ViajesSupabase.ps1`**: Sincronización diferencial diaria (programada vía SQL Agent).
+- **`Sync-ViajesSupabase-Backfill.ps1`**: Script manual para reprocesar rangos históricos de fechas.
+
+### 14.2 Control y Auditoría (SQL Server)
+El proceso deja trazabilidad en el servidor de origen:
+- **`Sync_Ejecucion`**: Maestro de ejecuciones (estatus, registros enviados, HTTP status).
+- **`Sync_Detalle`**: Detalle por viaje enviado para identificar fallos puntuales.
