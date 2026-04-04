@@ -27,6 +27,7 @@ interface ReporteConsumosData {
 interface ReporteConsumosForm {
     CveCiudad: string;
     IDTanque: string;
+    IDUnidad?: string;
     FechaInicial: string;
     FechaFinal: string;
 }
@@ -42,15 +43,17 @@ Este componente no recibe props. Maneja su propio estado interno.
 - `supabase` client (`supabase`)
 - `ComboCveCiudad` - Selector de ciudad
 - `ComboTanquePorCiudad` - Selector de tanque filtrado por ciudad
+- `ComboUnidades` - Selector de unidades filtrado por ciudad/tanque
 - `ReporteConsumosDetalleModal` - Modal para ver detalles de movimientos
 
 ## Estado Interno
 - `isLoading: boolean` - Indicador de carga durante la consulta
 - `alertMessage: { type: 'success' | 'danger', text: string } | null` - Mensaje de alerta
 - `consumos: ReporteConsumosData[]` - Datos del reporte
-- `cveCiudadSeleccionada: string` - Ciudad seleccionada (para filtrar tanques)
+- `cveCiudadSeleccionada: string` - Ciudad seleccionada (para filtrar tanques/unidades)
 - `showDetalle: boolean` - Estado del modal de detalle
-- `filaSeleccionada: { fecha, ciudad, tanque, idTanque } | null` - Datos de la fila seleccionada
+- `filaSeleccionada: { fecha, ciudad, tanque, idTanque, idUnidad } | null` - Datos de la fila seleccionada
+- `lastQueryParams: ReporteConsumosForm | null` - Últimos parámetros de búsqueda usados (para la modal)
 
 ## React Hooks
 - `useForm<ReporteConsumosForm>()` - Manejo de formulario con validaciones
@@ -60,7 +63,8 @@ Este componente no recibe props. Maneja su propio estado interno.
 - `useState<string>("")` - Ciudad seleccionada
 - `useState<boolean>(false)` - Estado del modal
 - `useState<FilaSeleccionada | null>(null)` - Fila seleccionada para detalle
-- `useEffect(() => {...}, [cveCiudad])` - Actualiza ciudad cuando cambia el formulario
+- `useEffect(() => {...}, [cveCiudad])` - Resetea Tanque y Unidad al cambiar Ciudad
+- `useEffect(() => {...}, [idTanqueWatch])` - Resetea Unidad al cambiar Tanque
 
 ## Funciones Internas
 
@@ -80,7 +84,7 @@ Formatea números con separadores de miles y 2 decimales.
 ```typescript
 function abrirDetalle(consumo: ReporteConsumosData): void
 ```
-Abre el modal de detalle con los datos de la fila seleccionada. Pasa la fecha en formato ISO para evitar errores de parsing en Supabase.
+Abre el modal de detalle con los datos de la fila seleccionada. Pasa la fecha en formato ISO y el `idUnidad` capturado en los filtros de búsqueda originales para filtrar el detalle de salidas.
 
 ### onSubmit
 ```typescript
@@ -102,12 +106,14 @@ Exporta los datos del reporte a un archivo CSV con codificación UTF-8 (BOM).
 - `p_fecha_fin` (DATE): Fecha final del rango
 - `p_cve_ciudad` (VARCHAR, opcional): Clave de ciudad para filtrar
 - `p_id_tanque` (BIGINT, opcional): ID del tanque para filtrar
+- `p_id_unidad` (BIGINT, opcional): ID de la unidad para filtrar
 
 **Retorna**: Array de `ReporteConsumosData`
 
 ### Validaciones del Formulario
 - `CveCiudad`: No requerido (permite consulta global)
-- `IDTanque`: No requerido (se filtra por ciudad si se selecciona)
+- `IDTanque`: No requerido (se filtra por ciudad si se selecciona). Resetea Unidad.
+- `IDUnidad`: No requerido (se filtra por ciudad/tanque).
 - `FechaInicial`: Requerido - "La fecha inicial es obligatoria"
 - `FechaFinal`: Requerido - "La fecha final es obligatoria"
 
@@ -141,8 +147,8 @@ Exporta los datos del reporte a un archivo CSV con codificación UTF-8 (BOM).
 ### Modal de Detalle
 Al hacer clic en "Detalle":
 1. Abre `ReporteConsumosDetalleModal`
-2. Pasa `fecha` (ISO), `ciudad`, `tanque`, `idTanque`
-3. Modal carga datos de entradas y salidas para esa fecha/tanque
+2. Pasa `fecha` (ISO), `ciudad`, `tanque`, `idTanque` e `idUnidad` (si se filtró por ella)
+3. Modal carga datos de entradas y salidas para esa fecha/tanque/unidad
 4. Usuario puede ver detalles y exportar a CSV
 
 ### Estados de la UI
@@ -179,10 +185,10 @@ Modal que muestra el detalle de movimientos (entradas y salidas) para una fecha 
 **Props recibidas**:
 - `show: boolean` - Estado de visibilidad
 - `onHide: () => void` - Callback para cerrar
-- `datosFila: { fecha, ciudad, tanque, idTanque }` - Datos de la fila seleccionada
+- `datosFila: { fecha, ciudad, tanque, idTanque, idUnidad }` - Datos de la fila seleccionada
 
 **Funciones de Supabase usadas**:
-- `get_salidas_detalle` - Movimientos de salida
+- `get_salidas_detalle` - Movimientos de salida (soporta `p_id_unidad`)
 - `get_entradas_detalle` - Movimientos de entrada
 
 ## Estructura del Formulario
@@ -190,7 +196,8 @@ Modal que muestra el detalle de movimientos (entradas y salidas) para una fecha 
 ```
 ┌─ Filtros de Búsqueda ──────────────────┐
 │ ┌─ Ciudad (opcional)                   │
-│ └─ Tanque (filtrado por ciudad)        │
+│ ├─ Tanque (filtrado por ciudad)       │
+│ └─ Unidad (filtrado por ciudad/tanque) │
 │ ┌─ Fecha Inicial (requerido)           │
 │ └─ Fecha Final (requerido)             │
 │ [Consultar] [Exportar CSV]             │
@@ -215,7 +222,8 @@ const { data, error } = await supabase.rpc('get_reporte_consumos', {
     p_fecha_inicio: data.FechaInicial,
     p_fecha_fin: data.FechaFinal,
     p_cve_ciudad: data.CveCiudad || null,
-    p_id_tanque: data.IDTanque ? parseInt(data.IDTanque) : null
+    p_id_tanque: data.IDTanque ? parseInt(data.IDTanque) : null,
+    p_id_unidad: data.IDUnidad ? parseInt(data.IDUnidad) : null
 });
 ```
 

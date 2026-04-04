@@ -36,13 +36,14 @@ Este informe compila en un visor consolidado las sumatorias en litros del total 
 | Fecha Inicial / Final          | Fecha Paramétrica     | Sí          | Rango válido para limitar procesamiento             | Evita peticiones de años sin sentido, reduciendo colapsos de memoria y bases de datos      |
 | Ciudad                         | Selección Filtro      | No          | Vacío significa total corporativo                   | Análisis ineficiente u omitir mermas de entidades enteras accidentalmente                  |
 | Tanque                         | Selección Filtro      | No          | Se ata jerárquicamente a la Ciudad de antemano      | Buscar movimientos que mezclen recintos irrealmente                                        |
+| Unidad                         | Selección Filtro      | No          | Se ata jerárquicamente a la Ciudad y Tanque         | Trazabilidad específica por vehículo en el reporte de consumos                             |
 | Botón Exportar CSV             | Botón Export          | N/A         | Exige resultados listos primero                     | Muestra de archivos vacíos engañosos en cierres de auditoría                               |
 | Botón "Detalle" en filas       | Botón de Acción       | N/A         | Levanta componente aislado Modal                    | Encubrimiento; Forzar a ver el nivel transaccional de un tanque particular bajo escrutinio |
 | Total Entradas / Total Salidas | Casilla de Resultados | N/A         | Sumativas nativas de Stored Procedure RPC Supabase. | Impide que el visualizador local introduzca recálculos de front-end erróneos               |
 
 ## 6. Flujo Operativo Controlado
 
-1. **Punto de Entrada Exploratoria:** El gerente o contador marca el inicio del mes a conciliar limitando fechas y/o ciudades.
+1. **Punto de Entrada Exploratoria:** El gerente o contador marca el inicio del mes a conciliar limitando fechas, ciudades, tanques o una unidad específica.
 2. **Registro y Búsqueda Remota:** Invoca procedimiento `get_reporte_consumos` con indicadores de spinner inhabilitadores para impedir interrupción o clic doble corruptor.
 3. **Inspección Macroscópica:** El auditor revisa fila por fila comparando "Día X: Entradas 0, pero Salidas 300".
 4. **Análisis Microscópico y Corrección:** El revisor pulsa "Detalle". Un modal emergente llama de nuevo a la nube y trae el cruce atómico (Cada Recibo de Remisión y cada Vale de Operador). Puede optar por ajustar un litro o valor con el modo "Edición Inline" en base a poder de perfil y salvar en BD directamente.
@@ -51,7 +52,7 @@ Este informe compila en un visor consolidado las sumatorias en litros del total 
 ## 7. Reglas de Negocio Críticas
 
 - Todas las fechas pasadas entre interfaces deben hacerse en puros literales ISO sin zonas horarias artificiales para rehuir colapsos "out_of_range" del servidor SQL post-gres.
-- Permite la total omisión del "Tanque" y la "Ciudad" por defecto para abarcar todo el ecosistema.
+- Permite la total omisión del "Tanque", "Ciudad" y "Unidad" por defecto para abarcar todo el ecosistema.
 - Proyecta los números formateados inquebrantemente al estándar idiomático separador numérico formal a base de locales.
 
 ## 8. Evidencia Generada

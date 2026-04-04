@@ -19,6 +19,7 @@ interface ReporteConsumosDetalleModalProps {
     ciudad: string;
     tanque: string;
     idTanque: number;
+    idUnidad?: number | null;
   } | null;
 }
 
@@ -87,6 +88,7 @@ export default function ReporteConsumosDetalleModal({
           p_fecha: datosFila.fecha,
           p_ciudad: datosFila.ciudad,
           p_id_tanque: datosFila.idTanque,
+          p_id_unidad: datosFila.idUnidad || null,
         },
       );
 

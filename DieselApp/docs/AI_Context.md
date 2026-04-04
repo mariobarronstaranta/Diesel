@@ -5,8 +5,8 @@
 > refactorización o documentación **sin fricción ni suposiciones incorrectas**.
 > Mantener este archivo actualizado tras cada cambio estructural significativo.
 
-**Última actualización:** 2026-03-11
-**Versión:** 1.2
+**Última actualización:** 2026-04-03
+**Versión:** 1.3
 
 ---
 
@@ -171,9 +171,9 @@ Todas se llaman vía `supabase.rpc('nombre_funcion', { params })`.
 
 | Función RPC                     | Propósito                                     | Parámetros principales                                           |
 | ------------------------------- | --------------------------------------------- | ---------------------------------------------------------------- |
-| `get_reporte_consumos`          | Totales E/S agrupados por fecha/ciudad/tanque | `p_fecha_inicio`, `p_fecha_fin`, `p_cve_ciudad?`, `p_id_tanque?` |
-| `get_entradas_detalle`          | Detalle de movimientos de Entrada             | `p_fecha_inicio`, `p_fecha_fin`, `p_cve_ciudad?`, `p_id_tanque?` |
-| `get_salidas_detalle`           | Detalle de movimientos de Salida              | Igual que entradas                                               |
+| `get_reporte_consumos`          | Totales E/S agrupados por fecha/ciudad/tanque | `p_fecha_inicio`, `p_fecha_fin`, `p_cve_ciudad?`, `p_id_tanque?`, `p_id_unidad?` |
+| `get_entradas_detalle`          | Detalle de movimientos de Entrada             | `p_fecha`, `p_ciudad`, `p_id_tanque`                             |
+| `get_salidas_detalle`           | Detalle de movimientos de Salida              | `p_fecha`, `p_ciudad`, `p_id_tanque`, `p_id_unidad?`             |
 | `get_rendimientos_detalle`      | Detalle de movimientos para rendimiento       | Igual + `p_id_unidad?`                                           |
 | `sp_obtener_lecturas_diarias`   | Lecturas de inventario físico                 | `p_fecha`, `p_cve_ciudad?`, `p_id_planta?`, `p_id_tanque?`       |
 | `fn_obtener_lecturas_por_fecha` | Lecturas para captura (validación 48 hrs)     | `p_fecha`, `p_id_tanque`                                         |
@@ -250,12 +250,12 @@ Cuando cambia `CveCiudad`, los combos dependientes se resetean y recargan. Esta 
 ```
 CveCiudad (raíz)
 ├── Tanque(s)
-├── Unidad(es) → solo en Salidas
+├── Unidad(es) → restringido por Ciudad y Tanque (si se selecciona)
 ├── Personal/Operador(es) → solo en Salidas
 └── Planta(s) → solo en CapturaLecturas
 ```
 
-Al cambiar `CveCiudad` en cualquier formulario, **todos los combos descendientes se limpian y recargan**.
+Al cambiar `CveCiudad` en cualquier formulario, **todos los combos descendientes se limpian y recargan**. En el Reporte de Consumos y Rendimientos, al cambiar `Tanque` también se limpia `Unidad`.
 
 ### 8.4 Reporte de Productividad — Casos Especiales
 

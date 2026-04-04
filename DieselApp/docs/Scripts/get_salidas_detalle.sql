@@ -7,11 +7,13 @@
 -- Retorna: Tabla con los movimientos de salida ordenados por hora
 
 DROP FUNCTION IF EXISTS get_salidas_detalle(DATE, VARCHAR, BIGINT);
+DROP FUNCTION IF EXISTS get_salidas_detalle(DATE, VARCHAR, BIGINT, BIGINT);
 
 CREATE OR REPLACE FUNCTION get_salidas_detalle(
     p_fecha DATE,
     p_ciudad VARCHAR,
-    p_id_tanque BIGINT
+    p_id_tanque BIGINT,
+    p_id_unidad BIGINT DEFAULT NULL
 )
 RETURNS TABLE (
     id_tanque_movimiento BIGINT,
@@ -51,10 +53,11 @@ BEGIN
         AND tm."CveCiudad" = p_ciudad
         AND tm."IdTanque" = p_id_tanque
         AND tm."TipoMovimiento" = 'S'
+        AND (p_id_unidad IS NULL OR tm."IdUnidad" = p_id_unidad)
     ORDER BY 
         tm."HoraCarga" ASC;
 END;
 $$;
 
 -- Comentarios sobre la función
-COMMENT ON FUNCTION get_salidas_detalle(DATE, VARCHAR, BIGINT) IS 'Obtiene el detalle de movimientos de salida de combustible por fecha, ciudad y tanque';
+COMMENT ON FUNCTION get_salidas_detalle(DATE, VARCHAR, BIGINT, BIGINT) IS 'Obtiene el detalle de movimientos de salida de combustible por fecha, ciudad, tanque y opcionalmente unidad';

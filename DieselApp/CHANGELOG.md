@@ -18,6 +18,9 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es/1.1.
 - Tipos TypeScript `ReporteRendimientosData` y `ReporteRendimientosForm` en `reportes.types.ts`.
 - Documentación técnica del componente en `docs/components/ReporteRendimientos.md`.
 - **Edición inline en modal de detalle de Rendimientos** (`ReporteRendimientosDetalleModal.tsx`): campos Litros, CuentaLitros, Horómetro y Odómetro editables con update directo a `TanqueMovimiento`.
+- **Reporte Consumos**: Implementación de filtro por **Unidad** (ComboUnidades) con cascada Ciudad -> Tanque -> Unidad.
+- **Reporte Consumos**: El filtro de Unidad ahora persiste y se aplica correctamente al abrir el modal de **Detalle de Salidas**.
+- Actualización de RPCs `get_reporte_consumos` y `get_salidas_detalle` para soportar filtrado opcional por `IDUnidad`.
 
 ### Changed
 

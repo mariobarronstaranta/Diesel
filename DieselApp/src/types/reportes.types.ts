@@ -12,6 +12,7 @@ export interface ReporteConsumosData {
 export interface ReporteConsumosForm {
   CveCiudad: string;
   IDTanque: string;
+  IDUnidad?: string;
   FechaInicial: string;
   FechaFinal: string;
 }

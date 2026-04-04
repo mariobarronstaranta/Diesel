@@ -13,6 +13,7 @@ import { useForm } from "react-hook-form";
 import { useState, useEffect } from "react";
 import ComboCveCiudad from "./ComboCveCiudad";
 import ComboTanquePorCiudad from "./ComboTanquePorCiudad";
+import ComboUnidades from "./ComboUnidades";
 import { supabase } from "../supabase/client";
 import type {
   ReporteConsumosData,
@@ -37,25 +38,37 @@ export default function ReporteConsumos() {
     ciudad: string;
     tanque: string;
     idTanque: number;
+    idUnidad?: number | null;
   } | null>(null);
+  const [lastQueryParams, setLastQueryParams] =
+    useState<ReporteConsumosForm | null>(null);
 
   const {
     register,
     handleSubmit,
     watch,
+    setValue,
     formState: { errors },
   } = useForm<ReporteConsumosForm>({
     mode: "onSubmit",
     reValidateMode: "onChange",
   });
 
-  // Observar cambios en CveCiudad para actualizar el combo de tanques
+  // Observar cambios para actualizar los combos en cascada
   const cveCiudad = watch("CveCiudad");
+  const idTanqueWatch = watch("IDTanque");
 
-  // Actualizar el estado cuando cambia la ciudad (usando useEffect para evitar loop infinito)
+  // Al cambiar la ciudad: resetear Tanque y Unidad
   useEffect(() => {
     setCveCiudadSeleccionada(cveCiudad || "");
-  }, [cveCiudad]);
+    setValue("IDTanque", "");
+    setValue("IDUnidad", "");
+  }, [cveCiudad, setValue]);
+
+  // Al cambiar el tanque: resetear Unidad
+  useEffect(() => {
+    setValue("IDUnidad", "");
+  }, [idTanqueWatch, setValue]);
 
   // Formatear fecha para mostrar en la tabla
   const formatearFecha = (fecha: string) => {
@@ -82,6 +95,7 @@ export default function ReporteConsumos() {
       ciudad: consumo.ciudad,
       tanque: consumo.tanque,
       idTanque: consumo.idTanque,
+      idUnidad: lastQueryParams?.IDUnidad ? parseInt(lastQueryParams.IDUnidad) : null,
     });
     setShowDetalle(true);
   };
@@ -90,12 +104,14 @@ export default function ReporteConsumos() {
     try {
       setIsLoading(true);
       setAlertMessage(null);
+      setLastQueryParams(data);
 
       console.log("Consultando consumos:", {
         p_fecha_inicio: data.FechaInicial,
         p_fecha_fin: data.FechaFinal,
         p_cve_ciudad: data.CveCiudad || null,
         p_id_tanque: data.IDTanque ? parseInt(data.IDTanque) : null,
+        p_id_unidad: data.IDUnidad ? parseInt(data.IDUnidad) : null,
       });
 
       // Llamar a la función RPC de Supabase
@@ -106,6 +122,7 @@ export default function ReporteConsumos() {
           p_fecha_fin: data.FechaFinal,
           p_cve_ciudad: data.CveCiudad || null,
           p_id_tanque: data.IDTanque ? parseInt(data.IDTanque) : null,
+          p_id_unidad: data.IDUnidad ? parseInt(data.IDUnidad) : null,
         },
       );
 
@@ -239,15 +256,26 @@ export default function ReporteConsumos() {
         <Card className="mb-3">
           <Card.Body>
             <Row className="align-items-start">
-              <Col lg={3} md={6} className="mb-3 mb-lg-0">
+              <Col lg={2} md={6} className="mb-3 mb-lg-0">
                 <ComboCveCiudad register={register} error={errors.CveCiudad} />
               </Col>
 
-              <Col lg={3} md={6} className="mb-3 mb-lg-0">
+              <Col lg={2} md={6} className="mb-3 mb-lg-0">
                 <ComboTanquePorCiudad
                   cveCiudad={cveCiudadSeleccionada || null}
                   register={register}
                   error={errors.IDTanque}
+                  optional={true}
+                />
+              </Col>
+
+              <Col lg={2} md={6} className="mb-3 mb-lg-0">
+                <ComboUnidades
+                  cveCiudad={cveCiudadSeleccionada}
+                  register={register}
+                  error={errors.IDUnidad}
+                  optional={true}
+                  idTanque={idTanqueWatch || null}
                 />
               </Col>
 

@@ -11,12 +11,14 @@
 -- =====================================================
 
 DROP FUNCTION IF EXISTS public.get_reporte_consumos(date, date, text, bigint);
+DROP FUNCTION IF EXISTS public.get_reporte_consumos(date, date, text, bigint, bigint);
 
 CREATE OR REPLACE FUNCTION public.get_reporte_consumos(
     p_fecha_inicio date,
     p_fecha_fin date,
     p_cve_ciudad text DEFAULT NULL,
-    p_id_tanque bigint DEFAULT NULL
+    p_id_tanque bigint DEFAULT NULL,
+    p_id_unidad bigint DEFAULT NULL
 )
 RETURNS TABLE (
     fecha date,
@@ -64,6 +66,7 @@ BEGIN
     WHERE tm."FechaCarga" BETWEEN p_fecha_inicio AND p_fecha_fin
         AND (p_cve_ciudad IS NULL OR tm."CveCiudad" = p_cve_ciudad)
         AND (p_id_tanque IS NULL OR tm."IdTanque" = p_id_tanque)
+        AND (p_id_unidad IS NULL OR tm."IdUnidad" = p_id_unidad)
 
     GROUP BY 
         tm."FechaCarga",
