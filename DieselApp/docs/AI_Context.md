@@ -6,7 +6,7 @@
 > Mantener este archivo actualizado tras cada cambio estructural significativo.
 
 **Última actualización:** 2026-04-03
-**Versión:** 1.3
+**Versión:** 1.4
 
 ---
 
@@ -119,22 +119,25 @@ DieselApp/
 
 | Columna               | Tipo          | Descripción                                          |
 | --------------------- | ------------- | ---------------------------------------------------- |
-| `IDTanqueMovimiento`  | bigint PK     | Identificador único del movimiento                   |
-| `FechaCarga`          | date          | Fecha operativa del movimiento (campo de negocio)    |
-| `FechaHoraMovimiento` | timestamptz   | Timestamp inmutable de inserción (servidor)          |
-| `CveCiudad`           | text          | Clave de ciudad (ej. `"MTY"`, `"GDL"`)               |
-| `IdTanque`            | bigint FK     | Referencia al tanque                                 |
-| `TipoMovimiento`      | char(1)       | `'E'` = Entrada, `'S'` = Salida                      |
-| `LitrosCarga`         | numeric(10,2) | Volumen en litros                                    |
-| `LecturaCms`          | numeric(8,2)  | Altura en cm (solo Entradas y Lecturas; Salidas = 0) |
-| `CuentaLitros`        | numeric       | Lectura del contador físico del surtidor             |
-| `Odometro`            | numeric       | Kilometraje del vehículo (solo Salidas)              |
-| `Horimetro`           | numeric       | Horómetro del vehículo (solo Salidas)                |
-| `IDPersonal`          | bigint FK     | Operador/conductor (solo Salidas)                    |
-| `IDUnidad`            | bigint FK     | Vehículo (solo Salidas)                              |
-| `IDProveedor`         | bigint FK     | Proveedor de pipa (solo Entradas)                    |
-| `Remision`            | text          | Número de remisión/factura del proveedor (Entradas)  |
-| `IDUsuarioRegistro`   | uuid FK       | ID del usuario Supabase que creó el registro         |
+| `IdTanqueMovimiento`  | bigint PK     | Identificador único (auto-increment)                 |
+| `CveCiudad`           | varchar       | Clave de ciudad (ej. `"MTY"`, `"GDL"`)               |
+| `IdTanque`            | bigint        | Referencia al tanque                                 |
+| `FechaCarga`          | date          | Fecha operativa del negocio                          |
+| `HoraCarga`           | time          | Hora operativa del negocio                           |
+| `TemperaturaCarga`    | bigint        | Temperatura registrada                               |
+| `LitrosCarga`         | bigint        | Volumen transferido (Entrada o Salida)               |
+| `AlturaTanque`        | numeric(8,2)  | Equivalente a LecturaCms (Entradas/Lecturas)         |
+| `CuentaLitros`        | bigint        | Lectura del contador mecánico                        |
+| `Remision`            | varchar       | Documento de referencia (Entradas/Salidas)           |
+| `IdProveedor`         | bigint        | Proveedor (Entradas)                                 |
+| `Observaciones`       | varchar       | Nota aclaratoria opcional                            |
+| `TipoMovimiento`      | varchar       | `'E'` = Entrada, `'S'` = Salida                      |
+| `FechaHoraMovimiento` | timestamp     | Registro de sistema (servidor)                       |
+| `IdUnidad`            | bigint        | Vehículo (Salidas)                                   |
+| `IdPersonal`          | bigint        | Operador/Personal (Salidas)                          |
+| `FolioVale`           | varchar       | Número de vale físico                                |
+| `Horimetro`           | bigint        | Horas de la unidad (Salidas)                         |
+| `Odometro`            | bigint        | Kilometraje de la unidad (Salidas)                    |
 
 > ⚠️ **IMPORTANTE:** `TanqueMovimiento` **NO** tiene columna `Activo`. No filtrar por ese campo.
 
@@ -142,12 +145,16 @@ DieselApp/
 
 | Tabla       | PK                 | Columnas relevantes                                   |
 | ----------- | ------------------ | ----------------------------------------------------- |
-| `Tanque`    | `IDTanque`         | `CveCiudad`, `Nombre`                                 |
-| `Ciudad`    | `CveCiudad` (text) | `Nombre`                                              |
-| `Planta`    | `IDPlanta`         | `CveCiudad`, `Nombre` (solo usado en CapturaLecturas) |
-| `Unidad`    | `IDUnidad`         | `CveCiudad`, `NombreUnidad`                           |
-| `Personal`  | `IDPersonal`       | `CveCiudad`, `Nombre` (operadores/conductores)        |
-| `Proveedor` | `IDProveedor`      | `NombreProveedor`                                     |
+| `Tanque`     | `IDTanque`   | `CveCiudad`, `Nombre`, `IDPlanta`, `Capacidad`, `IDTipoCombustible` |
+| `Ciudad`     | `IDCiudad`   | `Descripcion`, `CveCiudad` (text)                                   |
+| `Planta`     | `IDPlanta`   | `Nombre`, `CveCiudad`, `IDCiudad`                                   |
+| `Unidad`     | `IDUnidad`   | `IDClaveUnidad`, `ClaveAlterna`, `Planta`, `CveCiudad`, `Activo`    |
+| `Operadores` | `IDPersonal` | `CvePersonal`, `Nombre`, `APaterno`, `AMaterno`, `CveCiudad`        |
+| `Proveedores`| `IdProveedor`| `NombreProveedor`                                                   |
+| `Usuarios`   | `IDUsuario`  | `CveUsuario`, `Password`, `Correo`, `CveCiudad`, `NombrePerfil`     |
+| `TanqueLecturas` | `IDTanqueLecturas` | `IDTanque`, `Fecha`, `LecturaCms`, `VolActualTA`, `VolActual15C` |
+| `VolumenTanque` | `IDVolumenTanque` | `IDTanque`, `Volumen`, `Altura` (Tabla de cubicación) |
+| `AjusteVolumetrico` | `IDAjusteVolumetrico` | `Temperatura`, `FactorAjuste`, `Densidad` |
 
 ### 5.3 Vista Externa: `InformacionGeneral_Cierres`
 

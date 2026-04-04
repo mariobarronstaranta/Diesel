@@ -1,0 +1,20 @@
+create table public."Unidades" (
+  "IDUnidad" bigint not null,
+  "IDClaveUnidad" text null,
+  "ClaveAlterna" text null,
+  "Borrado" text null,
+  "IDPlanta" bigint null,
+  "Planta" text null,
+  "CveCiudad" text null,
+  "IDMarca" bigint null,
+  "MarcaCamion" text null,
+  "IDTipoCombustible" bigint null,
+  "TipoCombustible" text null,
+  "IDTipoPlacas" bigint null,
+  "TipoPlacas" text null,
+  "Activo" text null,
+  "Modelo" text null,
+  "NumSerie" text null,
+  "Placas" text null,
+  constraint Unidades_pkey primary key ("IDUnidad")
+) TABLESPACE pg_default;
