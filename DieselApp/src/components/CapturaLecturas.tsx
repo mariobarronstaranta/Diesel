@@ -58,7 +58,12 @@ export default function CapturaLecturas() {
   const today = new Date();
   const todayStr = toDateInput(today);
   const minDate = new Date();
-  minDate.setDate(minDate.getDate() - 2);
+  
+  // Leer contexto global expuesto desde public/config.js. Fallback a 2 si no existe.
+  const windowConfig = (window as any).AppConfig;
+  const diasPermitidos = windowConfig?.diasPermitidosHaciaAtrasCaptura ?? 2;
+  
+  minDate.setDate(minDate.getDate() - diasPermitidos);
   const minDateStr = toDateInput(minDate);
 
   // Helper to set default date/time

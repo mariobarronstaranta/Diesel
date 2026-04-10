@@ -11,10 +11,13 @@ import {
 } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { useState, useEffect } from "react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import ComboCveCiudad from "./ComboCveCiudad";
 import ComboTanquePorCiudad from "./ComboTanquePorCiudad";
 import ComboUnidades from "./ComboUnidades";
 import { supabase } from "../supabase/client";
+import logoUrl from "../assets/images/logo.png";
 import type {
   ReporteConsumosData,
   ReporteConsumosForm,
@@ -226,6 +229,147 @@ export default function ReporteConsumos() {
     document.body.removeChild(link);
   };
 
+  const exportarPDF = async () => {
+    if (consumos.length === 0) return;
+
+    const doc = new jsPDF("landscape");
+    
+    // Función auxiliar para cargar imagen
+    const loadLogo = (): Promise<HTMLImageElement> => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = logoUrl;
+        img.onload = () => resolve(img);
+        img.onerror = (e) => reject(e);
+      });
+    };
+
+    try {
+      const logo = await loadLogo();
+      const ratio = logo.width / logo.height;
+      const logoHeight = 12;
+      const logoWidth = logoHeight * ratio;
+      const pdfWidth = doc.internal.pageSize.getWidth();
+      doc.addImage(logo, "PNG", pdfWidth - 14 - logoWidth, 10, logoWidth, logoHeight);
+    } catch (err) {
+      console.error("Error cargando logo en PDF", err);
+    }
+
+    // Cabecera Corporativa
+    doc.setFontSize(22);
+    doc.setTextColor(52, 58, 64);
+    doc.setFont("helvetica", "bold");
+    doc.text("Reporte de Consumos", 14, 20);
+    
+    // Línea separadora amarilla
+    doc.setDrawColor(240, 173, 78);
+    doc.setLineWidth(1.5);
+    doc.line(14, 24, doc.internal.pageSize.getWidth() - 14, 24);
+    
+    // Filtros
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(108, 117, 125);
+    const ciudad = lastQueryParams?.CveCiudad || "Todas";
+    const fInicio = lastQueryParams?.FechaInicial ? formatearFecha(lastQueryParams.FechaInicial) : "";
+    const fFinal = lastQueryParams?.FechaFinal ? formatearFecha(lastQueryParams.FechaFinal) : "";
+    
+    doc.text(`Filtros:`, 14, 30);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(52, 58, 64);
+    
+    doc.text(`Ciudad:`, 30, 30);
+    doc.setFont("helvetica", "normal");
+    doc.text(ciudad, 43, 30);
+    
+    doc.setFont("helvetica", "bold");
+    doc.text(`Desde:`, 75, 30);
+    doc.setFont("helvetica", "normal");
+    doc.text(fInicio, 88, 30);
+    
+    doc.setFont("helvetica", "bold");
+    doc.text(`Hasta:`, 115, 30);
+    doc.setFont("helvetica", "normal");
+    doc.text(fFinal, 126, 30);
+    
+    const tableColumn = ["Fecha", "Ciudad", "Tanque", "Total Entradas (lts)", "Total Salidas (lts)"];
+    const tableRows = consumos.map(c => [
+      formatearFecha(c.fecha),
+      c.ciudad,
+      c.tanque,
+      formatearNumero(Number(c.totalEntradas)),
+      formatearNumero(Number(c.totalSalidas))
+    ]);
+
+    // Calcular totales localmente para el PDF
+    const tEntradas = consumos.reduce((sum, c) => sum + Number(c.totalEntradas), 0);
+    const tSalidas = consumos.reduce((sum, c) => sum + Number(c.totalSalidas), 0);
+    
+    // Anexar fila de totales
+    tableRows.push([
+      "TOTALES", "", "",
+       formatearNumero(tEntradas),
+       formatearNumero(tSalidas)
+    ]);
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 35,
+      styles: { 
+        fontSize: 10, 
+        cellPadding: 4,
+        valign: 'middle'
+      },
+      headStyles: { 
+        fillColor: [52, 58, 64],
+        textColor: 255,
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      alternateRowStyles: {
+        fillColor: [244, 246, 251]
+      },
+      columnStyles: {
+        0: { halign: 'center' },
+        1: { halign: 'left' },
+        2: { halign: 'left' },
+        3: { halign: 'right' },
+        4: { halign: 'right', fontStyle: 'bold', textColor: [52, 58, 64] }
+      },
+      didParseCell: function(data) {
+        // Estilizar fila de totales (ultima fila)
+        if (data.row.index === tableRows.length - 1) {
+          data.cell.styles.fillColor = [230, 230, 230];
+          data.cell.styles.fontStyle = 'bold';
+          data.cell.styles.textColor = [52, 58, 64];
+        }
+      }
+    });
+
+    const finalY = (doc as any).lastAutoTable.finalY || 35;
+    
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.5);
+    doc.line(14, finalY + 10, doc.internal.pageSize.getWidth() - 14, finalY + 10);
+    
+    const now = new Date();
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const month = pad(now.getMonth() + 1);
+    const day = pad(now.getDate());
+    const hours = pad(now.getHours());
+    const minutes = pad(now.getMinutes()); 
+    const timestamp = `${now.getFullYear()}-${month}-${day} ${hours}:${minutes}`;
+    
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(150, 150, 150);
+    doc.text(`Generado desde DieselApp el ${timestamp}`, 14, finalY + 15);
+
+    const safeDate = `${now.getFullYear()}${month}${day}`;
+    doc.save(`Reporte_Consumos_${safeDate}.pdf`);
+  };
+
   // Calcular totales para mostrar en la tabla
   const totalEntradas = consumos.reduce(
     (sum, c) => sum + Number(c.totalEntradas),
@@ -348,9 +492,14 @@ export default function ReporteConsumos() {
         <Card>
           <Card.Header className="d-flex justify-content-between align-items-center bg-white">
             <h5 className="mb-0">Resultados</h5>
-            <Button variant="success" size="sm" onClick={exportarCSV}>
-              Exportar CSV
-            </Button>
+            <div>
+              <Button variant="success" size="sm" onClick={exportarCSV} className="me-2">
+                Exportar CSV
+              </Button>
+              <Button variant="danger" size="sm" onClick={exportarPDF}>
+                Exportar PDF
+              </Button>
+            </div>
           </Card.Header>
           <Card.Body>
             <div className="table-responsive">

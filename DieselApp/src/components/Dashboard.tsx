@@ -9,7 +9,9 @@ import {
   Spinner,
 } from "react-bootstrap";
 import { useForm } from "react-hook-form";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
+import html2canvas from "html2canvas";
+import jsPDF from "jspdf";
 import ComboCveCiudad from "./ComboCveCiudad";
 import ComboTanquePorCiudad from "./ComboTanquePorCiudad";
 import { supabase } from "../supabase/client";
@@ -44,6 +46,8 @@ export default function Dashboard() {
   const [cveCiudadSeleccionada, setCveCiudadSeleccionada] =
     useState<string>("");
   const [hasData, setHasData] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const dashboardRef = useRef<HTMLDivElement>(null);
 
   // Dashboard data
   const [kpis, setKpis] = useState<KpiData>({
@@ -60,6 +64,7 @@ export default function Dashboard() {
     register,
     handleSubmit,
     watch,
+    getValues,
     formState: { errors },
   } = useForm<DashboardFilters>({
     mode: "onSubmit",
@@ -71,6 +76,55 @@ export default function Dashboard() {
   useEffect(() => {
     setCveCiudadSeleccionada(cveCiudad || "");
   }, [cveCiudad]);
+
+  const exportarPDF = async () => {
+    if (!dashboardRef.current) return;
+    try {
+      setIsExporting(true);
+      const canvas = await html2canvas(dashboardRef.current, { 
+        scale: 2,
+        useCORS: true,
+        scrollY: -window.scrollY
+      });
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "landscape",
+        unit: "mm",
+        format: "a4",
+      });
+      
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      
+      const canvasRatio = canvas.width / canvas.height;
+
+      let finalWidth = pdfWidth;
+      let finalHeight = pdfWidth / canvasRatio;
+
+      // Si la altura calculada es mayor a la altura física de la página,
+      // entonces escalamos basado en la altura para que no se corte por abajo.
+      if (finalHeight > pdfHeight) {
+        finalHeight = pdfHeight;
+        finalWidth = pdfHeight * canvasRatio;
+      }
+      
+      // Opcional: Centrar la imagen en el PDF
+      const x = (pdfWidth - finalWidth) / 2;
+      const y = (pdfHeight - finalHeight) / 2;
+
+      pdf.addImage(imgData, "PNG", x, y, finalWidth, finalHeight);
+      
+      const filters = getValues();
+      const ciudadStr = filters.CveCiudad || "Todas";
+      const fileName = `${ciudadStr}_${filters.FechaInicial}_${filters.FechaFinal}.pdf`;
+      pdf.save(fileName);
+    } catch (error) {
+      console.error("Error al exportar PDF:", error);
+      setAlertMessage({ type: "danger", text: "Error al generar el PDF." });
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const formatearNumero = (numero: number, decimales = 2) => {
     return numero.toLocaleString("es-MX", {
@@ -314,7 +368,24 @@ export default function Dashboard() {
 
       {/* Dashboard Content */}
       {hasData && (
-        <>
+        <div ref={dashboardRef} className="dashboard-wrapper bg-white py-2 px-1">
+          <div className="d-flex justify-content-end mb-3" data-html2canvas-ignore>
+            <Button
+              variant="outline-primary"
+              onClick={exportarPDF}
+              disabled={isExporting}
+            >
+              {isExporting ? (
+                <>
+                  <Spinner animation="border" size="sm" className="me-2" />
+                  Generando PDF...
+                </>
+              ) : (
+                "📄 Exportar a PDF"
+              )}
+            </Button>
+          </div>
+
           {/* KPI Cards */}
           <Row className="mb-4 g-3">
             <Col sm={6} lg={3}>
@@ -605,7 +676,7 @@ export default function Dashboard() {
               </Col>
             )}
           </Row>
-        </>
+        </div>
       )}
     </Container>
   );

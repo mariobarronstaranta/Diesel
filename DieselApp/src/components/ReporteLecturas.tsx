@@ -12,8 +12,11 @@ import {
 } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import ComboCveCiudad from "./ComboCveCiudad";
 import { supabase } from "../supabase/client";
+import logoUrl from "../assets/images/logo.png";
 
 interface ReporteLecturasForm {
   CveCiudad: string;
@@ -325,6 +328,140 @@ export default function ReporteLecturas() {
     document.body.removeChild(link);
   };
 
+  const exportarPDF = async () => {
+    if (lecturas.length === 0) return;
+
+    const doc = new jsPDF("landscape");
+    
+    // Función auxiliar para cargar imagen
+    const loadLogo = (): Promise<HTMLImageElement> => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = logoUrl;
+        img.onload = () => resolve(img);
+        img.onerror = (e) => reject(e);
+      });
+    };
+
+    try {
+      const logo = await loadLogo();
+      // Ajustar proporción matemáticamente
+      const ratio = logo.width / logo.height;
+      const logoHeight = 12;
+      const logoWidth = logoHeight * ratio;
+      // Posición a la derecha
+      const pdfWidth = doc.internal.pageSize.getWidth();
+      doc.addImage(logo, "PNG", pdfWidth - 14 - logoWidth, 10, logoWidth, logoHeight);
+    } catch (err) {
+      console.error("Error cargando logo en PDF", err);
+    }
+
+    // Cabecera Corporativa
+    doc.setFontSize(22);
+    doc.setTextColor(52, 58, 64); // --corporate-dark (#343a40)
+    doc.setFont("helvetica", "bold");
+    doc.text("Reporte Lecturas Diarias", 14, 20);
+    
+    // Línea separadora amarilla
+    doc.setDrawColor(240, 173, 78); // --corporate-yellow (#f0ad4e)
+    doc.setLineWidth(1.5);
+    doc.line(14, 24, doc.internal.pageSize.getWidth() - 14, 24);
+    
+    // Filtros
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(108, 117, 125); // --corporate-grey
+    const ciudad = lastQueryParams?.CveCiudad || "Todas";
+    const fInicio = lastQueryParams?.FechaInicial ? formatearFecha(lastQueryParams.FechaInicial) : "";
+    const fFinal = lastQueryParams?.FechaFinal ? formatearFecha(lastQueryParams.FechaFinal) : "";
+    
+    doc.text(`Filtros:`, 14, 30);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(52, 58, 64);
+    
+    doc.text(`Ciudad:`, 30, 30);
+    doc.setFont("helvetica", "normal");
+    doc.text(ciudad, 43, 30);
+    
+    doc.setFont("helvetica", "bold");
+    doc.text(`Desde:`, 75, 30);
+    doc.setFont("helvetica", "normal");
+    doc.text(fInicio, 88, 30);
+    
+    doc.setFont("helvetica", "bold");
+    doc.text(`Hasta:`, 115, 30);
+    doc.setFont("helvetica", "normal");
+    doc.text(fFinal, 126, 30);
+    
+    // Generar datos para la tabla
+    const tableColumn = ["Ciudad", "Tanque", "Fecha Lectura", "L. Inicial\n(cms)", "L. Final\n(cms)", "Cta Lts\nInicial", "Cta Lts\nFinal", "Lts\nConsumidos"];
+    const tableRows = lecturas.map(l => [
+      l.ciudad ?? "",
+      l.nombre ?? "",
+      l.fecha ? formatearFecha(l.fecha) : "",
+      l.lectura_inicial_cms ?? 0,
+      l.lectura_final_cms ?? 0,
+      (l.cuenta_litros_inicial ?? 0).toLocaleString(),
+      (l.cuenta_litros_final ?? 0).toLocaleString(),
+      (l.diferencia_cuenta_litros ?? 0).toLocaleString()
+    ]);
+
+    // Tabla UX
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 35, // Inicia despues de cabeceras
+      styles: { 
+        fontSize: 9, 
+        cellPadding: 3,
+        valign: 'middle'
+      },
+      headStyles: { 
+        fillColor: [52, 58, 64], // corporate-dark
+        textColor: 255,
+        fontStyle: 'bold',
+        halign: 'center'
+      },
+      alternateRowStyles: {
+        fillColor: [244, 246, 251] // bg-light corporativo
+      },
+      columnStyles: {
+        0: { halign: 'left' },
+        1: { halign: 'left' },
+        2: { halign: 'center' },
+        3: { halign: 'right' },
+        4: { halign: 'right' },
+        5: { halign: 'right' },
+        6: { halign: 'right' },
+        7: { halign: 'right', fontStyle: 'bold', textColor: [52, 58, 64] } // Resalte al importante
+      }
+    });
+
+    // Pie de Reporte UX
+    const finalY = (doc as any).lastAutoTable.finalY || 35;
+    
+    // Línea de pie
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.5);
+    doc.line(14, finalY + 10, doc.internal.pageSize.getWidth() - 14, finalY + 10);
+    
+    const now = new Date();
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    const month = pad(now.getMonth() + 1);
+    const day = pad(now.getDate());
+    const hours = pad(now.getHours());
+    const minutes = pad(now.getMinutes()); 
+    const timestamp = `${now.getFullYear()}-${month}-${day} ${hours}:${minutes}`;
+    
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(150, 150, 150);
+    doc.text(`Generado desde DieselApp el ${timestamp}`, 14, finalY + 15);
+
+    const safeDate = `${now.getFullYear()}${month}${day}`;
+    doc.save(`Reporte_Lecturas_${safeDate}.pdf`);
+  };
+
   return (
     <Container fluid className="p-3">
       <h4 className="text-center mb-4">Reporte de Lecturas Diarias</h4>
@@ -418,9 +555,14 @@ export default function ReporteLecturas() {
         <Card>
           <Card.Header className="d-flex justify-content-between align-items-center bg-white">
             <h5 className="mb-0">Resultados</h5>
-            <Button variant="success" size="sm" onClick={exportarCSV}>
-              Exportar CSV
-            </Button>
+            <div>
+              <Button variant="success" size="sm" onClick={exportarCSV} className="me-2">
+                Exportar CSV
+              </Button>
+              <Button variant="danger" size="sm" onClick={exportarPDF}>
+                Exportar PDF
+              </Button>
+            </div>
           </Card.Header>
           <Card.Body>
             <div className="table-responsive">
