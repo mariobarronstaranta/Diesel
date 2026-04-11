@@ -1,53 +1,51 @@
 import {
-  Container,
-  Card,
-  Form,
-  Button,
-  Row,
-  Col,
   Alert,
-  Table,
+  Button,
+  Card,
+  Col,
+  Container,
+  Form,
+  Row,
   Spinner,
+  Table,
 } from "react-bootstrap";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { useState, useEffect } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import ComboCveCiudad from "./ComboCveCiudad";
 import ComboTanquePorCiudad from "./ComboTanquePorCiudad";
 import ComboUnidades from "./ComboUnidades";
+import ReporteRendimientosDetalleModalV2 from "./ReporteRendimientosDetalleModalV2";
 import { supabase } from "../supabase/client";
 import logoUrl from "../assets/images/logo.png";
 import type {
-  ReporteRendimientosData,
   ReporteRendimientosForm,
+  ReporteRendimientosV2Data,
 } from "../types/reportes.types";
-import ReporteRendimientosDetalleModal from "./ReporteRendimientosDetalleModal";
 
-export default function ReporteRendimientos() {
+export default function ReporteRendimientosV2() {
   const [isLoading, setIsLoading] = useState(false);
   const [alertMessage, setAlertMessage] = useState<{
     type: "success" | "danger";
     text: string;
   } | null>(null);
-  const [rendimientos, setRendimientos] = useState<ReporteRendimientosData[]>(
+  const [rendimientos, setRendimientos] = useState<ReporteRendimientosV2Data[]>(
     [],
   );
   const [cveCiudadSeleccionada, setCveCiudadSeleccionada] =
     useState<string>("");
   const [tanqueNombre, setTanqueNombre] = useState<string>("Todos");
   const [unidadNombre, setUnidadNombre] = useState<string>("Todas");
-
-  // Estados para el modal de detalle
   const [showDetalle, setShowDetalle] = useState(false);
   const [filaSeleccionada, setFilaSeleccionada] = useState<{
     fechaInicio: string;
     fechaFin: string;
     cveCiudad: string;
-    idTanque: number | null;
     idUnidad: number;
-    tanque: string;
     unidad: string;
+    tanquePrincipal: string;
+    tanquesUtilizados: string;
   } | null>(null);
   const [lastQueryParams, setLastQueryParams] =
     useState<ReporteRendimientosForm | null>(null);
@@ -66,20 +64,18 @@ export default function ReporteRendimientos() {
   const cveCiudad = watch("CveCiudad");
   const idTanqueWatch = watch("IDTanque");
 
-  // Al cambiar la ciudad: resetear Tanque y Unidad para que los combos se recarguen
   useEffect(() => {
     setCveCiudadSeleccionada(cveCiudad || "");
     setValue("IDTanque", "");
     setValue("IDUnidad", "");
     setTanqueNombre("Todos");
     setUnidadNombre("Todas");
-  }, [cveCiudad]);
+  }, [cveCiudad, setValue]);
 
-  // Al cambiar el tanque: resetear Unidad para que se recargue con las del nuevo tanque
   useEffect(() => {
     setValue("IDUnidad", "");
     setUnidadNombre("Todas");
-  }, [idTanqueWatch]);
+  }, [idTanqueWatch, setValue]);
 
   const formatearFecha = (fecha: string) => {
     const [y, m, d] = fecha.split("-");
@@ -97,19 +93,16 @@ export default function ReporteRendimientos() {
     });
   };
 
-  const abrirDetalle = (r: ReporteRendimientosData) => {
+  const abrirDetalle = (r: ReporteRendimientosV2Data) => {
     if (!lastQueryParams) return;
     setFilaSeleccionada({
       fechaInicio: lastQueryParams.FechaInicial,
       fechaFin: lastQueryParams.FechaFinal,
       cveCiudad: lastQueryParams.CveCiudad,
-      // Si IDTanque está vacío (Todos), pasar null para que el RPC no filtre por tanque
-      idTanque: lastQueryParams.IDTanque
-        ? parseInt(lastQueryParams.IDTanque)
-        : null,
       idUnidad: r.IDUnidad,
-      tanque: r.Tanque,
       unidad: r.Unidad,
+      tanquePrincipal: r["Tanque Principal"],
+      tanquesUtilizados: r["Tanques Utilizados"],
     });
     setShowDetalle(true);
   };
@@ -121,7 +114,7 @@ export default function ReporteRendimientos() {
       setLastQueryParams(data);
 
       const { data: result, error } = await supabase.rpc(
-        "reporte_rendimientos",
+        "reporte_rendimientos_v2",
         {
           p_fecha_inicio: data.FechaInicial,
           p_fecha_fin: data.FechaFinal,
@@ -131,38 +124,31 @@ export default function ReporteRendimientos() {
         },
       );
 
-      if (error) {
-        throw error;
-      }
+      if (error) throw error;
 
       if (Array.isArray(result)) {
         setRendimientos(result);
-        if (result.length === 0) {
-          setAlertMessage({
-            type: "success",
-            text: "No se encontraron rendimientos para los filtros seleccionados",
-          });
-        } else {
-          setAlertMessage({
-            type: "success",
-            text: `Se encontraron ${result.length} registros`,
-          });
-        }
+        setAlertMessage({
+          type: "success",
+          text:
+            result.length === 0
+              ? "No se encontraron rendimientos consolidados para los filtros seleccionados"
+              : `Se encontraron ${result.length} registros consolidados`,
+        });
       } else {
         setAlertMessage({
           type: "danger",
-          text: "Error al obtener los rendimientos",
+          text: "Error al obtener los rendimientos consolidados",
         });
       }
     } catch (error: unknown) {
-      console.error("Error al consultar rendimientos:", error);
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Error de conexión con el servidor";
+      console.error("Error al consultar rendimientos consolidados:", error);
       setAlertMessage({
         type: "danger",
-        text: errorMessage,
+        text:
+          error instanceof Error
+            ? error.message
+            : "Error de conexión con el servidor",
       });
     } finally {
       setIsLoading(false);
@@ -173,26 +159,30 @@ export default function ReporteRendimientos() {
     if (rendimientos.length === 0) return;
 
     const headers = [
-      "Tanque",
       "Unidad",
       "Carga Total",
       "Kms Recorridos",
       "Hrs Recorridos",
       "Kms/Lts",
       "Hrs/Lts",
+      "Tanque Principal",
+      "Tanques Utilizados",
+      "Cantidad Tanques",
     ];
 
     const csvContent = [
       headers.join(","),
       ...rendimientos.map((r) =>
         [
-          `"${r.Tanque}"`,
           `"${r.Unidad}"`,
           Number(r["Carga Total"] || 0).toFixed(0),
           Number(r["Kms Recorridos"] || 0).toFixed(0),
           Number(r["Hrs Recorridos"] || 0).toFixed(0),
           Number(r["Kms/Lts"] || 0).toFixed(4),
           Number(r["Hrs/Lts"] || 0).toFixed(4),
+          `"${r["Tanque Principal"] || ""}"`,
+          `"${r["Tanques Utilizados"] || ""}"`,
+          Number(r["Cantidad Tanques"] || 0).toFixed(0),
         ].join(","),
       ),
     ].join("\n");
@@ -205,7 +195,7 @@ export default function ReporteRendimientos() {
     link.href = url;
     link.setAttribute(
       "download",
-      `rendimientos_${new Date().toISOString().slice(0, 10)}.csv`,
+      `rendimientos_consolidados_${new Date().toISOString().slice(0, 10)}.csv`,
     );
     document.body.appendChild(link);
     link.click();
@@ -247,7 +237,7 @@ export default function ReporteRendimientos() {
     doc.setFontSize(22);
     doc.setTextColor(52, 58, 64);
     doc.setFont("helvetica", "bold");
-    doc.text("Reporte de Rendimientos", 14, 20);
+    doc.text("Reporte de Rendimientos Consolidado", 14, 20);
 
     doc.setDrawColor(240, 173, 78);
     doc.setLineWidth(1.5);
@@ -309,32 +299,35 @@ export default function ReporteRendimientos() {
     const totalHrsLts = totalCarga > 0 ? totalHrs / totalCarga : 0;
 
     const tableColumn = [
-      "Tanque",
       "Unidad",
       "Carga Total",
       "Kms Recorridos",
       "Hrs Recorridos",
       "Kms/Lts",
       "Hrs/Lts",
+      "Tanque Principal",
+      "Tanques Utilizados",
     ];
     const tableRows = rendimientos.map((item) => [
-      item.Tanque ?? "",
       item.Unidad ?? "",
       formatearNumero(item["Carga Total"], true),
       formatearNumero(item["Kms Recorridos"], true),
       formatearNumero(item["Hrs Recorridos"], true),
       formatearNumero(item["Kms/Lts"]),
       formatearNumero(item["Hrs/Lts"]),
+      item["Tanque Principal"] ?? "",
+      item["Tanques Utilizados"] ?? "",
     ]);
 
     tableRows.push([
       "TOTALES",
-      "",
       formatearNumero(totalCarga, true),
       formatearNumero(totalKms, true),
       formatearNumero(totalHrs, true),
       formatearNumero(totalKmsLts),
       formatearNumero(totalHrsLts),
+      "",
+      "",
     ]);
 
     autoTable(doc, {
@@ -342,7 +335,7 @@ export default function ReporteRendimientos() {
       body: tableRows,
       startY: 35,
       styles: {
-        fontSize: 9,
+        fontSize: 8.5,
         cellPadding: 3,
         valign: "middle",
       },
@@ -357,12 +350,13 @@ export default function ReporteRendimientos() {
       },
       columnStyles: {
         0: { halign: "left" },
-        1: { halign: "left" },
+        1: { halign: "right" },
         2: { halign: "right" },
         3: { halign: "right" },
         4: { halign: "right" },
-        5: { halign: "right" },
-        6: { halign: "right", fontStyle: "bold", textColor: [52, 58, 64] },
+        5: { halign: "right", fontStyle: "bold", textColor: [52, 58, 64] },
+        6: { halign: "left" },
+        7: { halign: "left" },
       },
       didParseCell: (data) => {
         if (data.row.index === tableRows.length - 1) {
@@ -398,12 +392,19 @@ export default function ReporteRendimientos() {
     doc.text(`Generado desde DieselApp el ${timestamp}`, 14, finalY + 15);
 
     const safeDate = `${now.getFullYear()}${month}${day}`;
-    doc.save(`Reporte_Rendimientos_${safeDate}.pdf`);
+    doc.save(`Reporte_Rendimientos_Consolidado_${safeDate}.pdf`);
   };
 
   return (
     <Container fluid className="p-3">
-      <h4 className="text-center mb-4">Reporte de Rendimientos</h4>
+      <h4 className="text-center mb-4">Reporte de Rendimientos Consolidado</h4>
+
+      <Alert variant="warning" className="mb-3">
+        Esta versión no reemplaza el reporte actual. Consolida el rendimiento
+        por unidad aunque haya cargado en múltiples tanques. Si se selecciona un
+        tanque, el filtro sirve para ubicar unidades que cargaron allí, pero el
+        KPI se calcula con todas sus cargas del periodo.
+      </Alert>
 
       {alertMessage && (
         <Alert
@@ -527,7 +528,7 @@ export default function ReporteRendimientos() {
       {rendimientos.length > 0 && (
         <Card>
           <Card.Header className="d-flex justify-content-between align-items-center bg-white">
-            <h5 className="mb-0">Resultados</h5>
+            <h5 className="mb-0">Resultados consolidados</h5>
             <div>
               <Button
                 variant="success"
@@ -548,41 +549,60 @@ export default function ReporteRendimientos() {
                 striped
                 bordered
                 hover
-                className="table-corporate align-middle"
+                className="table-corporate align-middle rendimientos-v2-table"
               >
+                <colgroup>
+                  <col className="rendimientos-v2-table__col--unidad" />
+                  <col className="rendimientos-v2-table__col--numero" />
+                  <col className="rendimientos-v2-table__col--numero" />
+                  <col className="rendimientos-v2-table__col--numero" />
+                  <col className="rendimientos-v2-table__col--kpi" />
+                  <col className="rendimientos-v2-table__col--kpi" />
+                  <col className="rendimientos-v2-table__col--tanque" />
+                  <col className="rendimientos-v2-table__col--tanques" />
+                  <col className="rendimientos-v2-table__col--accion" />
+                </colgroup>
                 <thead>
                   <tr>
-                    <th className="text-center">Tanque</th>
                     <th className="text-center">Unidad</th>
                     <th className="text-center">Carga Total</th>
                     <th className="text-center">Kms Recorridos</th>
                     <th className="text-center">Hrs Recorridos</th>
                     <th className="text-center">Kms/Lts</th>
                     <th className="text-center">Hrs/Lts</th>
+                    <th className="text-center">Tanque Principal</th>
+                    <th className="text-center">Tanques Utilizados</th>
                     <th className="text-center">Acción</th>
                   </tr>
                 </thead>
                 <tbody>
                   {rendimientos.map((r, index) => (
                     <tr key={index}>
-                      <td>{r.Tanque}</td>
-                      <td>{r.Unidad}</td>
-                      <td className="text-end">
+                      <td className="rendimientos-v2-table__unidad">
+                        {r.Unidad}
+                      </td>
+                      <td className="text-end rendimientos-v2-table__numero">
                         {formatearNumero(r["Carga Total"], true)}
                       </td>
-                      <td className="text-end">
+                      <td className="text-end rendimientos-v2-table__numero">
                         {formatearNumero(r["Kms Recorridos"], true)}
                       </td>
-                      <td className="text-end">
+                      <td className="text-end rendimientos-v2-table__numero">
                         {formatearNumero(r["Hrs Recorridos"], true)}
                       </td>
-                      <td className="text-end">
+                      <td className="text-end rendimientos-v2-table__numero">
                         {formatearNumero(r["Kms/Lts"])}
                       </td>
-                      <td className="text-end">
+                      <td className="text-end rendimientos-v2-table__numero">
                         {formatearNumero(r["Hrs/Lts"])}
                       </td>
-                      <td className="text-center">
+                      <td className="rendimientos-v2-table__tanque">
+                        {r["Tanque Principal"]}
+                      </td>
+                      <td className="rendimientos-v2-table__tanques">
+                        {r["Tanques Utilizados"]}
+                      </td>
+                      <td className="text-center rendimientos-v2-table__accion">
                         <Button
                           variant="outline-corporate"
                           size="sm"
@@ -600,7 +620,7 @@ export default function ReporteRendimientos() {
         </Card>
       )}
 
-      <ReporteRendimientosDetalleModal
+      <ReporteRendimientosDetalleModalV2
         show={showDetalle}
         onHide={() => setShowDetalle(false)}
         datosFila={filaSeleccionada}

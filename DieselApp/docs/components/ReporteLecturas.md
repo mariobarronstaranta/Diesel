@@ -1,11 +1,13 @@
 # ReporteLecturas
 
 ## Propósito
-Consultar, visualizar y exportar lecturas diarias; además permite detallar, editar y desactivar registros de lecturas.
+
+Consultar, visualizar y exportar lecturas diarias. El módulo permite filtrar por ciudad y tanque, consultar detalle por fecha/tanque, editar registros individuales y realizar desactivación lógica.
 
 ## Firma del Componente
+
 ```typescript
-function ReporteLecturas(): JSX.Element
+function ReporteLecturas(): JSX.Element;
 ```
 
 No recibe props - es un componente de página completo con funcionalidad CRUD completa.
@@ -13,15 +15,18 @@ No recibe props - es un componente de página completo con funcionalidad CRUD co
 ## TypeScript Types
 
 ### ReporteLecturasForm
+
 ```typescript
 interface ReporteLecturasForm {
   CveCiudad: string;
+  IDTanque: string;
   FechaInicial: string;
   FechaFinal: string;
 }
 ```
 
 ### LecturaDiaria
+
 ```typescript
 interface LecturaDiaria {
   ciudad: string;
@@ -36,6 +41,7 @@ interface LecturaDiaria {
 ```
 
 ### DetalleLectura
+
 ```typescript
 interface DetalleLectura {
   IDTanqueLecturas: number;
@@ -49,20 +55,27 @@ interface DetalleLectura {
 ```
 
 ## Dependencias
-- `react` (`useState`)
+
+- `react` (`useState`, `useEffect`)
 - `react-bootstrap` (`Container`, `Card`, `Form`, `Button`, `Row`, `Col`, `Alert`, `Table`, `Spinner`, `Modal`)
 - `react-hook-form` (`useForm`)
-- Componentes internos: `ComboCveCiudad`
+- `jspdf`
+- `jspdf-autotable`
+- Componentes internos: `ComboCveCiudad`, `ComboTanquePorCiudad`
 - `supabase` client local
 
 ## Estado interno
 
 ### Consulta principal
+
 - `isLoading: boolean` - Estado de consulta agregada
 - `alertMessage: { type, text } | null` - Mensajes de resultado
 - `lecturas: LecturaDiaria[]` - Datos agregados por tanque/fecha
+- `cveCiudadSeleccionada: string` - Ciudad activa para recargar el combo de tanque
+- `tanqueNombre: string` - Texto visible del tanque elegido para exportación PDF
 
 ### Modal detalle
+
 - `showModal: boolean` - Visibilidad del modal
 - `detalleLecturas: DetalleLectura[]` - Lecturas individuales del día
 - `isModalLoading: boolean` - Carga de datos del modal
@@ -70,79 +83,111 @@ interface DetalleLectura {
 - `infoFilaSeleccionada: { fecha, tanque } | null` - Info para título del modal
 
 ### Edición inline
+
 - `editingId: number | null` - ID del registro en edición
 - `editForm: { Hora, LecturaCms, Temperatura, CuentaLitros }` - Formulario de edición
 
 ### Reconsulta
+
 - `lastQueryParams: ReporteLecturasForm | null` - Últimos parámetros para recargar después de editar/eliminar
 
 ## React Hooks
 
 ### useState
+
 Total de 10 estados (listados arriba en "Estado interno")
 
 ### useForm
+
 ```typescript
-const { 
-  register, 
-  handleSubmit, 
-  formState: { errors } 
+const {
+  register,
+  handleSubmit,
+  watch,
+  setValue,
+  formState: { errors },
 } = useForm<ReporteLecturasForm>({
   mode: "onSubmit",
-  reValidateMode: "onChange"
+  reValidateMode: "onChange",
 });
 ```
+
+### useEffect
+
+1. Observa `CveCiudad`.
+2. Resetea `IDTanque` cuando cambia la ciudad.
+3. Reinicia el nombre visible del tanque a `Todos`.
+
+### watch
+
+- `watch("CveCiudad")` para controlar la cascada del filtro de tanque.
 
 ## Funciones Internas
 
 ### 1. formatearFecha
+
 ```typescript
-function formatearFecha(fecha: string): string
+function formatearFecha(fecha: string): string;
 ```
+
 Convierte fecha ISO a formato español (`DD/MM/YYYY`).
 
-### 2. onSubmit  
+### 2. onSubmit
+
 ```typescript
-async function onSubmit(data: ReporteLecturasForm): Promise<void>
+async function onSubmit(data: ReporteLecturasForm): Promise<void>;
 ```
-1. Llama RPC `sp_obtener_lecturas_diarias(p_ciudad, p_fecha_inicial, p_fecha_final)`
+
+1. Llama RPC `sp_obtener_lecturas_diarias(p_ciudad, p_id_tanque, p_fecha_inicial, p_fecha_final)`
 2. Ordena resultados por fecha y nombre de tanque
 3. Actualiza estado `lecturas`
 4. Guarda parámetros para reconsulta posterior
 5. Muestra mensaje con cantidad de registros encontrados
 
+Si `CveCiudad` o `IDTanque` vienen vacíos, el frontend envía `null` para indicar que el filtro es opcional.
+
 ### 3. handleVerDetalle
+
 ```typescript
-async function handleVerDetalle(fecha: string, tanque: string): Promise<void>
+async function handleVerDetalle(fecha: string, tanque: string): Promise<void>;
 ```
+
 1. Abre modal
 2. Llama RPC `fn_obtener_lecturas_por_fecha(p_fecha, p_tanque)`
 3. Carga detalle de todas las lecturas individuales del día
 4. Muestra en tabla con opciones de editar/eliminar
 
 ### 4. handleDelete
+
 ```typescript
-async function handleDelete(id: number, tanque: string): Promise<void>
+async function handleDelete(id: number, tanque: string): Promise<void>;
 ```
+
 **Eliminación lógica** (no física):
+
 1. Confirma con usuario vía `window.confirm()`
 2. Actualiza `TanqueLecturas.Activo = 0`
 3. Cierra modal
 4. Reconsulta datos agregados
 
 ### 5. handleEditStart
+
 ```typescript
-function handleEditStart(item: DetalleLectura): void
+function handleEditStart(item: DetalleLectura): void;
 ```
+
 Activa modo de edición inline:
+
 1. Establece `editingId` al ID del registro
 2. Carga valores actuales en `editForm`
 3. Convierte fila a inputs editables
 
 ### 6. handleUpdate
+
 ```typescript
-async function handleUpdate(id: number, tanque: string): Promise<void>
+async function handleUpdate(id: number, tanque: string): Promise<void>;
 ```
+
 1. Valida que todos los campos estén llenos
 2. Confirma con usuario
 3. Actualiza registro en `TanqueLecturas`
@@ -150,43 +195,65 @@ async function handleUpdate(id: number, tanque: string): Promise<void>
 5. Reconsulta datos agregados
 
 ### 7. exportarCSV
+
 ```typescript
-function exportarCSV(): void
+function exportarCSV(): void;
 ```
+
 1. Convierte `lecturas` a formato CSV
 2. Añade BOM UTF-8 (`\uFEFF`) para compatibilidad con Excel
 3. Crea blob y descarga archivo
 4. Nombre: `Lecturas_YYYY-MM-DD.csv`
 
+### 8. exportarPDF
+
+```typescript
+async function exportarPDF(): Promise<void>;
+```
+
+1. Genera PDF horizontal con `jsPDF`
+2. Inserta logotipo corporativo
+3. Imprime filtros activos: ciudad, tanque y rango de fechas
+4. Construye tabla con `jspdf-autotable`
+5. Descarga archivo `Reporte_Lecturas_YYYYMMDD.pdf`
+
 ## Integración de datos
 
 ### RPC: `sp_obtener_lecturas_diarias`
+
 **Parámetros:**
-- `p_ciudad: string`
+
+- `p_ciudad: string | null`
+- `p_id_tanque: number | null`
 - `p_fecha_inicial: string`
 - `p_fecha_final: string`
 
 **Retorna:** Array de `LecturaDiaria` con datos agregados (primera y última lectura del día).
 
 ### RPC: `fn_obtener_lecturas_por_fecha`
+
 **Parámetros:**
+
 - `p_fecha: string`
 - `p_tanque: string`
 
 **Retorna:** Array de `DetalleLectura` con todas las lecturas individuales.
 
 ### Tabla: `TanqueLecturas`
+
 **Operaciones:**
+
 - `UPDATE ... SET Activo = 0` - Eliminación lógica
 - `UPDATE` por `IDTanqueLecturas` - Edición de campos
 
 ## Validaciones
 
-| Campo | Validación |
-|-------|------------|
-| `CveCiudad` | Obligatorio |
-| `FechaInicial` | Obligatoria |
-| `FechaFinal` | Obligatoria, no puede ser menor que inicial |
+| Campo          | Validación                                  |
+| -------------- | ------------------------------------------- |
+| `CveCiudad`    | Opcional                                    |
+| `IDTanque`     | Opcional, dependiente de ciudad             |
+| `FechaInicial` | Obligatoria                                 |
+| `FechaFinal`   | Obligatoria, no puede ser menor que inicial |
 
 ## Estructura Visual
 
@@ -196,9 +263,9 @@ function exportarCSV(): void
 │                                                 │
 │ [Alert si hay mensajes]                        │
 │                                                 │
-│ [Ciudad ▾] [Fecha Inicial] [Fecha Final] [Consultar]│
+│ [Ciudad ▾] [Tanque ▾] [Fecha Inicial] [Fecha Final] [Consultar]│
 │                                                 │
-│ ┌─ Resultados ────────── [Exportar CSV] ┐     │
+│ ┌─ Resultados ───── [Exportar CSV] [Exportar PDF] ┐ │
 │ │ ┌──────────────────────────────────┐  │     │
 │ │ │ Tabla con encabezados multinivel │  │     │
 │ │ │ - Ciudad, Tanque, Fecha          │  │     │
@@ -228,13 +295,13 @@ function exportarCSV(): void
 ```html
 <thead>
   <tr>
-    <th rowSpan={2}>Ciudad</th>
-    <th rowSpan={2}>Tanque</th>
-    <th rowSpan={2}>Fecha Lectura</th>
-    <th colSpan={2}>Altura (cms)</th>
-    <th colSpan={2}>Cuenta Litros</th>
-    <th rowSpan={2}>Lts Consumidos</th>
-    <th rowSpan={2}>Acción</th>
+    <th rowspan="{2}">Ciudad</th>
+    <th rowspan="{2}">Tanque</th>
+    <th rowspan="{2}">Fecha Lectura</th>
+    <th colspan="{2}">Altura (cms)</th>
+    <th colspan="{2}">Cuenta Litros</th>
+    <th rowspan="{2}">Lts Consumidos</th>
+    <th rowspan="{2}">Acción</th>
   </tr>
   <tr>
     <th>Inicial</th>
@@ -269,15 +336,21 @@ Usuario edita y hace clic en "Ok"
 ## Características avanzadas
 
 ### 1. CSV Export con BOM UTF-8
+
 ```typescript
-const blob = new Blob([`\uFEFF${csvContent}`], { type: "text/csv;charset=utf-8;" });
+const blob = new Blob([`\uFEFF${csvContent}`], {
+  type: "text/csv;charset=utf-8;",
+});
 ```
+
 El prefijo `\uFEFF` (BOM) asegura que Excel interprete correctamente caracteres especiales españoles.
 
 ### 2. Edición inline en modal
+
 Cada fila puede transformarse en inputs editables sin cambiar de vista.
 
 ### 3. Modal estilizado
+
 ```css
 .modal-backdrop-blur {
   backdrop-filter: blur(5px);
@@ -289,15 +362,22 @@ Cada fila puede transformarse en inputs editables sin cambiar de vista.
 ```
 
 ### 4. Ordenamiento automático
+
 Los resultados se ordenan primero por fecha, luego por nombre de tanque para facilitar lectura.
 
 ### 5. Reconsulta automática
+
 Después de editar o eliminar, se vuelve a ejecutar la consulta agregada para reflejar cambios.
 
+### 6. Cascada de filtros
+
+Cuando cambia la ciudad, el filtro de tanque se limpia y se recarga con la ciudad seleccionada. Si no hay ciudad seleccionada, el combo de tanque opera en modo opcional.
+
 ## Ejemplo de uso
+
 ```tsx
-import ReporteLecturas from './components/ReporteLecturas';
-import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import ReporteLecturas from "./components/ReporteLecturas";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 function App() {
   return (
@@ -311,6 +391,7 @@ function App() {
 ```
 
 ## Notas técnicas
+
 - Este es el componente más complejo de la aplicación (589 líneas)
 - Combina consulta agregada (resumen diario) con detalle granular (lecturas individuales)
 - La eliminación es lógica (`Activo = 0`), no física
@@ -319,3 +400,4 @@ function App() {
 - Los números en la tabla usan `.toLocaleString()` para formateo con separadores de miles
 - El modal tiene ancho personalizado (1050px) para acomodar todas las columnas sin scroll horizontal
 - La validación de `FechaFinal` usa función personalizada que compara con `FechaInicial`
+- El filtro de tanque usa el texto seleccionado para etiquetar correctamente las exportaciones PDF

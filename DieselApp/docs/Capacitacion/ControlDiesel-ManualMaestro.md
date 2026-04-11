@@ -25,13 +25,13 @@ Tipo: Documento Consolidado para Capacitación, Auditoría y Contexto IA
 
 # 3. Matriz de Pantallas
 
-| Módulo     | Pantalla                         | Objetivo                                                                                      | Perfil Principal              | Riesgo Mitigado                                                                                  |
-| ---------- | -------------------------------- | --------------------------------------------------------------------------------------------- | ----------------------------- | ------------------------------------------------------------------------------------------------ |
-| Operación  | Registro de Carga (Salidas)      | Vincular litros erogados con vehículos y conductores.                                         | Despachador de combustible    | Desviación de combustible; Evasión de responsabilidades.                                         |
-| Operación  | Registro de Recepción (Entradas) | Cargar inventario conectando un proveedor legal y un remito físico al tanque.                 | Administrador / Recepcionista | Pago a proveedores o pipas fantasma, o mermas simuladas.                                         |
-| Inventario | Captura de Lecturas Diarias      | Crear un corte de caja físico del tanque con su regla metrológica y cuenta litros.            | Supervisor de Patio           | Faltantes indocumentados (fugas o robo nocturno) cubiertos a toro pasado por atraso.             |
-| Reportes   | Reporte de Consumos              | Sumar e inspeccionar Entradas y Salidas cruzadas por fechas consolidando.                     | Auditoría / Control Interno   | Cuadraturas falsas hechas en Excel aislando los registros duros en BD.                           |
-| Reportes   | Reporte de Rendimientos          | Medir ineficiencia o fugas vehiculares exponiendo la métrica de kilómetros u horas por litro. | Gerencia de Flota / Taller    | Vehículos "ordeñados" silenciosamente que figuran devorando cantidades irreales por kilometraje. |
+| Módulo     | Pantalla                         | Objetivo                                                                                           | Perfil Principal              | Riesgo Mitigado                                                                                    |
+| ---------- | -------------------------------- | -------------------------------------------------------------------------------------------------- | ----------------------------- | -------------------------------------------------------------------------------------------------- |
+| Operación  | Registro de Carga (Salidas)      | Vincular litros erogados con vehículos y conductores.                                              | Despachador de combustible    | Desviación de combustible; Evasión de responsabilidades.                                           |
+| Operación  | Registro de Recepción (Entradas) | Cargar inventario conectando un proveedor legal y un remito físico al tanque.                      | Administrador / Recepcionista | Pago a proveedores o pipas fantasma, o mermas simuladas.                                           |
+| Inventario | Captura de Lecturas Diarias      | Crear un corte de caja físico del tanque con su regla metrológica y cuenta litros.                 | Supervisor de Patio           | Faltantes indocumentados (fugas o robo nocturno) cubiertos a toro pasado por atraso.               |
+| Reportes   | Reporte de Consumos              | Sumar e inspeccionar Entradas y Salidas cruzadas por fechas consolidando.                          | Auditoría / Control Interno   | Cuadraturas falsas hechas en Excel aislando los registros duros en BD.                             |
+| Reportes   | Reporte de Rendimientos          | Medir ineficiencia o fugas vehiculares exponiendo la métrica de kilómetros u horas por litro.      | Gerencia de Flota / Taller    | Vehículos "ordeñados" silenciosamente que figuran devorando cantidades irreales por kilometraje.   |
 | Reportes   | Productividad por Carga          | Correlacionar cada recarga de diésel con los viajes de concreto realizados inmediatamente después. | Auditoría / Gerencia          | Identifica exactamente cuándo y con qué carga una unidad dejó de ser rentable (precisión horaria). |
 
 # 4. Reglas de Negocio Consolidadas
@@ -80,14 +80,14 @@ Globalmente el sistema deja el rastreo indiscutible asimilado a Base de Datos de
 
 # 8. Riesgos Operativos Controlados por el Sistema
 
-La normalización consolida que el portal protege sobre todo el Inventario real mediante tres ejes: Controla los falsos ingresos inyectados facturando pipas invisibles; controla el surtimiento ilegal disfrazando combustible propio a flotillas fantasmas o cruzadas; y controla la pasividad del almacenaje forzando a establecer un cerco horario para medir pérdidas estáticas para reclamaciones de mantenimiento u ordenanzas de seguridad patrimonial de modo casi perentorio y constante (cada 48 horas como máximo de límite permisivo). Todo esto inhibiendo cruces geográficos absurdos.
+La normalización consolida que el portal protege sobre todo el Inventario real mediante tres ejes: Controla los falsos ingresos inyectados facturando pipas invisibles; controla el surtimiento ilegal disfrazando combustible propio a flotillas fantasmas o cruzadas; y controla la pasividad del almacenaje forzando a establecer un cerco horario para medir pérdidas estáticas para reclamaciones de mantenimiento u ordenanzas de seguridad patrimonial bajo una ventana de captura restringida por configuración operativa. Todo esto inhibiendo cruces geográficos absurdos.
 
 # 9. Escenarios de Auditoría
 
 1. **Facturas vs Sisyema:** Compulsa directa entre las facturación que subió al ERP de Compras con la sumatoria estricta del CSV desprendido del Reporte de Consumos (Módulo de Entradas).
 2. **Surtimiento vs Vale:** El cruce minucioso "Al Vuelo" entre los cientos de vales de papel retenidos en cajas de despacho, cruzados contra el modal de Detalle en los Reportes para revisar que no se hayan inventado registros ficticios.
 3. **Validaciones Mecánicas y Rendimiento:** Disparadores que detecten Kms/Lts por debajo de rangos normados lo que inicia peritaje de desgaste mecánico inusitado en Unidad Taller, o un interrogatorio oficial por robo de diesel ("ordeña") al Chofer responsable en ese Turno y la ciudad registrada.
-4. **Cruce Temporal Tardío de Inventario:** Extraer "Lecturas" del sistema midiendo las distancias temporales del campo "FechaRegistro" que exponga en evidencia a los jefes de patio con tendencia a capturar retrasadamente al final del límite 48 hrs.
+4. **Cruce Temporal Tardío de Inventario:** Extraer "Lecturas" del sistema midiendo las distancias temporales del campo "FechaRegistro" para detectar capturas realizadas al borde del límite configurado de tolerancia operativa.
 
 # 10. Consideraciones para Flujos de IA
 

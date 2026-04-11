@@ -48,6 +48,30 @@ export interface RendimientoDetalleItem {
   odometro: number;
 }
 
+export interface ReporteRendimientosV2Data {
+  Unidad: string;
+  IDUnidad: number;
+  "Carga Total": number;
+  "Kms Recorridos": number;
+  "Hrs Recorridos": number;
+  "Kms/Lts": number;
+  "Hrs/Lts": number;
+  "Tanque Principal": string;
+  "Tanques Utilizados": string;
+  "Cantidad Tanques": number;
+}
+
+export interface RendimientoDetalleV2Item {
+  id_tanque_movimiento: number;
+  tanque: string;
+  fecha: string;
+  hora: string;
+  litros: number;
+  cuenta_litros: number;
+  horometro: number;
+  odometro: number;
+}
+
 // Tipos para el Reporte de Productividad y Rentabilidad
 
 export interface ReporteProductividadData {

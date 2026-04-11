@@ -263,6 +263,51 @@
   vertical-align: middle;
 }
 
+.rendimientos-v2-table {
+  table-layout: fixed;
+  min-width: 1030px;
+}
+
+.rendimientos-v2-table__col--unidad {
+  width: 146px;
+}
+
+.rendimientos-v2-table__col--numero {
+  width: 9%;
+}
+
+.rendimientos-v2-table__col--kpi {
+  width: 7%;
+}
+
+.rendimientos-v2-table__col--tanque {
+  width: calc(12% + 20px);
+}
+
+.rendimientos-v2-table__col--tanques {
+  width: 18%;
+}
+
+.rendimientos-v2-table__col--accion {
+  width: 9%;
+}
+
+.rendimientos-v2-table__unidad,
+.rendimientos-v2-table__tanque,
+.rendimientos-v2-table__tanques {
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.rendimientos-v2-table__numero,
+.rendimientos-v2-table__accion {
+  white-space: nowrap;
+}
+
+.rendimientos-v2-table .btn {
+  white-space: nowrap;
+}
+
 /* Card Headers */
 .card-header-corporate {
   background-color: var(--corporate-dark) !important;

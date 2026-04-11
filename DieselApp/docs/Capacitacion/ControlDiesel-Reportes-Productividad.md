@@ -42,14 +42,15 @@ El reporte presenta un conglomerado totalizado en el rango de fechas seleccionad
 
 ## 5. Elementos de la Interfaz, Semáforos y Criterios de Aceptación (UX/UI)
 
-| Componente                     | Tipo          | Criterio de Aceptación / Lógica de Negocio                          | Riesgo de Negocio que Mitiga                                                     |
-| :----------------------------- | :------------ | :------------------------------------------------------------------ | :------------------------------------------------------------------------------- |
-| **Piltros Principales**        | Controles     | Fecha de inicio, fin, Ciudad y Tanque.                              | Acotar consultas masivas y generar rentabilidad por centro de costo.             |
-| **Alerta "No Registrado"**     | Badge UX      | Unidades de otras plazas operando localmente se marcan visualmente. | Previene la confusión corporativa al ver camiones fantasmas en el listado local. |
-| **Costo Energético ($L/m^3$)** | KPI Divisorio | Total de Litros $\div$ Carga Total ($m^3$).                         | Es el KPI "Reina" para medir la rentabilidad operativa.                          |
-| **KPI Verde (Excelente)**      | Semáforo      | $L/m^3 < 3.5$                                                       | Recompensa visual a operaciones altamente eficientes.                            |
-| **KPI Amarillo (Atención)**    | Semáforo      | $L/m^3$ está entre $3.5$ y $5.0$                                    | Zona de advertencia temprana para ajustar rutas o mantenimientos.                |
-| **KPI Rojo (Crítico)**         | Semáforo      | $L/m^3 > 5.0$ o Exceso en Consumo.                                  | Foco de auditoría urgente: Posible ordeña o motor dañado.                        |
+| Componente                     | Tipo          | Criterio de Aceptación / Lógica de Negocio                                                       | Riesgo de Negocio que Mitiga                                                     |
+| :----------------------------- | :------------ | :----------------------------------------------------------------------------------------------- | :------------------------------------------------------------------------------- |
+| **Piltros Principales**        | Controles     | Fecha de inicio, fin, Ciudad y Tanque.                                                           | Acotar consultas masivas y generar rentabilidad por centro de costo.             |
+| **Alerta "No Registrado"**     | Badge UX      | Unidades de otras plazas operando localmente se marcan visualmente.                              | Previene la confusión corporativa al ver camiones fantasmas en el listado local. |
+| **Costo Energético ($L/m^3$)** | KPI Divisorio | Total de Litros $\div$ Carga Total ($m^3$).                                                      | Es el KPI "Reina" para medir la rentabilidad operativa.                          |
+| **KPI Verde (Excelente)**      | Semáforo      | $L/m^3 < 3.5$                                                                                    | Recompensa visual a operaciones altamente eficientes.                            |
+| **KPI Amarillo (Atención)**    | Semáforo      | $L/m^3$ está entre $3.5$ y $5.0$                                                                 | Zona de advertencia temprana para ajustar rutas o mantenimientos.                |
+| **KPI Rojo (Crítico)**         | Semáforo      | $L/m^3 > 5.0$ o Exceso en Consumo.                                                               | Foco de auditoría urgente: Posible ordeña o motor dañado.                        |
+| **Exportación PDF**            | Acción        | Genera salida corporativa con filtros, tabla principal y semáforos reproducidos en el documento. | Compartir análisis ejecutivo sin depender de Excel o acceso directo al sistema.  |
 
 ## 6. Flujo Operativo y de Toma de Decisión (User Journey)
 
@@ -76,7 +77,7 @@ Muestra cada viaje o remisión que la unidad le entregó a un cliente. Contiene 
 
 ### Pestaña C: Productividad por Carga (Correlación Automática)
 
-Muestra el cruce analítico entre las recargas de Diésel registradas en la *Pestaña A* y los viajes realizados en la *Pestaña B*. Esta funcionalidad toma cada recarga de combustible como un "punto de inicio" y evalúa la productividad generada hasta la siguiente recarga.
+Muestra el cruce analítico entre las recargas de Diésel registradas en la _Pestaña A_ y los viajes realizados en la _Pestaña B_. Esta funcionalidad toma cada recarga de combustible como un "punto de inicio" y evalúa la productividad generada hasta la siguiente recarga.
 
 - **Métricas Analizadas:**
   - Cantidad de Viajes realizados con esos litros específicos.

@@ -40,6 +40,11 @@ El resultado está agrupado por **Tanque + Unidad**, mostrando totales acumulado
 | **Kms/Lts**        | `Kms Recorridos / Carga Total` (protegido con `NULLIF`) |
 | **Hrs/Lts**        | `Hrs Recorridos / Carga Total` (protegido con `NULLIF`) |
 
+## Exportación
+
+- **CSV** con el total de filas del resultado.
+- **PDF** con formato corporativo, encabezado, filtros activos, tabla del reporte y fila de totales agregados del periodo.
+
 ## Función RPC (Supabase)
 
 **Nombre**: `public.reporte_rendimientos`  
@@ -60,10 +65,10 @@ Llamada desde el frontend:
 ```ts
 await supabase.rpc("reporte_rendimientos", {
   p_fecha_inicio: data.FechaInicial,
-  p_fecha_fin:    data.FechaFinal,
-  p_cve_ciudad:   data.CveCiudad || null,
-  p_id_tanque:    data.IDTanque  ? parseInt(data.IDTanque)  : null,
-  p_id_unidad:    data.IDUnidad  ? parseInt(data.IDUnidad)  : null,
+  p_fecha_fin: data.FechaFinal,
+  p_cve_ciudad: data.CveCiudad || null,
+  p_id_tanque: data.IDTanque ? parseInt(data.IDTanque) : null,
+  p_id_unidad: data.IDUnidad ? parseInt(data.IDUnidad) : null,
 });
 ```
 
@@ -124,7 +129,7 @@ Al hacer clic en **Detalle** en una fila del reporte, se abre un modal con los m
 | :--------- | :------------------------------------------------------------------------------------------------------------ |
 | 2026-02-19 | Creación inicial: SQL, tipos, componente, rutas y menú.                                                       |
 | 2026-02-19 | Se eliminó la columna **Fecha** del resultado para mostrar totales acumulados.                                |
-| 2026-02-24 | Edición inline en modal de detalle: Litros, CuentaLitros, Horómetro, Odómetro con update a TanqueMovimiento. |
+| 2026-02-24 | Edición inline en modal de detalle: Litros, CuentaLitros, Horómetro, Odómetro con update a TanqueMovimiento.  |
 | 2026-03-11 | Combo **Tanque** pasa a ser opcional (wildcard Todos). **Ciudad** pasa a ser obligatorio.                     |
 | 2026-03-11 | Nuevo combo **Unidad** opcional con cascada desde Tanque. Reseteo automático en cascada al cambiar selección. |
 | 2026-03-11 | Fuente de unidades unificada a `TanqueMovimiento` en ambos modos (Todos/específico).                          |

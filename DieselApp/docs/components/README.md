@@ -22,11 +22,13 @@ Cada archivo `.md` documenta un componente de React y sigue una estructura estan
 ## Componentes Documentados
 
 ### Formularios de Captura
+
 - `CapturaLecturas.md` - Captura de lecturas diarias de tanques
 - `EntradasDiesel.md` - Registro de entradas de combustible
 - `SalidasDiesel.md` - Registro de salidas de combustible a unidades
 
 ### Selectores (Combos)
+
 - `ComboCiudad.md` - Selector de ciudades
 - `ComboCveCiudad.md` - Selector de clave de ciudad
 - `ComboOperadores.md` - Selector de operadores filtrado
@@ -37,24 +39,29 @@ Cada archivo `.md` documenta un componente de React y sigue una estructura estan
 - `ComboUnidades.md` - Selector de unidades vehiculares
 
 ### Reportes
-- `ReporteLecturas.md` - Reporte de lecturas diarias con CRUD
+
+- `ReporteLecturas.md` - Reporte de lecturas diarias con filtros opcionales, detalle editable y exportación CSV/PDF
 - `ReporteConsumos.md` - Reporte de consumos (entradas/salidas)
+- `ReporteRendimientos.md` - Reporte actual de rendimientos agrupado por tanque y unidad
+- `ReporteRendimientosV2.md` - Reporte consolidado por unidad para cargas en múltiples tanques
 
 ### Navegación
+
 - `Login.md` - Componente de autenticación
 - `TopNav.md` - Barra de navegación superior
 
 ---
 
-## 📝 Mantenimiento de Documentación
+## Mantenimiento de Documentación
 
-### ⚠️ IMPORTANTE: Actualización Obligatoria
+### IMPORTANTE: Actualización Obligatoria
 
 **Esta documentación debe actualizarse cada vez que se realicen cambios técnicos en los componentes.**
 
 ### Cuándo Actualizar
 
 Debes actualizar la documentación cuando:
+
 - ✅ Se agreguen o modifiquen **props** del componente
 - ✅ Se cambien **tipos TypeScript** (interfaces)
 - ✅ Se añadan nuevos **estados** o **hooks**
@@ -85,6 +92,7 @@ Debes actualizar la documentación cuando:
 ### Ejemplo de Actualización
 
 **Antes** (componente modificado):
+
 ```tsx
 // Se agregó nuevo prop 'showExportButton'
 interface ReporteProps {
@@ -93,16 +101,19 @@ interface ReporteProps {
 ```
 
 **Después** (documentación actualizada):
+
 ```markdown
 ## Props
+
 - `showExportButton?: boolean` - Muestra/oculta botón de exportar CSV (default: true)
 ```
 
 ### Responsabilidad del Desarrollador
 
-> 💡 **Regla de Oro**: Si modificas el código de un componente, actualiza su documentación en la misma sesión de trabajo.
+**Regla de Oro**: Si modificas el código de un componente, actualiza su documentación en la misma sesión de trabajo.
 
 Esto asegura que:
+
 - La documentación siempre refleje el estado actual del código
 - Otros desarrolladores puedan entender rápidamente los cambios
 - Se mantenga un registro histórico de la evolución del componente

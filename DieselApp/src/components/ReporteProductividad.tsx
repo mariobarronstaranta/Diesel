@@ -14,10 +14,13 @@ import {
 } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { useState, useEffect } from "react";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
 import ComboCveCiudad from "./ComboCveCiudad";
 import ComboTanquePorCiudad from "./ComboTanquePorCiudad";
 import { supabase } from "../supabase/client";
 import ReporteProductividadDetalleModal from "./ReporteProductividadDetalleModal";
+import logoUrl from "../assets/images/logo.png";
 import type {
   ReporteProductividadData,
   ReporteProductividadForm,
@@ -34,6 +37,7 @@ export default function ReporteProductividad() {
   );
   const [cveCiudadSeleccionada, setCveCiudadSeleccionada] =
     useState<string>("");
+  const [tanqueNombre, setTanqueNombre] = useState<string>("Todos");
   const [lastQueryParams, setLastQueryParams] =
     useState<ReporteProductividadForm | null>(null);
 
@@ -74,6 +78,11 @@ export default function ReporteProductividad() {
   useEffect(() => {
     setCveCiudadSeleccionada(cveCiudad || "");
   }, [cveCiudad]);
+
+  const formatearFecha = (fecha: string) => {
+    const [y, m, d] = fecha.split("-");
+    return `${d}/${m}/${y}`;
+  };
 
   const formatearNumero = (
     numero: number | null | undefined,
@@ -192,6 +201,248 @@ export default function ReporteProductividad() {
     document.body.removeChild(link);
   };
 
+  const exportarPDF = async () => {
+    if (reporteData.length === 0) return;
+
+    const doc = new jsPDF("landscape");
+
+    const loadLogo = (): Promise<HTMLImageElement> => {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.src = logoUrl;
+        img.onload = () => resolve(img);
+        img.onerror = (e) => reject(e);
+      });
+    };
+
+    try {
+      const logo = await loadLogo();
+      const ratio = logo.width / logo.height;
+      const logoHeight = 12;
+      const logoWidth = logoHeight * ratio;
+      const pdfWidth = doc.internal.pageSize.getWidth();
+      doc.addImage(
+        logo,
+        "PNG",
+        pdfWidth - 14 - logoWidth,
+        10,
+        logoWidth,
+        logoHeight,
+      );
+    } catch (err) {
+      console.error("Error cargando logo en PDF", err);
+    }
+
+    doc.setFontSize(22);
+    doc.setTextColor(52, 58, 64);
+    doc.setFont("helvetica", "bold");
+    doc.text("Reporte de Productividad y Rentabilidad", 14, 20);
+
+    doc.setDrawColor(240, 173, 78);
+    doc.setLineWidth(1.5);
+    doc.line(14, 24, doc.internal.pageSize.getWidth() - 14, 24);
+
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(108, 117, 125);
+    const ciudad = lastQueryParams?.CveCiudad || "Todas";
+    const tanque = tanqueNombre || "Todos";
+    const fInicio = lastQueryParams?.FechaInicial
+      ? formatearFecha(lastQueryParams.FechaInicial)
+      : "";
+    const fFinal = lastQueryParams?.FechaFinal
+      ? formatearFecha(lastQueryParams.FechaFinal)
+      : "";
+
+    doc.text("Filtros:", 14, 30);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(52, 58, 64);
+    doc.text("Ciudad:", 30, 30);
+    doc.setFont("helvetica", "normal");
+    doc.text(ciudad, 43, 30);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("Tanque:", 85, 30);
+    doc.setFont("helvetica", "normal");
+    doc.text(tanque, 100, 30);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("Desde:", 150, 30);
+    doc.setFont("helvetica", "normal");
+    doc.text(fInicio, 163, 30);
+
+    doc.setFont("helvetica", "bold");
+    doc.text("Hasta:", 205, 30);
+    doc.setFont("helvetica", "normal");
+    doc.text(fFinal, 218, 30);
+
+    const totalLitros = reporteData.reduce(
+      (sum, item) => sum + Number(item["Litros Consumidos"] || 0),
+      0,
+    );
+    const totalKms = reporteData.reduce(
+      (sum, item) => sum + Number(item["Kms Totales"] || 0),
+      0,
+    );
+    const totalHrs = reporteData.reduce(
+      (sum, item) => sum + Number(item["Hrs Totales"] || 0),
+      0,
+    );
+    const totalMetros = reporteData.reduce(
+      (sum, item) => sum + Number(item.MetrosCubicos || 0),
+      0,
+    );
+    const totalViajes = reporteData.reduce(
+      (sum, item) => sum + Number(item.Viajes || 0),
+      0,
+    );
+    const totalLtsM3 = totalMetros > 0 ? totalLitros / totalMetros : 0;
+    const totalM3Viaje = totalViajes > 0 ? totalMetros / totalViajes : 0;
+    const totalKmLts = totalLitros > 0 ? totalKms / totalLitros : 0;
+
+    const tableColumn = [
+      "Unidad",
+      "Tanque",
+      "Lts Totales",
+      "Kms Totales",
+      "Hrs Totales",
+      "Carga Total Viajes",
+      "Lts/M3",
+      "M3/Viaje",
+      "Km/Lts",
+    ];
+
+    const tableRows = reporteData.map((item) => {
+      const noRegistrada = item.EstadoRegistro === "No Registrada";
+      return [
+        noRegistrada ? `${item.Unidad} [No Registrada]` : item.Unidad,
+        item.Tanque ?? "",
+        noRegistrada ? "-" : formatearNumero(item["Litros Consumidos"]),
+        noRegistrada ? "-" : formatearNumero(item["Kms Totales"], true),
+        noRegistrada ? "-" : formatearNumero(item["Hrs Totales"], true),
+        `${formatearNumero(item.MetrosCubicos)} (${item.Viajes} viajes)`,
+        noRegistrada ? "-" : formatearNumero(item["Lts/M3"]),
+        formatearNumero(item["M3/Viaje"]),
+        noRegistrada ? "-" : formatearNumero(item["Km/Lts"]),
+      ];
+    });
+
+    tableRows.push([
+      "TOTALES",
+      "",
+      formatearNumero(totalLitros),
+      formatearNumero(totalKms, true),
+      formatearNumero(totalHrs, true),
+      `${formatearNumero(totalMetros)} (${totalViajes} viajes)`,
+      formatearNumero(totalLtsM3),
+      formatearNumero(totalM3Viaje),
+      formatearNumero(totalKmLts),
+    ]);
+
+    autoTable(doc, {
+      head: [tableColumn],
+      body: tableRows,
+      startY: 35,
+      styles: {
+        fontSize: 8,
+        cellPadding: 3,
+        valign: "middle",
+      },
+      headStyles: {
+        fillColor: [52, 58, 64],
+        textColor: 255,
+        fontStyle: "bold",
+        halign: "center",
+      },
+      alternateRowStyles: {
+        fillColor: [244, 246, 251],
+      },
+      columnStyles: {
+        0: { halign: "left" },
+        1: { halign: "left" },
+        2: { halign: "right" },
+        3: { halign: "right" },
+        4: { halign: "right" },
+        5: { halign: "center" },
+        6: { halign: "right" },
+        7: { halign: "right" },
+        8: { halign: "right", fontStyle: "bold", textColor: [52, 58, 64] },
+      },
+      didParseCell: (data) => {
+        const rowIndex = data.row.index;
+        if (rowIndex < reporteData.length) {
+          const item = reporteData[rowIndex];
+          if (item?.EstadoRegistro === "No Registrada") {
+            data.cell.styles.fillColor = [255, 243, 205];
+          }
+          if (
+            data.column.index === 6 &&
+            item?.EstadoRegistro !== "No Registrada"
+          ) {
+            const valor = Number(item["Lts/M3"] || 0);
+            if (valor > 5) {
+              data.cell.styles.fillColor = [220, 53, 69];
+              data.cell.styles.textColor = [255, 255, 255];
+              data.cell.styles.fontStyle = "bold";
+            } else if (valor > 3.5) {
+              data.cell.styles.fillColor = [255, 193, 7];
+              data.cell.styles.textColor = [33, 37, 41];
+              data.cell.styles.fontStyle = "bold";
+            } else if (valor > 0) {
+              data.cell.styles.fillColor = [25, 135, 84];
+              data.cell.styles.textColor = [255, 255, 255];
+              data.cell.styles.fontStyle = "bold";
+            }
+          }
+          if (
+            data.column.index === 8 &&
+            item?.EstadoRegistro !== "No Registrada"
+          ) {
+            const valor = Number(item["Km/Lts"] || 0);
+            if (valor < 1.0 && valor > 0) {
+              data.cell.styles.fillColor = [220, 53, 69];
+              data.cell.styles.textColor = [255, 255, 255];
+              data.cell.styles.fontStyle = "bold";
+            }
+          }
+        }
+
+        if (rowIndex === tableRows.length - 1) {
+          data.cell.styles.fillColor = [230, 230, 230];
+          data.cell.styles.fontStyle = "bold";
+          data.cell.styles.textColor = [52, 58, 64];
+        }
+      },
+    });
+
+    const finalY = (doc as any).lastAutoTable.finalY || 35;
+
+    doc.setDrawColor(200, 200, 200);
+    doc.setLineWidth(0.5);
+    doc.line(
+      14,
+      finalY + 10,
+      doc.internal.pageSize.getWidth() - 14,
+      finalY + 10,
+    );
+
+    const now = new Date();
+    const pad = (n: number) => n.toString().padStart(2, "0");
+    const month = pad(now.getMonth() + 1);
+    const day = pad(now.getDate());
+    const hours = pad(now.getHours());
+    const minutes = pad(now.getMinutes());
+    const timestamp = `${now.getFullYear()}-${month}-${day} ${hours}:${minutes}`;
+
+    doc.setFontSize(8);
+    doc.setFont("helvetica", "italic");
+    doc.setTextColor(150, 150, 150);
+    doc.text(`Generado desde DieselApp el ${timestamp}`, 14, finalY + 15);
+
+    const safeDate = `${now.getFullYear()}${month}${day}`;
+    doc.save(`Reporte_Productividad_${safeDate}.pdf`);
+  };
+
   // Lógica de Semáforos
   const determinarClaseCelda = (
     valor: number,
@@ -243,12 +494,20 @@ export default function ReporteProductividad() {
               </Col>
 
               <Col lg={3} md={6} className="mb-3 mb-lg-0">
-                <ComboTanquePorCiudad
-                  cveCiudad={cveCiudadSeleccionada || null}
-                  register={register}
-                  error={errors.IDTanque}
-                  optional
-                />
+                <div
+                  onChange={(e) => {
+                    const select = e.target as HTMLSelectElement;
+                    const selectedOption = select.options[select.selectedIndex];
+                    setTanqueNombre(selectedOption?.text || "Todos");
+                  }}
+                >
+                  <ComboTanquePorCiudad
+                    cveCiudad={cveCiudadSeleccionada || null}
+                    register={register}
+                    error={errors.IDTanque}
+                    optional
+                  />
+                </div>
               </Col>
 
               <Col lg={2} md={6} className="mb-3 mb-lg-0">
@@ -325,9 +584,19 @@ export default function ReporteProductividad() {
               {lastQueryParams.IDTanque || "Todos"} | del{" "}
               {lastQueryParams.FechaInicial} al {lastQueryParams.FechaFinal})
             </h5>
-            <Button variant="success" size="sm" onClick={exportarCSV}>
-              Exportar CSV
-            </Button>
+            <div>
+              <Button
+                variant="success"
+                size="sm"
+                onClick={exportarCSV}
+                className="me-2"
+              >
+                Exportar CSV
+              </Button>
+              <Button variant="danger" size="sm" onClick={exportarPDF}>
+                Exportar PDF
+              </Button>
+            </div>
           </Card.Header>
           <Card.Body>
             <div className="table-responsive">

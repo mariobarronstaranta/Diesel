@@ -5,6 +5,7 @@ import CapturaLecturas from "./components/CapturaLecturas";
 import ReporteLecturas from "./components/ReporteLecturas";
 import ReporteConsumos from "./components/ReporteConsumos";
 import ReporteRendimientos from "./components/ReporteRendimientos";
+import ReporteRendimientosV2 from "./components/ReporteRendimientosV2";
 import ReporteProductividad from "./components/ReporteProductividad";
 import EntradasDiesel from "./components/EntradasDiesel";
 import SalidasDiesel from "./components/SalidasDiesel";
@@ -30,6 +31,10 @@ function AppLayout() {
           <Route
             path="/reportes/rendimiento"
             element={<ReporteRendimientos />}
+          />
+          <Route
+            path="/reportes/rendimiento-consolidado"
+            element={<ReporteRendimientosV2 />}
           />
           <Route
             path="/reportes/productividad"

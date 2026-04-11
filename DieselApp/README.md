@@ -1,73 +1,85 @@
-# React + TypeScript + Vite
+# DieselApp
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Aplicación web interna para control operativo de diésel en patios y plantas de empresas de transporte. Centraliza captura de lecturas, recepción de combustible, salidas por unidad y reportes operativos sobre inventario, consumo, rendimiento y productividad.
 
-Currently, two official plugins are available:
+## Stack
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- React 19
+- TypeScript 5.9
+- Vite 7
+- Bootstrap 5 + react-bootstrap
+- react-hook-form
+- Supabase
 
-## React Compiler
+## Funcionalidad principal
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+- Captura diaria de lecturas físicas de tanque.
+- Registro de entradas de combustible.
+- Registro de salidas a unidades.
+- Reportes de lecturas, consumos, rendimientos y productividad.
+- Exportación de reportes en CSV y, en algunos módulos, PDF.
 
-## Expanding the ESLint configuration
+## Estructura relevante
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```text
+DieselApp/
+├── public/
+│   └── config.js
+├── src/
+│   ├── components/
+│   ├── shared/
+│   ├── supabase/
+│   └── types/
+├── docs/
+│   ├── AI_Context.md
+│   ├── Capacitacion/
+│   ├── components/
+│   └── Scripts/
+├── deploy-to-iis.bat
+└── vite.config.ts
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+## Requisitos
+
+- Node.js 20 o superior.
+- Acceso a las credenciales/configuración de Supabase.
+- Archivo de configuración global en `public/config.js`.
+
+## Configuración local
+
+La aplicación expone configuración global desde `public/config.js` mediante `window.AppConfig`.
+
+Ejemplo actual:
 
 ```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+window.AppConfig = {
+  diasPermitidosHaciaAtrasCaptura: 60,
+};
 ```
+
+Ese valor controla la retroactividad permitida en calendarios de captura de inventario.
+
+## Scripts disponibles
+
+```bash
+npm install
+npm run dev
+npm run build
+npm run lint
+npm run preview
+```
+
+## Documentación del proyecto
+
+- `docs/AI_Context.md`: contexto técnico y funcional consolidado.
+- `docs/components/`: documentación técnica por componente.
+- `docs/Capacitacion/`: manuales operativos y de capacitación.
+- `docs/Scripts/`: scripts SQL/RPC usados por Supabase.
+
+## Despliegue
+
+El proyecto contempla despliegue en IIS mediante `deploy-to-iis.bat`. La aplicación se sirve bajo la base `/dieselapp`.
+
+## Nota de mantenimiento
+
+Cuando se cambie el comportamiento de un componente o una regla de negocio, debe actualizarse también la documentación relacionada en `docs/components/`, `docs/Capacitacion/` y, si aplica, `docs/AI_Context.md`.

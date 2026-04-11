@@ -108,6 +108,13 @@ export default function TopNav() {
             </Dropdown.Item>
             <Dropdown.Item
               as={NavLink}
+              to="/reportes/rendimiento-consolidado"
+              onClick={closeMenu}
+            >
+              Rendimiento Consolidado
+            </Dropdown.Item>
+            <Dropdown.Item
+              as={NavLink}
               to="/reportes/productividad"
               onClick={closeMenu}
             >

@@ -11,15 +11,17 @@ import {
   Modal,
 } from "react-bootstrap";
 import { useForm } from "react-hook-form";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import ComboCveCiudad from "./ComboCveCiudad";
+import ComboTanquePorCiudad from "./ComboTanquePorCiudad";
 import { supabase } from "../supabase/client";
 import logoUrl from "../assets/images/logo.png";
 
 interface ReporteLecturasForm {
   CveCiudad: string;
+  IDTanque: string;
   FechaInicial: string;
   FechaFinal: string;
 }
@@ -77,11 +79,25 @@ export default function ReporteLecturas() {
   const {
     register,
     handleSubmit,
+    watch,
+    setValue,
     formState: { errors },
   } = useForm<ReporteLecturasForm>({
     mode: "onSubmit",
     reValidateMode: "onChange",
   });
+
+  // Observar ciudad para cascada en combo tanque
+  const cveCiudad = watch("CveCiudad");
+  const [cveCiudadSeleccionada, setCveCiudadSeleccionada] = useState<string>("");
+  const [tanqueNombre, setTanqueNombre] = useState<string>("Todos");
+
+  // Al cambiar la ciudad: resetear Tanque
+  useEffect(() => {
+    setCveCiudadSeleccionada(cveCiudad || "");
+    setValue("IDTanque", "");
+    setTanqueNombre("Todos");
+  }, [cveCiudad, setValue]);
 
   // Reordena "YYYY-MM-DD" → "DD/MM/YYYY" sin pasar por Date (evita desfase UTC)
   const formatearFecha = (fecha: string) => {
@@ -96,16 +112,19 @@ export default function ReporteLecturas() {
       setLastQueryParams(data);
 
       console.log("Consultando lecturas diarias:", {
-        p_ciudad: data.CveCiudad,
+        p_ciudad: data.CveCiudad || null,
+        p_id_tanque: data.IDTanque ? parseInt(data.IDTanque) : null,
         p_fecha_inicial: data.FechaInicial,
         p_fecha_final: data.FechaFinal,
       });
 
       // Llamar a la función RPC de Supabase
+      // Si Ciudad/Tanque están vacíos enviamos null para que el RPC no filtre por ellos
       const { data: result, error } = await supabase.rpc(
         "sp_obtener_lecturas_diarias",
         {
-          p_ciudad: data.CveCiudad,
+          p_ciudad: data.CveCiudad || null,
+          p_id_tanque: data.IDTanque ? parseInt(data.IDTanque) : null,
           p_fecha_inicial: data.FechaInicial,
           p_fecha_final: data.FechaFinal,
         },
@@ -384,14 +403,19 @@ export default function ReporteLecturas() {
     doc.text(ciudad, 43, 30);
     
     doc.setFont("helvetica", "bold");
-    doc.text(`Desde:`, 75, 30);
+    doc.text(`Tanque:`, 75, 30);
     doc.setFont("helvetica", "normal");
-    doc.text(fInicio, 88, 30);
+    doc.text(tanqueNombre, 90, 30);
     
     doc.setFont("helvetica", "bold");
-    doc.text(`Hasta:`, 115, 30);
+    doc.text(`Desde:`, 140, 30);
     doc.setFont("helvetica", "normal");
-    doc.text(fFinal, 126, 30);
+    doc.text(fInicio, 153, 30);
+    
+    doc.setFont("helvetica", "bold");
+    doc.text(`Hasta:`, 185, 30);
+    doc.setFont("helvetica", "normal");
+    doc.text(fFinal, 197, 30);
     
     // Generar datos para la tabla
     const tableColumn = ["Ciudad", "Tanque", "Fecha Lectura", "L. Inicial\n(cms)", "L. Final\n(cms)", "Cta Lts\nInicial", "Cta Lts\nFinal", "Lts\nConsumidos"];
@@ -482,11 +506,26 @@ export default function ReporteLecturas() {
         <Card className="mb-3">
           <Card.Body>
             <Row className="align-items-start">
-              <Col lg={4} md={12} className="mb-3 mb-lg-0">
-                <ComboCveCiudad register={register} error={errors.CveCiudad} />
+              <Col lg={3} md={6} className="mb-3 mb-lg-0">
+                <ComboCveCiudad register={register} error={errors.CveCiudad} optional={true} />
               </Col>
 
               <Col lg={3} md={6} className="mb-3 mb-lg-0">
+                <div onChange={(e) => {
+                  const select = (e.target as HTMLSelectElement);
+                  const selectedOption = select.options[select.selectedIndex];
+                  setTanqueNombre(selectedOption?.text || "Todos");
+                }}>
+                  <ComboTanquePorCiudad
+                    cveCiudad={cveCiudadSeleccionada || null}
+                    register={register}
+                    error={errors.IDTanque}
+                    optional={true}
+                  />
+                </div>
+              </Col>
+
+              <Col lg={2} md={6} className="mb-3 mb-lg-0">
                 <Form.Group>
                   <Form.Label>Fecha Inicial</Form.Label>
                   <Form.Control
@@ -502,7 +541,7 @@ export default function ReporteLecturas() {
                 </Form.Group>
               </Col>
 
-              <Col lg={3} md={6} className="mb-3 mb-lg-0">
+              <Col lg={2} md={6} className="mb-3 mb-lg-0">
                 <Form.Group>
                   <Form.Label>Fecha Final</Form.Label>
                   <Form.Control

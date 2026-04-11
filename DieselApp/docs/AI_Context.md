@@ -5,8 +5,8 @@
 > refactorización o documentación **sin fricción ni suposiciones incorrectas**.
 > Mantener este archivo actualizado tras cada cambio estructural significativo.
 
-**Última actualización:** 2026-04-03
-**Versión:** 1.4
+**Última actualización:** 2026-04-10
+**Versión:** 1.5
 
 ---
 
@@ -97,17 +97,18 @@ DieselApp/
 
 ## 4. Rutas de la Aplicación
 
-| Ruta                      | Componente             | Descripción                                |
-| ------------------------- | ---------------------- | ------------------------------------------ |
-| `/`                       | `Login`                | Pantalla de autenticación                  |
-| `/dashboard`              | `Dashboard`            | Resumen ejecutivo con gráficas             |
-| `/captura`                | `CapturaLecturas`      | Inventario físico de tanque (Lecturas)     |
-| `/entradas`               | `EntradasDiesel`       | Registro de recepción de pipas             |
-| `/salidas`                | `SalidasDiesel`        | Registro de despacho a unidades            |
-| `/reportes/lecturas`      | `ReporteLecturas`      | Historial de lecturas de inventario        |
-| `/reportes/consumos`      | `ReporteConsumos`      | Reporte Entradas vs Salidas por fecha      |
-| `/reportes/rendimiento`   | `ReporteRendimientos`  | Métricas Km/Lt y Hr/Lt por unidad          |
-| `/reportes/productividad` | `ReporteProductividad` | Cruce diesel + viajes SP (M3/Viaje, Lt/M3) |
+| Ruta                                | Componente              | Descripción                                                        |
+| ----------------------------------- | ----------------------- | ------------------------------------------------------------------ |
+| `/`                                 | `Login`                 | Pantalla de autenticación                                          |
+| `/dashboard`                        | `Dashboard`             | Resumen ejecutivo con gráficas                                     |
+| `/captura`                          | `CapturaLecturas`       | Inventario físico de tanque (Lecturas)                             |
+| `/entradas`                         | `EntradasDiesel`        | Registro de recepción de pipas                                     |
+| `/salidas`                          | `SalidasDiesel`         | Registro de despacho a unidades                                    |
+| `/reportes/lecturas`                | `ReporteLecturas`       | Historial de lecturas de inventario                                |
+| `/reportes/consumos`                | `ReporteConsumos`       | Reporte Entradas vs Salidas por fecha                              |
+| `/reportes/rendimiento`             | `ReporteRendimientos`   | Métricas Km/Lt y Hr/Lt por unidad                                  |
+| `/reportes/rendimiento-consolidado` | `ReporteRendimientosV2` | Rendimiento consolidado por unidad con cargas en múltiples tanques |
+| `/reportes/productividad`           | `ReporteProductividad`  | Cruce diesel + viajes SP (M3/Viaje, Lt/M3)                         |
 
 ---
 
@@ -117,44 +118,44 @@ DieselApp/
 
 ### 5.1 `TanqueMovimiento` — Tabla central de transacciones
 
-| Columna               | Tipo          | Descripción                                          |
-| --------------------- | ------------- | ---------------------------------------------------- |
-| `IdTanqueMovimiento`  | bigint PK     | Identificador único (auto-increment)                 |
-| `CveCiudad`           | varchar       | Clave de ciudad (ej. `"MTY"`, `"GDL"`)               |
-| `IdTanque`            | bigint        | Referencia al tanque                                 |
-| `FechaCarga`          | date          | Fecha operativa del negocio                          |
-| `HoraCarga`           | time          | Hora operativa del negocio                           |
-| `TemperaturaCarga`    | bigint        | Temperatura registrada                               |
-| `LitrosCarga`         | bigint        | Volumen transferido (Entrada o Salida)               |
-| `AlturaTanque`        | numeric(8,2)  | Equivalente a LecturaCms (Entradas/Lecturas)         |
-| `CuentaLitros`        | bigint        | Lectura del contador mecánico                        |
-| `Remision`            | varchar       | Documento de referencia (Entradas/Salidas)           |
-| `IdProveedor`         | bigint        | Proveedor (Entradas)                                 |
-| `Observaciones`       | varchar       | Nota aclaratoria opcional                            |
-| `TipoMovimiento`      | varchar       | `'E'` = Entrada, `'S'` = Salida                      |
-| `FechaHoraMovimiento` | timestamp     | Registro de sistema (servidor)                       |
-| `IdUnidad`            | bigint        | Vehículo (Salidas)                                   |
-| `IdPersonal`          | bigint        | Operador/Personal (Salidas)                          |
-| `FolioVale`           | varchar       | Número de vale físico                                |
-| `Horimetro`           | bigint        | Horas de la unidad (Salidas)                         |
-| `Odometro`            | bigint        | Kilometraje de la unidad (Salidas)                    |
+| Columna               | Tipo         | Descripción                                  |
+| --------------------- | ------------ | -------------------------------------------- |
+| `IdTanqueMovimiento`  | bigint PK    | Identificador único (auto-increment)         |
+| `CveCiudad`           | varchar      | Clave de ciudad (ej. `"MTY"`, `"GDL"`)       |
+| `IdTanque`            | bigint       | Referencia al tanque                         |
+| `FechaCarga`          | date         | Fecha operativa del negocio                  |
+| `HoraCarga`           | time         | Hora operativa del negocio                   |
+| `TemperaturaCarga`    | bigint       | Temperatura registrada                       |
+| `LitrosCarga`         | bigint       | Volumen transferido (Entrada o Salida)       |
+| `AlturaTanque`        | numeric(8,2) | Equivalente a LecturaCms (Entradas/Lecturas) |
+| `CuentaLitros`        | bigint       | Lectura del contador mecánico                |
+| `Remision`            | varchar      | Documento de referencia (Entradas/Salidas)   |
+| `IdProveedor`         | bigint       | Proveedor (Entradas)                         |
+| `Observaciones`       | varchar      | Nota aclaratoria opcional                    |
+| `TipoMovimiento`      | varchar      | `'E'` = Entrada, `'S'` = Salida              |
+| `FechaHoraMovimiento` | timestamp    | Registro de sistema (servidor)               |
+| `IdUnidad`            | bigint       | Vehículo (Salidas)                           |
+| `IdPersonal`          | bigint       | Operador/Personal (Salidas)                  |
+| `FolioVale`           | varchar      | Número de vale físico                        |
+| `Horimetro`           | bigint       | Horas de la unidad (Salidas)                 |
+| `Odometro`            | bigint       | Kilometraje de la unidad (Salidas)           |
 
 > ⚠️ **IMPORTANTE:** `TanqueMovimiento` **NO** tiene columna `Activo`. No filtrar por ese campo.
 
 ### 5.2 Catálogos
 
-| Tabla       | PK                 | Columnas relevantes                                   |
-| ----------- | ------------------ | ----------------------------------------------------- |
-| `Tanque`     | `IDTanque`   | `CveCiudad`, `Nombre`, `IDPlanta`, `Capacidad`, `IDTipoCombustible` |
-| `Ciudad`     | `IDCiudad`   | `Descripcion`, `CveCiudad` (text)                                   |
-| `Planta`     | `IDPlanta`   | `Nombre`, `CveCiudad`, `IDCiudad`                                   |
-| `Unidad`     | `IDUnidad`   | `IDClaveUnidad`, `ClaveAlterna`, `Planta`, `CveCiudad`, `Activo`    |
-| `Operadores` | `IDPersonal` | `CvePersonal`, `Nombre`, `APaterno`, `AMaterno`, `CveCiudad`        |
-| `Proveedores`| `IdProveedor`| `NombreProveedor`                                                   |
-| `Usuarios`   | `IDUsuario`  | `CveUsuario`, `Password`, `Correo`, `CveCiudad`, `NombrePerfil`     |
-| `TanqueLecturas` | `IDTanqueLecturas` | `IDTanque`, `Fecha`, `LecturaCms`, `VolActualTA`, `VolActual15C` |
-| `VolumenTanque` | `IDVolumenTanque` | `IDTanque`, `Volumen`, `Altura` (Tabla de cubicación) |
-| `AjusteVolumetrico` | `IDAjusteVolumetrico` | `Temperatura`, `FactorAjuste`, `Densidad` |
+| Tabla               | PK                    | Columnas relevantes                                                 |
+| ------------------- | --------------------- | ------------------------------------------------------------------- |
+| `Tanque`            | `IDTanque`            | `CveCiudad`, `Nombre`, `IDPlanta`, `Capacidad`, `IDTipoCombustible` |
+| `Ciudad`            | `IDCiudad`            | `Descripcion`, `CveCiudad` (text)                                   |
+| `Planta`            | `IDPlanta`            | `Nombre`, `CveCiudad`, `IDCiudad`                                   |
+| `Unidad`            | `IDUnidad`            | `IDClaveUnidad`, `ClaveAlterna`, `Planta`, `CveCiudad`, `Activo`    |
+| `Operadores`        | `IDPersonal`          | `CvePersonal`, `Nombre`, `APaterno`, `AMaterno`, `CveCiudad`        |
+| `Proveedores`       | `IdProveedor`         | `NombreProveedor`                                                   |
+| `Usuarios`          | `IDUsuario`           | `CveUsuario`, `Password`, `Correo`, `CveCiudad`, `NombrePerfil`     |
+| `TanqueLecturas`    | `IDTanqueLecturas`    | `IDTanque`, `Fecha`, `LecturaCms`, `VolActualTA`, `VolActual15C`    |
+| `VolumenTanque`     | `IDVolumenTanque`     | `IDTanque`, `Volumen`, `Altura` (Tabla de cubicación)               |
+| `AjusteVolumetrico` | `IDAjusteVolumetrico` | `Temperatura`, `FactorAjuste`, `Densidad`                           |
 
 ### 5.3 Vista Externa: `InformacionGeneral_Cierres`
 
@@ -176,15 +177,17 @@ Vista de sistema de báscula (SP) con datos de viajes/remisiones de camiones rev
 
 Todas se llaman vía `supabase.rpc('nombre_funcion', { params })`.
 
-| Función RPC                     | Propósito                                     | Parámetros principales                                           |
-| ------------------------------- | --------------------------------------------- | ---------------------------------------------------------------- |
+| Función RPC                     | Propósito                                     | Parámetros principales                                                           |
+| ------------------------------- | --------------------------------------------- | -------------------------------------------------------------------------------- |
 | `get_reporte_consumos`          | Totales E/S agrupados por fecha/ciudad/tanque | `p_fecha_inicio`, `p_fecha_fin`, `p_cve_ciudad?`, `p_id_tanque?`, `p_id_unidad?` |
-| `get_entradas_detalle`          | Detalle de movimientos de Entrada             | `p_fecha`, `p_ciudad`, `p_id_tanque`                             |
-| `get_salidas_detalle`           | Detalle de movimientos de Salida              | `p_fecha`, `p_ciudad`, `p_id_tanque`, `p_id_unidad?`             |
-| `get_rendimientos_detalle`      | Detalle de movimientos para rendimiento       | Igual + `p_id_unidad?`                                           |
-| `sp_obtener_lecturas_diarias`   | Lecturas de inventario físico                 | `p_fecha`, `p_cve_ciudad?`, `p_id_planta?`, `p_id_tanque?`       |
-| `fn_obtener_lecturas_por_fecha` | Lecturas para captura (validación 48 hrs)     | `p_fecha`, `p_id_tanque`                                         |
-| `reporte_productividad`         | Cruce SP + TanqueMovimiento por unidad        | `p_fecha_inicio`, `p_fecha_fin`, `p_cve_ciudad?`, `p_id_tanque?` |
+| `get_entradas_detalle`          | Detalle de movimientos de Entrada             | `p_fecha`, `p_ciudad`, `p_id_tanque`                                             |
+| `get_salidas_detalle`           | Detalle de movimientos de Salida              | `p_fecha`, `p_ciudad`, `p_id_tanque`, `p_id_unidad?`                             |
+| `get_rendimientos_detalle`      | Detalle de movimientos para rendimiento       | Igual + `p_id_unidad?`                                                           |
+| `reporte_rendimientos_v2`       | Rendimiento consolidado por unidad            | `p_fecha_inicio`, `p_fecha_fin`, `p_cve_ciudad?`, `p_id_tanque?`, `p_id_unidad?` |
+| `get_rendimientos_detalle_v2`   | Detalle consolidado de movimientos por unidad | `p_fecha_inicio`, `p_fecha_fin`, `p_cve_ciudad`, `p_id_unidad`                   |
+| `sp_obtener_lecturas_diarias`   | Lecturas de inventario físico                 | `p_ciudad?`, `p_fecha_inicial`, `p_fecha_final`, `p_id_tanque?`                  |
+| `fn_obtener_lecturas_por_fecha` | Lecturas para captura y detalle de inventario | `p_fecha`, `p_id_tanque`                                                         |
+| `reporte_productividad`         | Cruce SP + TanqueMovimiento por unidad        | `p_fecha_inicio`, `p_fecha_fin`, `p_cve_ciudad?`, `p_id_tanque?`                 |
 
 > Scripts DDL en: `docs/Scripts/*.sql`
 
@@ -248,7 +251,7 @@ Cuando cambia `CveCiudad`, los combos dependientes se resetean y recargan. Esta 
 ### 8.2 Validaciones Obligatorias
 
 - **`LecturaCms` en Salidas:** Siempre se registra como `0`. No solicitar ni validar altura en despachos.
-- **Lecturas Diarias (Inventario):** `LecturaCms` debe ser > 0. Máximo 48 horas hacia atrás respecto al momento actual.
+- **Lecturas Diarias (Inventario):** `LecturaCms` debe ser > 0. La retroactividad permitida no es fija; se controla desde `window.AppConfig.diasPermitidosHaciaAtrasCaptura` en `public/config.js`. En el estado actual del proyecto está configurada en 60 días.
 - **`FechaHoraMovimiento`:** Se genera en el servidor (SQL `NOW()`). El frontend **no** debe enviarla. La `FechaCarga` es la fecha operativa de negocio que sí puede capturar el usuario.
 - **Divisiones métricas:** Siempre usar `NULLIF(divisor, 0)` en SQL para proteger contra `÷0`.
 
@@ -260,6 +263,19 @@ CveCiudad (raíz)
 ├── Unidad(es) → restringido por Ciudad y Tanque (si se selecciona)
 ├── Personal/Operador(es) → solo en Salidas
 └── Planta(s) → solo en CapturaLecturas
+
+### 8.4 Inventario y Reporte de Lecturas
+
+- `CapturaLecturas` usa una cascada obligatoria `Ciudad -> Planta -> Tanque`.
+- `ReporteLecturas` permite filtros opcionales por ciudad y tanque.
+- En `ReporteLecturas`, cuando no se selecciona ciudad o tanque, el frontend envía `null` para solicitar consulta sin ese filtro.
+- `ReporteLecturas` soporta exportación a CSV y PDF del resumen agregado.
+
+### 8.5 Rendimientos Actual vs Consolidado
+
+- `ReporteRendimientos` se mantiene como versión actual en producción y agrupa por `Tanque + Unidad`.
+- `ReporteRendimientosV2` es una versión paralela que consolida el KPI por `Unidad`, evitando distorsiones cuando la misma unidad carga en múltiples tanques dentro del periodo.
+- En `ReporteRendimientosV2`, el filtro por tanque funciona como criterio de selección de unidades involucradas, pero el cálculo del rendimiento usa todas las cargas de la unidad dentro del rango consultado.
 ```
 
 Al cambiar `CveCiudad` en cualquier formulario, **todos los combos descendientes se limpian y recargan**. En el Reporte de Consumos y Rendimientos, al cambiar `Tanque` también se limpia `Unidad`.
@@ -347,10 +363,13 @@ Antes de implementar un nuevo componente o modificar uno existente, verificar:
 Este componente es un proceso ETL externo (PowerShell + T-SQL) que alimenta la vista `InformacionGeneral_Cierres` en Supabase con datos reales del sistema de producción local.
 
 ### 14.1 Scripts Principales
+
 - **`Sync-ViajesSupabase.ps1`**: Sincronización diferencial diaria (programada vía SQL Agent).
 - **`Sync-ViajesSupabase-Backfill.ps1`**: Script manual para reprocesar rangos históricos de fechas.
 
 ### 14.2 Control y Auditoría (SQL Server)
+
 El proceso deja trazabilidad en el servidor de origen:
+
 - **`Sync_Ejecucion`**: Maestro de ejecuciones (estatus, registros enviados, HTTP status).
 - **`Sync_Detalle`**: Detalle por viaje enviado para identificar fallos puntuales.
