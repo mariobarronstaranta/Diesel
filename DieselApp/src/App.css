@@ -308,6 +308,70 @@
   white-space: nowrap;
 }
 
+.productividad-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.productividad-header__title {
+  flex: 1 1 480px;
+  min-width: 260px;
+}
+
+.productividad-header__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.productividad-header__toggle {
+  white-space: nowrap;
+}
+
+.productividad-header__buttons {
+  display: flex;
+  align-items: center;
+}
+
+@media (max-width: 991px) {
+  .productividad-header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .productividad-header__title {
+    min-width: 0;
+  }
+
+  .productividad-header__actions {
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 576px) {
+  .productividad-header__actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .productividad-header__toggle {
+    width: 100%;
+  }
+
+  .productividad-header__buttons {
+    width: 100%;
+  }
+
+  .productividad-header__buttons .btn {
+    flex: 1 1 auto;
+  }
+}
+
 /* Card Headers */
 .card-header-corporate {
   background-color: var(--corporate-dark) !important;

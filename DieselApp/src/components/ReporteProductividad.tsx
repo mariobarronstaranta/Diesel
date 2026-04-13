@@ -35,6 +35,8 @@ export default function ReporteProductividad() {
   const [reporteData, setReporteData] = useState<ReporteProductividadData[]>(
     [],
   );
+  const [mostrarUnidadesSinCargas, setMostrarUnidadesSinCargas] =
+    useState<boolean>(true);
   const [cveCiudadSeleccionada, setCveCiudadSeleccionada] =
     useState<string>("");
   const [tanqueNombre, setTanqueNombre] = useState<string>("Todos");
@@ -96,6 +98,213 @@ export default function ReporteProductividad() {
     });
   };
 
+  const esUnidadSinCargas = (row: ReporteProductividadData) => {
+    return !row.Tanque || row.Tanque.trim().toUpperCase() === "N/A";
+  };
+
+  const reporteDataVisible = mostrarUnidadesSinCargas
+    ? reporteData
+    : reporteData.filter((r) => !esUnidadSinCargas(r));
+
+  const consolidarProductividadPorUnidad = (
+    rows: ReporteProductividadData[],
+  ): ReporteProductividadData[] => {
+    const mapa = new Map<
+      string,
+      ReporteProductividadData & { _tanques: Set<string> }
+    >();
+
+    for (const row of rows) {
+      const idUnidad = row.IDUnidad ?? 0;
+      const clave = `${idUnidad}-${row.Unidad}`;
+      const tanqueActual = (row.Tanque || "").trim();
+
+      if (!mapa.has(clave)) {
+        const tanques = new Set<string>();
+        if (tanqueActual && tanqueActual !== "N/A") {
+          tanques.add(tanqueActual);
+        }
+
+        mapa.set(clave, {
+          ...row,
+          "Litros Consumidos": Number(row["Litros Consumidos"] || 0),
+          Viajes: Number(row.Viajes || 0),
+          MetrosCubicos: Number(row.MetrosCubicos || 0),
+          "Kms Totales": Number(row["Kms Totales"] || 0),
+          "Hrs Totales": Number(row["Hrs Totales"] || 0),
+          _tanques: tanques,
+        });
+        continue;
+      }
+
+      const acumulado = mapa.get(clave)!;
+
+      if (tanqueActual && tanqueActual !== "N/A") {
+        acumulado._tanques.add(tanqueActual);
+      }
+
+      acumulado["Litros Consumidos"] =
+        Number(acumulado["Litros Consumidos"] || 0) +
+        Number(row["Litros Consumidos"] || 0);
+
+      // Estos valores representan totales por unidad en el periodo y pueden repetirse por tanque.
+      acumulado["Viajes"] = Math.max(
+        Number(acumulado.Viajes || 0),
+        Number(row.Viajes || 0),
+      );
+      acumulado["MetrosCubicos"] = Math.max(
+        Number(acumulado.MetrosCubicos || 0),
+        Number(row.MetrosCubicos || 0),
+      );
+      acumulado["Kms Totales"] = Math.max(
+        Number(acumulado["Kms Totales"] || 0),
+        Number(row["Kms Totales"] || 0),
+      );
+      acumulado["Hrs Totales"] = Math.max(
+        Number(acumulado["Hrs Totales"] || 0),
+        Number(row["Hrs Totales"] || 0),
+      );
+
+      if (acumulado.EstadoRegistro !== "Registrada") {
+        acumulado.EstadoRegistro = row.EstadoRegistro;
+      }
+    }
+
+    return Array.from(mapa.values())
+      .map((item) => {
+        const viajes = Number(item.Viajes || 0);
+        const metros = Number(item.MetrosCubicos || 0);
+        const kms = Number(item["Kms Totales"] || 0);
+        const hrs = Number(item["Hrs Totales"] || 0);
+        const litros = Number(item["Litros Consumidos"] || 0);
+
+        const tanques = Array.from(item._tanques);
+        const tanqueTexto = tanques.length > 0 ? tanques.join(", ") : "N/A";
+
+        return {
+          EstadoRegistro: item.EstadoRegistro,
+          Tanque: tanqueTexto,
+          Unidad: item.Unidad,
+          IDUnidad: item.IDUnidad,
+          Viajes: viajes,
+          MetrosCubicos: metros,
+          "Kms Totales": kms,
+          "Hrs Totales": hrs,
+          "Litros Consumidos": litros,
+          "Lts/M3": metros > 0 ? Number((litros / metros).toFixed(4)) : 0,
+          "Km/Lts": litros > 0 ? Number((kms / litros).toFixed(4)) : 0,
+          "M3/Viaje": viajes > 0 ? Number((metros / viajes).toFixed(4)) : 0,
+        } satisfies ReporteProductividadData;
+      })
+      .sort((a, b) => {
+        if (a.EstadoRegistro !== b.EstadoRegistro) {
+          return a.EstadoRegistro === "Registrada" ? -1 : 1;
+        }
+        return Number(b.MetrosCubicos || 0) - Number(a.MetrosCubicos || 0);
+      });
+  };
+
+  const enriquecerConTodosLosTanques = async (
+    rows: ReporteProductividadData[],
+    filtros: ReporteProductividadForm,
+  ): Promise<ReporteProductividadData[]> => {
+    if (!filtros.IDTanque) return rows;
+
+    const unidadesObjetivo = rows
+      .filter((r) => Number(r.IDUnidad || 0) > 0)
+      .map((r) => Number(r.IDUnidad));
+
+    if (unidadesObjetivo.length === 0) return rows;
+
+    const { data: movimientos, error: movimientosError } = await supabase
+      .from("TanqueMovimiento")
+      .select("IdUnidad, IdTanque, LitrosCarga, CveCiudad")
+      .eq("TipoMovimiento", "S")
+      .gte("FechaCarga", filtros.FechaInicial)
+      .lte("FechaCarga", filtros.FechaFinal)
+      .in("IdUnidad", unidadesObjetivo);
+
+    if (movimientosError) {
+      throw movimientosError;
+    }
+
+    const movimientosFiltrados = (movimientos || []).filter((m) =>
+      filtros.CveCiudad ? m.CveCiudad === filtros.CveCiudad : true,
+    );
+
+    const idsTanque = Array.from(
+      new Set(
+        movimientosFiltrados
+          .map((m) => Number(m.IdTanque || 0))
+          .filter((id) => id > 0),
+      ),
+    );
+
+    const nombresTanque = new Map<number, string>();
+    if (idsTanque.length > 0) {
+      const { data: tanques, error: tanquesError } = await supabase
+        .from("Tanque")
+        .select("IDTanque, Nombre")
+        .in("IDTanque", idsTanque);
+
+      if (tanquesError) {
+        throw tanquesError;
+      }
+
+      for (const t of tanques || []) {
+        nombresTanque.set(Number(t.IDTanque), String(t.Nombre || ""));
+      }
+    }
+
+    const acumuladoPorUnidad = new Map<
+      number,
+      { litros: number; tanques: Set<string> }
+    >();
+
+    for (const m of movimientosFiltrados) {
+      const idUnidad = Number(m.IdUnidad || 0);
+      if (idUnidad <= 0) continue;
+
+      if (!acumuladoPorUnidad.has(idUnidad)) {
+        acumuladoPorUnidad.set(idUnidad, {
+          litros: 0,
+          tanques: new Set<string>(),
+        });
+      }
+
+      const entrada = acumuladoPorUnidad.get(idUnidad)!;
+      entrada.litros += Number(m.LitrosCarga || 0);
+
+      const nombreTanque = nombresTanque.get(Number(m.IdTanque || 0));
+      if (nombreTanque) {
+        entrada.tanques.add(nombreTanque);
+      }
+    }
+
+    return rows.map((row) => {
+      const idUnidad = Number(row.IDUnidad || 0);
+      const enriquecido = acumuladoPorUnidad.get(idUnidad);
+      if (!enriquecido) return row;
+
+      const litros = enriquecido.litros;
+      const kms = Number(row["Kms Totales"] || 0);
+      const metros = Number(row.MetrosCubicos || 0);
+      const viajes = Number(row.Viajes || 0);
+
+      return {
+        ...row,
+        Tanque:
+          enriquecido.tanques.size > 0
+            ? Array.from(enriquecido.tanques).join(", ")
+            : row.Tanque,
+        "Litros Consumidos": litros,
+        "Lts/M3": metros > 0 ? Number((litros / metros).toFixed(4)) : 0,
+        "Km/Lts": litros > 0 ? Number((kms / litros).toFixed(4)) : 0,
+        "M3/Viaje": viajes > 0 ? Number((metros / viajes).toFixed(4)) : 0,
+      };
+    });
+  };
+
   const onSubmit = async (data: ReporteProductividadForm) => {
     try {
       setIsLoading(true);
@@ -117,8 +326,16 @@ export default function ReporteProductividad() {
       }
 
       if (Array.isArray(result)) {
-        setReporteData(result);
-        if (result.length === 0) {
+        const dataConsolidada = consolidarProductividadPorUnidad(
+          result as ReporteProductividadData[],
+        );
+        const dataFinal = await enriquecerConTodosLosTanques(
+          dataConsolidada,
+          data,
+        );
+
+        setReporteData(dataFinal);
+        if (dataFinal.length === 0) {
           setAlertMessage({
             type: "warning",
             text: "No se encontraron datos de productividad para los filtros seleccionados",
@@ -126,7 +343,7 @@ export default function ReporteProductividad() {
         } else {
           setAlertMessage({
             type: "success",
-            text: `Se procesaron ${result.length} unidades`,
+            text: `Se procesaron ${dataFinal.length} unidades consolidadas`,
           });
         }
       } else {
@@ -151,7 +368,7 @@ export default function ReporteProductividad() {
   };
 
   const exportarCSV = () => {
-    if (reporteData.length === 0) return;
+    if (reporteDataVisible.length === 0) return;
 
     const headers = [
       "Estado",
@@ -169,7 +386,7 @@ export default function ReporteProductividad() {
 
     const csvContent = [
       headers.join(","),
-      ...reporteData.map((r) =>
+      ...reporteDataVisible.map((r) =>
         [
           `"${r.EstadoRegistro}"`,
           `"${r.Unidad}"`,
@@ -202,7 +419,7 @@ export default function ReporteProductividad() {
   };
 
   const exportarPDF = async () => {
-    if (reporteData.length === 0) return;
+    if (reporteDataVisible.length === 0) return;
 
     const doc = new jsPDF("landscape");
 
@@ -276,23 +493,23 @@ export default function ReporteProductividad() {
     doc.setFont("helvetica", "normal");
     doc.text(fFinal, 218, 30);
 
-    const totalLitros = reporteData.reduce(
+    const totalLitros = reporteDataVisible.reduce(
       (sum, item) => sum + Number(item["Litros Consumidos"] || 0),
       0,
     );
-    const totalKms = reporteData.reduce(
+    const totalKms = reporteDataVisible.reduce(
       (sum, item) => sum + Number(item["Kms Totales"] || 0),
       0,
     );
-    const totalHrs = reporteData.reduce(
+    const totalHrs = reporteDataVisible.reduce(
       (sum, item) => sum + Number(item["Hrs Totales"] || 0),
       0,
     );
-    const totalMetros = reporteData.reduce(
+    const totalMetros = reporteDataVisible.reduce(
       (sum, item) => sum + Number(item.MetrosCubicos || 0),
       0,
     );
-    const totalViajes = reporteData.reduce(
+    const totalViajes = reporteDataVisible.reduce(
       (sum, item) => sum + Number(item.Viajes || 0),
       0,
     );
@@ -312,7 +529,7 @@ export default function ReporteProductividad() {
       "Km/Lts",
     ];
 
-    const tableRows = reporteData.map((item) => {
+    const tableRows = reporteDataVisible.map((item) => {
       const noRegistrada = item.EstadoRegistro === "No Registrada";
       return [
         noRegistrada ? `${item.Unidad} [No Registrada]` : item.Unidad,
@@ -370,8 +587,8 @@ export default function ReporteProductividad() {
       },
       didParseCell: (data) => {
         const rowIndex = data.row.index;
-        if (rowIndex < reporteData.length) {
-          const item = reporteData[rowIndex];
+        if (rowIndex < reporteDataVisible.length) {
+          const item = reporteDataVisible[rowIndex];
           if (item?.EstadoRegistro === "No Registrada") {
             data.cell.styles.fillColor = [255, 243, 205];
           }
@@ -577,25 +794,39 @@ export default function ReporteProductividad() {
 
       {reporteData.length > 0 && lastQueryParams && (
         <Card>
-          <Card.Header className="d-flex justify-content-between align-items-center bg-white">
-            <h5 className="mb-0">
-              Rendimiento por CR (
-              {lastQueryParams.CveCiudad || "Todas las Ciudades"} | Tanque{" "}
-              {lastQueryParams.IDTanque || "Todos"} | del{" "}
-              {lastQueryParams.FechaInicial} al {lastQueryParams.FechaFinal})
-            </h5>
-            <div>
-              <Button
-                variant="success"
-                size="sm"
-                onClick={exportarCSV}
-                className="me-2"
-              >
-                Exportar CSV
-              </Button>
-              <Button variant="danger" size="sm" onClick={exportarPDF}>
-                Exportar PDF
-              </Button>
+          <Card.Header className="bg-white">
+            <div className="productividad-header">
+              <h5 className="mb-0 productividad-header__title">
+                Rendimiento por CR (
+                {lastQueryParams.CveCiudad || "Todas las Ciudades"} | Tanque{" "}
+                {lastQueryParams.IDTanque || "Todos"} | del{" "}
+                {lastQueryParams.FechaInicial} al {lastQueryParams.FechaFinal})
+              </h5>
+              <div className="productividad-header__actions">
+                <Form.Check
+                  type="checkbox"
+                  id="filtro-unidades-sin-cargas"
+                  label="Mostrar unidades sin cargas"
+                  checked={mostrarUnidadesSinCargas}
+                  onChange={(e) =>
+                    setMostrarUnidadesSinCargas(e.target.checked)
+                  }
+                  className="mb-0 productividad-header__toggle"
+                />
+                <div className="productividad-header__buttons">
+                  <Button
+                    variant="success"
+                    size="sm"
+                    onClick={exportarCSV}
+                    className="me-2"
+                  >
+                    Exportar CSV
+                  </Button>
+                  <Button variant="danger" size="sm" onClick={exportarPDF}>
+                    Exportar PDF
+                  </Button>
+                </div>
+              </div>
             </div>
           </Card.Header>
           <Card.Body>
@@ -636,7 +867,7 @@ export default function ReporteProductividad() {
                   </tr>
                 </thead>
                 <tbody>
-                  {reporteData.map((r, index) => {
+                  {reporteDataVisible.map((r, index) => {
                     const noRegistrada = r.EstadoRegistro === "No Registrada";
                     return (
                       <tr
@@ -710,6 +941,13 @@ export default function ReporteProductividad() {
                       </tr>
                     );
                   })}
+                  {reporteDataVisible.length === 0 && (
+                    <tr>
+                      <td colSpan={10} className="text-center text-muted py-4">
+                        No hay unidades para mostrar con el filtro actual.
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </Table>
             </div>

@@ -42,3 +42,9 @@
 ---
 
 -- FIN REPORTE DE AUDITORÍA -----
+
+## 8. Deuda Técnica Pendiente (2026-04-12)
+
+| Prioridad | Módulo                   | Deuda Técnica                                                                                                                                                                                                                  | Estado    |
+| --------- | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ | --------- |
+| Media     | Reporte de Productividad | Migrar a SQL (Supabase) la lógica de consolidación multi-tanque por unidad para que el cálculo no dependa del frontend. Incluye: selección de unidades por tanque filtro y recálculo con todas las cargas/tanques del periodo. | Pendiente |

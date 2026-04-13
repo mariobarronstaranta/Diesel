@@ -52,6 +52,13 @@ El reporte presenta un conglomerado totalizado en el rango de fechas seleccionad
 | **KPI Rojo (Crítico)**         | Semáforo      | $L/m^3 > 5.0$ o Exceso en Consumo.                                                               | Foco de auditoría urgente: Posible ordeña o motor dañado.                        |
 | **Exportación PDF**            | Acción        | Genera salida corporativa con filtros, tabla principal y semáforos reproducidos en el documento. | Compartir análisis ejecutivo sin depender de Excel o acceso directo al sistema.  |
 
+### Regla de Consolidación Multi-Tanque
+
+- El reporte se visualiza con una sola fila por unidad.
+- La columna Tanque muestra todos los tanques en los que la unidad cargó dentro del periodo.
+- Litros Consumidos suma todas las cargas de la unidad, sin dividir por tanque.
+- Los indicadores Lts/M3, Km/Lts y M3/Viaje se recalculan con totales consolidados por unidad.
+
 ## 6. Flujo Operativo y de Toma de Decisión (User Journey)
 
 1. **Visión Macro:** El Product Owner o Gerente selecciona un mes o una semana crítica y la Ciudad a revisar.

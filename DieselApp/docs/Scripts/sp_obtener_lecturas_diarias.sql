@@ -1,22 +1,25 @@
-DROP FUNCTION IF EXISTS public.sp_obtener_lecturas_diarias(text, date, date);
+-- Drop de la función que acabas de crear (ahora con 4 parámetros)
+DROP FUNCTION IF EXISTS sp_obtener_lecturas_diarias(TEXT, DATE, DATE, INTEGER);
 
-CREATE OR REPLACE FUNCTION public.sp_obtener_lecturas_diarias(
-  p_ciudad text DEFAULT NULL::text, 
-  p_fecha_inicial date DEFAULT NULL::date, 
-  p_fecha_final date DEFAULT NULL::date
+-- Recrear con BIGINT correcto
+CREATE OR REPLACE FUNCTION sp_obtener_lecturas_diarias(
+    p_ciudad TEXT DEFAULT NULL,
+    p_fecha_inicial DATE DEFAULT NULL,
+    p_fecha_final DATE DEFAULT NULL,
+    p_id_tanque INTEGER DEFAULT NULL
 )
-RETURNS TABLE(
-  ciudad text, 
-  nombre text, 
-  fecha date, 
-  lectura_inicial_cms numeric(8,2),
-  lectura_final_cms numeric(8,2),
-  cuenta_litros_inicial bigint, 
-  cuenta_litros_final bigint, 
-  diferencia_cuenta_litros bigint
+RETURNS TABLE (
+    idciudad TEXT,
+    nombre TEXT,
+    fecha DATE,
+    lectura_inicial_cms NUMERIC(8,2),
+    lectura_final_cms NUMERIC(8,2),
+    cuenta_litros_inicial BIGINT,        -- ✅ BIGINT
+    cuenta_litros_final BIGINT,          -- ✅ BIGINT
+    diferencia_cuenta_litros BIGINT      -- ✅ BIGINT
 )
 LANGUAGE plpgsql
-AS $function$
+AS $$
 BEGIN
     RETURN QUERY
     WITH LecturasFiltradas AS (
@@ -37,6 +40,10 @@ BEGIN
                 OR p_ciudad = '' 
                 OR p_ciudad = '-1' 
                 OR TN.idciudad = p_ciudad
+            )
+             AND (
+                p_id_tanque IS NULL
+                OR TN."IDTanque" = p_id_tanque
             )
     ),
     LecturasOrdenadas AS (
@@ -67,4 +74,4 @@ BEGIN
         AND t1."Fecha" = t2."Fecha"
     WHERE t1.rn_asc = 1 AND t2.rn_desc = 1;
 END;
-$function$;
+$$;
