@@ -18,6 +18,7 @@ import ComboCveCiudad from "./ComboCveCiudad";
 import ComboTanquePorCiudad from "./ComboTanquePorCiudad";
 import { supabase } from "../supabase/client";
 import logoUrl from "../assets/images/logo.png";
+import { handleSupabaseError } from "../shared/errors/supabaseErrorHandler";
 
 interface ReporteLecturasForm {
   CveCiudad: string;
@@ -32,6 +33,8 @@ interface LecturaDiaria {
   fecha: string;
   lectura_inicial_cms: number;
   lectura_final_cms: number;
+  entradas?: number | null;
+  consumo_alturas?: number | null;
   cuenta_litros_inicial: number;
   cuenta_litros_final: number;
   diferencia_cuenta_litros: number;
@@ -105,6 +108,16 @@ export default function ReporteLecturas() {
     return `${d}/${m}/${y}`;
   };
 
+  const obtenerEntradas = (lectura: LecturaDiaria) =>
+    Number(lectura.entradas ?? 0);
+
+  const obtenerConsumoAlturas = (lectura: LecturaDiaria) =>
+    Number(
+      lectura.consumo_alturas ??
+        (Number(lectura.lectura_inicial_cms ?? 0) -
+          Number(lectura.lectura_final_cms ?? 0)),
+    );
+
   const onSubmit = async (data: ReporteLecturasForm) => {
     try {
       setIsLoading(true);
@@ -121,7 +134,7 @@ export default function ReporteLecturas() {
       // Llamar a la función RPC de Supabase
       // Si Ciudad/Tanque están vacíos enviamos null para que el RPC no filtre por ellos
       const { data: result, error } = await supabase.rpc(
-        "sp_obtener_lecturas_diarias",
+        "sp_obtener_lecturas_diarias_consumos",
         {
           p_ciudad: data.CveCiudad || null,
           p_id_tanque: data.IDTanque ? parseInt(data.IDTanque) : null,
@@ -166,11 +179,26 @@ export default function ReporteLecturas() {
         });
       }
     } catch (error: unknown) {
-      console.error("Error al consultar lecturas:", error);
-      const errorMessage =
-        error instanceof Error
-          ? error.message
-          : "Error de conexión con el servidor";
+      console.error("Error al consultar lecturas:", {
+        error,
+        message:
+          error && typeof error === "object" && "message" in error
+            ? (error as { message?: string }).message
+            : null,
+        details:
+          error && typeof error === "object" && "details" in error
+            ? (error as { details?: string }).details
+            : null,
+        hint:
+          error && typeof error === "object" && "hint" in error
+            ? (error as { hint?: string }).hint
+            : null,
+        code:
+          error && typeof error === "object" && "code" in error
+            ? (error as { code?: string }).code
+            : null,
+      });
+      const errorMessage = handleSupabaseError(error);
       setAlertMessage({
         type: "danger",
         text: errorMessage,
@@ -309,9 +337,11 @@ export default function ReporteLecturas() {
       "Fecha Lectura",
       "Lectura Inicial CMS",
       "Lectura Final CMS",
+      "Entradas",
+      "Consumo Alturas",
       "Cuenta Lts Inicial",
       "Cuenta Lts Final",
-      "Lts Consumidos",
+      "Consumo C. Litros",
     ];
 
     // Convertir datos a formato CSV
@@ -324,6 +354,8 @@ export default function ReporteLecturas() {
           `"${formatearFecha(l.fecha)}"`,
           l.lectura_inicial_cms,
           l.lectura_final_cms,
+          obtenerEntradas(l),
+          obtenerConsumoAlturas(l),
           l.cuenta_litros_inicial,
           l.cuenta_litros_final,
           l.diferencia_cuenta_litros,
@@ -418,13 +450,26 @@ export default function ReporteLecturas() {
     doc.text(fFinal, 197, 30);
     
     // Generar datos para la tabla
-    const tableColumn = ["Ciudad", "Tanque", "Fecha Lectura", "L. Inicial\n(cms)", "L. Final\n(cms)", "Cta Lts\nInicial", "Cta Lts\nFinal", "Lts\nConsumidos"];
+    const tableColumn = [
+      "Ciudad",
+      "Tanque",
+      "Fecha Lectura",
+      "L. Inicial\n(cms)",
+      "L. Final\n(cms)",
+      "Entradas",
+      "Consumo\nAlturas",
+      "Cta Lts\nInicial",
+      "Cta Lts\nFinal",
+      "Consumo\nC. Litros",
+    ];
     const tableRows = lecturas.map(l => [
       l.ciudad ?? "",
       l.nombre ?? "",
       l.fecha ? formatearFecha(l.fecha) : "",
       l.lectura_inicial_cms ?? 0,
       l.lectura_final_cms ?? 0,
+      obtenerEntradas(l).toLocaleString(),
+      obtenerConsumoAlturas(l).toLocaleString(),
       (l.cuenta_litros_inicial ?? 0).toLocaleString(),
       (l.cuenta_litros_final ?? 0).toLocaleString(),
       (l.diferencia_cuenta_litros ?? 0).toLocaleString()
@@ -457,7 +502,9 @@ export default function ReporteLecturas() {
         4: { halign: 'right' },
         5: { halign: 'right' },
         6: { halign: 'right' },
-        7: { halign: 'right', fontStyle: 'bold', textColor: [52, 58, 64] } // Resalte al importante
+        7: { halign: 'right' },
+        8: { halign: 'right' },
+        9: { halign: 'right', fontStyle: 'bold', textColor: [52, 58, 64] } // Resalte al importante
       }
     });
 
@@ -612,8 +659,10 @@ export default function ReporteLecturas() {
                     <th rowSpan={2}>Tanque</th>
                     <th rowSpan={2}>Fecha Lectura</th>
                     <th colSpan={2}>Altura (cms)</th>
+                    <th rowSpan={2}>Entradas</th>
+                    <th rowSpan={2}>Consumo Alturas</th>
                     <th colSpan={2}>Cuenta Litros</th>
-                    <th rowSpan={2}>Lts Consumidos</th>
+                    <th rowSpan={2}>Consumo C. Litros</th>
                     <th rowSpan={2}>Acción</th>
                   </tr>
                   <tr>
@@ -633,6 +682,8 @@ export default function ReporteLecturas() {
                       </td>
                       <td>{lectura.lectura_inicial_cms ?? 0}</td>
                       <td>{lectura.lectura_final_cms ?? 0}</td>
+                      <td>{obtenerEntradas(lectura).toLocaleString()}</td>
+                      <td>{obtenerConsumoAlturas(lectura).toLocaleString()}</td>
                       <td>
                         {(lectura.cuenta_litros_inicial ?? 0).toLocaleString()}
                       </td>

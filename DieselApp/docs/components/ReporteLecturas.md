@@ -34,6 +34,8 @@ interface LecturaDiaria {
   fecha: string;
   lectura_inicial_cms: number;
   lectura_final_cms: number;
+  entradas?: number | null;
+  consumo_alturas?: number | null;
   cuenta_litros_inicial: number;
   cuenta_litros_final: number;
   diferencia_cuenta_litros: number;
@@ -138,7 +140,7 @@ Convierte fecha ISO a formato español (`DD/MM/YYYY`).
 async function onSubmit(data: ReporteLecturasForm): Promise<void>;
 ```
 
-1. Llama RPC `sp_obtener_lecturas_diarias(p_ciudad, p_id_tanque, p_fecha_inicial, p_fecha_final)`
+1. Llama RPC `sp_obtener_lecturas_diarias_consumos(p_ciudad, p_id_tanque, p_fecha_inicial, p_fecha_final)`
 2. Ordena resultados por fecha y nombre de tanque
 3. Actualiza estado `lecturas`
 4. Guarda parámetros para reconsulta posterior
@@ -201,9 +203,10 @@ function exportarCSV(): void;
 ```
 
 1. Convierte `lecturas` a formato CSV
-2. Añade BOM UTF-8 (`\uFEFF`) para compatibilidad con Excel
-3. Crea blob y descarga archivo
-4. Nombre: `Lecturas_YYYY-MM-DD.csv`
+2. Incluye columnas `Entradas`, `Consumo Alturas` y `Consumo C. Litros`
+3. Añade BOM UTF-8 (`\uFEFF`) para compatibilidad con Excel
+4. Crea blob y descarga archivo
+5. Nombre: `Lecturas_YYYY-MM-DD.csv`
 
 ### 8. exportarPDF
 
@@ -215,11 +218,12 @@ async function exportarPDF(): Promise<void>;
 2. Inserta logotipo corporativo
 3. Imprime filtros activos: ciudad, tanque y rango de fechas
 4. Construye tabla con `jspdf-autotable`
-5. Descarga archivo `Reporte_Lecturas_YYYYMMDD.pdf`
+5. Refleja las columnas nuevas del reporte (`Entradas`, `Consumo Alturas`, `Consumo C. Litros`)
+6. Descarga archivo `Reporte_Lecturas_YYYYMMDD.pdf`
 
 ## Integración de datos
 
-### RPC: `sp_obtener_lecturas_diarias`
+### RPC: `sp_obtener_lecturas_diarias_consumos`
 
 **Parámetros:**
 
@@ -228,7 +232,15 @@ async function exportarPDF(): Promise<void>;
 - `p_fecha_inicial: string`
 - `p_fecha_final: string`
 
-**Retorna:** Array de `LecturaDiaria` con datos agregados (primera y última lectura del día).
+**Retorna:** Array de `LecturaDiaria` con datos agregados (primera y última lectura del día), incluyendo `Entradas` por fecha/tanque y `Consumo Alturas`.
+
+La columna `ciudad` proviene de `Tanque.CveCiudad`.
+
+La columna `Entradas` se calcula como la suma de `TanqueMovimiento.LitrosCarga` cuando `TipoMovimiento = 'E'`, haciendo match exacto por `TanqueMovimiento.FechaCarga = TanqueLecturas.Fecha` y `TanqueMovimiento.IdTanque = TanqueLecturas.IDTanque`.
+
+La columna `Consumo Alturas` se calcula traduciendo `lectura_inicial_cms` y `lectura_final_cms` a litros mediante la tabla `VolumenAlturaTanque` por `TanqueId`; el valor mostrado es la diferencia entre litros iniciales y litros finales. Como `VolumenAlturaTanque.Altura` puede no coincidir exactamente con `LecturaCms`, la RPC toma la altura más cercana para resolver cada volumen.
+
+**Compatibilidad:** La RPC histórica `sp_obtener_lecturas_diarias` se conserva sin cambios para no impactar producción. El reporte consume la nueva variante orientada a consumos.
 
 ### RPC: `fn_obtener_lecturas_por_fecha`
 
