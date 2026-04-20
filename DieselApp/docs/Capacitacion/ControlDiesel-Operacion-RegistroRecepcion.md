@@ -9,7 +9,7 @@ Clasificación: Documento de Capacitación y Control Interno
 
 ## 1. Objetivo de Control
 
-Asegurar que toda inyección de combustible comprado a proveedores sea respaldada por documentos físicos (Remisión), verificando que el volumen que se inyecta y paga concuerde mediante pruebas en el lugar ("Altura del Tanque", "Temperatura"). Mitiga facturas fantasma.
+Asegurar que toda inyección de combustible comprado a proveedores sea respaldada por documentos físicos (Remisión), verificando que el volumen que se inyecta y paga concuerde mediante pruebas en el lugar ("Altura Inicial", "Altura Final", "Temperatura"). Mitiga facturas fantasma.
 
 ## 2. Alcance
 
@@ -40,7 +40,8 @@ Registra la compra o ingreso de diésel por pipas externas hacia los tanques int
 | Hora          | Time        | Sí          | Hora local de la operación.                          | Modificación y manipulación de tiempos de tránsito para la pipa proveedora.                      |
 | Temperatura   | Numérico    | Sí          | Validando decimales (`any` step).                    | Enmascaramiento de faltante justificado erróneamente con la expansión o contracción volumétrica. |
 | Litros Carga  | Numérico    | Sí          | Valor estricto superior a cero.                      | Aporte de inventario ficticio o falso para ocultar otra fuga anterior.                           |
-| Altura        | Numérico    | Sí          | Uso forzado de cinta métrica decimal.                | Asegurar que el tanque físico tuvo una elevación real.                                           |
+| Altura Inicial | Numérico   | Sí          | Uso forzado de cinta métrica decimal antes de surtir. | Evidenciar el nivel real previo a la descarga y detectar inconsistencias base.                   |
+| Altura Final   | Numérico   | Sí          | Uso forzado de cinta métrica decimal después de surtir. | Confirmar que la descarga elevó físicamente el nivel del tanque.                                 |
 | Cuenta Litros | Numérico    | Sí          | Concordancia con medidores fijos.                    | Variaciones en registros mecánicos auditables a vista desnuda.                                   |
 | Proveedor     | Selección   | Sí          | Catálogo validado.                                   | Pago a empresas apócrifas y/o sin contrato.                                                      |
 | Remisión      | Texto       | Sí          | Coincidencia de papel legal (Documento contable).    | Lavado de inventario a favor de coludidos sin costo respaldado contablemente.                    |
@@ -50,16 +51,18 @@ Registra la compra o ingreso de diésel por pipas externas hacia los tanques int
 
 1. **Punto de entrada:** Desplazamiento y preparación de la pipa abastecedora con Remisión en mano.
 2. **Registro:** Captura de lugar (Ciudad y Tanque de descarga directa).
-3. **Validaciones físicas:** Capturista toma "Altura" con regla física y extrae los "Litros Carga", anotando también "Temperatura".
-4. **Vínculo Documental:** Imputación oficial cruzando con "Proveedor" exacto y su "Remisión" impresa.
-5. **Confirmación:** Conversión numérica en tiempo real para evitar cadenas vacías; se guardan en BD con Tipo Movimiento "E" (Entrada).
-6. **Generación de evidencia:** Creación del timestamp ineditable `FechaHoraMovimiento`.
+3. **Validaciones físicas previas:** Capturista toma la "Altura Inicial" con regla física antes de abrir la descarga y registra también la "Temperatura".
+4. **Registro de carga:** Al concluir el surtido, captura la "Altura Final" y los "Litros Carga".
+5. **Vínculo Documental:** Imputación oficial cruzando con "Proveedor" exacto y su "Remisión" impresa.
+6. **Confirmación:** Conversión numérica en tiempo real para evitar cadenas vacías; se guardan en BD con Tipo Movimiento "E" (Entrada).
+7. **Generación de evidencia:** Creación del timestamp ineditable `FechaHoraMovimiento`.
 
 ## 7. Reglas de Negocio Críticas
 
 - No involucra "Planta" u otras estructuras intermedias que sí existen en CapturaLecturas; la relación de Ciudad a Tanque es directa.
 - Omisión obligatoria de todos los metadatos propios de Salidas (IdUnidad = null, IdPersonal = null, Horimetro = null, FolioVale = nulo).
 - Exige obligatoriamente documentar `Remision` y `Proveedor` si es una 'E' (Entrada).
+- `AlturaTanque` almacena la altura inicial previa al surtido y `Altura2Tanque` conserva la altura final al cierre de la descarga.
 
 ## 8. Evidencia Generada
 
@@ -70,14 +73,15 @@ Registra la compra o ingreso de diésel por pipas externas hacia los tanques int
 ## 9. Riesgos Operativos si No se Utiliza Correctamente
 
 - Imposibilidad de conciliar volumen físico contra facturas presentadas, propiciando posibles doble-pagos al proveedor o recibimientos incompletos.
-- Fallar en registrar la Altura y Temperatura puede invalidar garantías o reclamos sobre diésel con mal peso específico / dilución excesiva.
+- Fallar en registrar ambas alturas y la temperatura puede invalidar garantías o reclamos sobre diésel con mal peso específico, faltantes o dilución excesiva.
 
 ## 10. Escenarios de Auditoría
 
-- **Conciliación de inventario físico vs sistema:** El aumento de altura en cm capturado ("Altura") debe empalmar mediante las tablas de aforo del tanque con los "Litros Carga".
+- **Conciliación de inventario físico vs sistema:** La diferencia entre "Altura Inicial" y "Altura Final" debe empalmar mediante las tablas de aforo del tanque con los "Litros Carga".
 - **Comprobación Cruzada Contable:** Auditoría obtiene "Remisiones" semanales del ERP contable y coteja directamente si toda factura pagada existe como una remisión con estatus capturado en esta pantalla.
 
 ## 11. Consideraciones para Capacitación
 
 - Enseñar las correctas pautas de metrología física de tanques (Aforo, regla o cinta con plomada para extraer Altura y Termómetro de probeta).
 - Insistir a los usuarios en revisar dos veces el consecutivo alfanumérico exacto del folio de Remisión para no estropear al área de finanzas.
+- Reforzar que Cuenta Litros Actual, Proveedor y Remisión se capturan en un mismo renglón para cerrar la operación documental sin perder contexto visual.

@@ -21,7 +21,8 @@ interface EntradasForm {
   Hora: string;
   Temperatura: string;
   LitrosCarga: string;
-  Altura: string;           // "Altura del Tanque"
+  AlturaInicial: string;    // "Altura Inicial"
+  Altura: string;           // "Altura Final"
   CuentaLitros: string;     // "Cuenta Litros Actual"
   IdProveedor: string;      // Nota: Id con mayúscula
   Remision: string;
@@ -102,6 +103,7 @@ async function onSubmit(data: EntradasForm): Promise<void>
 | `Hora` | time | Obligatoria |
 | `Temperatura` | number | Obligatoria, step any |
 | `LitrosCarga` | number | Obligatoria |
+| `AlturaInicial` | number | Obligatoria |
 | `Altura` | number | Obligatoria |
 | `CuentaLitros` | number | Obligatoria |
 | `IdProveedor` | select | Obligatorio |
@@ -130,7 +132,8 @@ Campos insertados:
   HoraCarga: string,             // HH:MM
   TemperaturaCarga: number,
   LitrosCarga: number,
-  AlturaTanque: number,          // Campo Altura
+  AlturaTanque: number,          // Altura Inicial
+  Altura2Tanque: number,         // Altura Final
   CuentaLitros: number,
   Remision: string,
   IdProveedor: number,
@@ -154,8 +157,8 @@ Campos insertados:
 │ └──────────────────────────┘            │
 │                                          │
 │ ┌─── DATOS DE CARGA ────────┐           │
-│ │ Litros | Altura | Cuenta Litros │     │
-│ │ Proveedor | Remisión      │          │
+│ │ Litros | Altura Inicial | Altura Final │
+│ │ Cuenta Litros | Proveedor | Remisión │
 │ │ Observaciones (textarea)   │          │
 │ └───────────────────────────┘           │
 │                                          │
@@ -175,6 +178,8 @@ Campos insertados:
 
 ## UX Características
 - Estructura por tarjetas: datos del tanque + datos de carga
+- Las alturas inicial y final se capturan por separado para evidenciar el nivel antes y después de la descarga
+- Cuenta Litros Actual, Proveedor y Remisión comparten un mismo renglón para reducir el recorrido visual en captura operativa
 - Botón limpiar restablece valores y defaults
 - Indicador visual de envío en botón guardar (spinner)
 - Mensajes dismissibles con Bootstrap Alert
@@ -199,6 +204,7 @@ function App() {
 ## Notas técnicas
 - Usa `ComboCveCiudad` (clave string) en lugar de `ComboCiudad` (ID numérico)
 - El timestamp `FechaHoraMovimiento` se construye manualmente concatenando fecha y hora actuales
+- `AlturaTanque` conserva la altura inicial antes de surtir; `Altura2Tanque` almacena la altura final posterior a la carga
 - Los campos específicos de **salidas** (`IdUnidad`, `IdPersonal`, `FolioVale`, `Horimetro`, `Odometro`) se omiten (serían `null` implícitamente)
 - El botón guardar muestra un Spinner durante el proceso de guardado
 - Campo `Observaciones` es opcional (no tiene validación `required`)

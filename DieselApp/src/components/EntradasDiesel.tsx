@@ -24,7 +24,8 @@ interface EntradasForm {
   Hora: string;
   Temperatura: string;
   LitrosCarga: string;
-  Altura: string; // "Altura del Tanque"
+  AlturaInicial: string;
+  Altura: string; // "Altura Final"
   CuentaLitros: string; // "Cuenta Litros Actual"
   IdProveedor: string; // Fixed: Changed from IDProveedor to IdProveedor to match ComboProveedores
   Remision: string;
@@ -76,6 +77,7 @@ export default function EntradasDiesel() {
       Observaciones: "",
       Temperatura: "",
       LitrosCarga: "",
+      AlturaInicial: "",
       Altura: "",
       CuentaLitros: "",
     });
@@ -106,7 +108,8 @@ export default function EntradasDiesel() {
           HoraCarga: data.Hora,
           TemperaturaCarga: Number(data.Temperatura),
           LitrosCarga: Number(data.LitrosCarga),
-          AlturaTanque: Number(data.Altura),
+          AlturaTanque: Number(data.AlturaInicial),
+          Altura2Tanque: Number(data.Altura),
           CuentaLitros: Number(data.CuentaLitros),
           Remision: data.Remision,
           IdProveedor: Number(data.IdProveedor),
@@ -227,9 +230,26 @@ export default function EntradasDiesel() {
               </Col>
               <Col md={4}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Altura del Tanque (cms)</Form.Label>
+                  <Form.Label>Altura Inicial (cms)</Form.Label>
                   <Form.Control
                     type="number"
+                    step="any"
+                    {...register("AlturaInicial", {
+                      required: "Altura inicial requerida",
+                    })}
+                    isInvalid={!!errors.AlturaInicial}
+                  />
+                  <Form.Control.Feedback type="invalid">
+                    {errors.AlturaInicial?.message}
+                  </Form.Control.Feedback>
+                </Form.Group>
+              </Col>
+              <Col md={4}>
+                <Form.Group className="mb-3">
+                  <Form.Label>Altura Final (cms)</Form.Label>
+                  <Form.Control
+                    type="number"
+                    step="any"
                     {...register("Altura", { required: "Altura requerida" })}
                     isInvalid={!!errors.Altura}
                   />
@@ -238,6 +258,8 @@ export default function EntradasDiesel() {
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
+            </Row>
+            <Row>
               <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>Cuenta Litros Actual</Form.Label>
@@ -253,15 +275,13 @@ export default function EntradasDiesel() {
                   </Form.Control.Feedback>
                 </Form.Group>
               </Col>
-            </Row>
-            <Row>
-              <Col md={6}>
+              <Col md={4}>
                 <ComboProveedores
                   register={register}
                   error={errors.IdProveedor}
                 />
               </Col>
-              <Col md={6}>
+              <Col md={4}>
                 <Form.Group className="mb-3">
                   <Form.Label>Remisión</Form.Label>
                   <Form.Control

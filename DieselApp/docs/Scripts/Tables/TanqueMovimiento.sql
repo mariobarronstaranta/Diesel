@@ -18,5 +18,6 @@ create table public."TanqueMovimiento" (
   "FolioVale" character varying null,
   "Horimetro" bigint null,
   "Odometro" bigint null,
+  "Altura2Tanque" numeric(8, 2) null,
   constraint TanqueMovimiento_pkey primary key ("IdTanqueMovimiento")
 ) TABLESPACE pg_default;
