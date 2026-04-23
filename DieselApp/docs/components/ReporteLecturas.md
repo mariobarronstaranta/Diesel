@@ -36,6 +36,7 @@ interface LecturaDiaria {
   lectura_final_cms: number;
   entradas?: number | null;
   consumo_alturas?: number | null;
+  consumo_salidas?: number | null;
   cuenta_litros_inicial: number;
   cuenta_litros_final: number;
   diferencia_cuenta_litros: number;
@@ -73,6 +74,7 @@ interface DetalleLectura {
 - `isLoading: boolean` - Estado de consulta agregada
 - `alertMessage: { type, text } | null` - Mensajes de resultado
 - `lecturas: LecturaDiaria[]` - Datos agregados por tanque/fecha
+- `mostrarSinMovimientos: boolean` - Controla si se incluyen renglones sin movimientos
 - `cveCiudadSeleccionada: string` - Ciudad activa para recargar el combo de tanque
 - `tanqueNombre: string` - Texto visible del tanque elegido para exportación PDF
 
@@ -97,7 +99,7 @@ interface DetalleLectura {
 
 ### useState
 
-Total de 10 estados (listados arriba en "Estado interno")
+Total de 11 estados (listados arriba en "Estado interno")
 
 ### useForm
 
@@ -196,19 +198,43 @@ async function handleUpdate(id: number, tanque: string): Promise<void>;
 4. Cierra modal y modo edición
 5. Reconsulta datos agregados
 
-### 7. exportarCSV
+### 7. Filtro de renglones sin movimientos
+
+```typescript
+const lecturasFiltradas = mostrarSinMovimientos
+  ? lecturas
+  : lecturas.filter((l) =>
+      !(
+        obtenerEntradas(l) === 0 &&
+        Number(l.consumo_salidas ?? 0) === 0 &&
+        Number(l.diferencia_cuenta_litros ?? 0) === 0 &&
+        obtenerConsumoAlturas(l) === 0
+      )
+    );
+```
+
+Comportamiento del check `Mostrar Tanques sin Movimientos`:
+
+1. Inicia seleccionado para mostrar todos los registros.
+2. Si se desmarca, oculta renglones donde simultáneamente:
+   - `Entradas = 0`
+   - `Consumo Salidas = 0`
+   - `Consumo C. Litros = 0`
+   - `Consumo Alturas = 0`
+
+### 8. exportarCSV
 
 ```typescript
 function exportarCSV(): void;
 ```
 
-1. Convierte `lecturas` a formato CSV
-2. Incluye columnas `Entradas`, `Consumo Alturas` y `Consumo C. Litros`
+1. Convierte `lecturasFiltradas` a formato CSV (respeta el estado del check)
+2. Incluye columnas `Entradas`, `Consumo Salidas`, `Consumo C. Litros` y `Consumo Alturas`
 3. Añade BOM UTF-8 (`\uFEFF`) para compatibilidad con Excel
 4. Crea blob y descarga archivo
 5. Nombre: `Lecturas_YYYY-MM-DD.csv`
 
-### 8. exportarPDF
+### 9. exportarPDF
 
 ```typescript
 async function exportarPDF(): Promise<void>;
@@ -217,8 +243,8 @@ async function exportarPDF(): Promise<void>;
 1. Genera PDF horizontal con `jsPDF`
 2. Inserta logotipo corporativo
 3. Imprime filtros activos: ciudad, tanque y rango de fechas
-4. Construye tabla con `jspdf-autotable`
-5. Refleja las columnas nuevas del reporte (`Entradas`, `Consumo Alturas`, `Consumo C. Litros`)
+4. Construye tabla con `jspdf-autotable` usando `lecturasFiltradas`
+5. Refleja las columnas del reporte (`Entradas`, `Consumo Salidas`, `Consumo C. Litros`, `Consumo Alturas`)
 6. Descarga archivo `Reporte_Lecturas_YYYYMMDD.pdf`
 
 ## Integración de datos
@@ -232,11 +258,13 @@ async function exportarPDF(): Promise<void>;
 - `p_fecha_inicial: string`
 - `p_fecha_final: string`
 
-**Retorna:** Array de `LecturaDiaria` con datos agregados (primera y última lectura del día), incluyendo `Entradas` por fecha/tanque y `Consumo Alturas`.
+**Retorna:** Array de `LecturaDiaria` con datos agregados (primera y última lectura del día), incluyendo `Entradas`, `Consumo Salidas` y `Consumo Alturas` por fecha/tanque.
 
 La columna `ciudad` proviene de `Tanque.CveCiudad`.
 
 La columna `Entradas` se calcula como la suma de `TanqueMovimiento.LitrosCarga` cuando `TipoMovimiento = 'E'`, haciendo match exacto por `TanqueMovimiento.FechaCarga = TanqueLecturas.Fecha` y `TanqueMovimiento.IdTanque = TanqueLecturas.IDTanque`.
+
+La columna `Consumo Salidas` se calcula como la suma de `TanqueMovimiento.LitrosCarga` cuando `TipoMovimiento = 'S'`, agregada por `IdTanque + FechaCarga`.
 
 La columna `Consumo Alturas` se calcula traduciendo `lectura_inicial_cms` y `lectura_final_cms` a litros mediante la tabla `VolumenAlturaTanque` por `TanqueId`; el valor mostrado es la diferencia entre litros iniciales y litros finales. Como `VolumenAlturaTanque.Altura` puede no coincidir exactamente con `LecturaCms`, la RPC toma la altura más cercana para resolver cada volumen.
 
@@ -277,13 +305,15 @@ La columna `Consumo Alturas` se calcula traduciendo `lectura_inicial_cms` y `lec
 │                                                 │
 │ [Ciudad ▾] [Tanque ▾] [Fecha Inicial] [Fecha Final] [Consultar]│
 │                                                 │
-│ ┌─ Resultados ───── [Exportar CSV] [Exportar PDF] ┐ │
+│ ┌─ Resultados ─ [x] Mostrar Tanques sin Movimientos │
+│ │                  [Exportar CSV] [Exportar PDF]   │
 │ │ ┌──────────────────────────────────┐  │     │
 │ │ │ Tabla con encabezados multinivel │  │     │
 │ │ │ - Ciudad, Tanque, Fecha          │  │     │
 │ │ │ - Altura CMS (Inicial/Final)     │  │     │
 │ │ │ - Cuenta Litros (Inicial/Final)  │  │     │
-│ │ │ - Litros Consumidos              │  │     │
+│ │ │ - Entradas / Consumo Salidas     │  │     │
+│ │ │ - Consumo C. Litros / Alturas    │  │     │
 │ │ │ - [Detalle] por fila             │  │     │
 │ │ └──────────────────────────────────┘  │     │
 │ └───────────────────────────────────────┘     │
@@ -312,7 +342,10 @@ La columna `Consumo Alturas` se calcula traduciendo `lectura_inicial_cms` y `lec
     <th rowspan="{2}">Fecha Lectura</th>
     <th colspan="{2}">Altura (cms)</th>
     <th colspan="{2}">Cuenta Litros</th>
-    <th rowspan="{2}">Lts Consumidos</th>
+    <th rowspan="{2}">Entradas</th>
+    <th rowspan="{2}">Consumo Salidas</th>
+    <th rowspan="{2}">Consumo C. Litros</th>
+    <th rowspan="{2}">Consumo Alturas</th>
     <th rowspan="{2}">Acción</th>
   </tr>
   <tr>

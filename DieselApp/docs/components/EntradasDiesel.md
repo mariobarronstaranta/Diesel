@@ -21,8 +21,8 @@ interface EntradasForm {
   Hora: string;
   Temperatura: string;
   LitrosCarga: string;
-  AlturaInicial: string;    // "Altura Inicial"
-  Altura: string;           // "Altura Final"
+  AlturaInicial: string;    // "Altura Antes de Carga"
+  Altura: string;           // "Altura Despues de Carga"
   CuentaLitros: string;     // "Cuenta Litros Actual"
   IdProveedor: string;      // Nota: Id con mayúscula
   Remision: string;
@@ -132,8 +132,8 @@ Campos insertados:
   HoraCarga: string,             // HH:MM
   TemperaturaCarga: number,
   LitrosCarga: number,
-  AlturaTanque: number,          // Altura Inicial
-  Altura2Tanque: number,         // Altura Final
+  AlturaTanque: number,          // Altura Antes de Carga
+  Altura2Tanque: number,         // Altura Despues de Carga
   CuentaLitros: number,
   Remision: string,
   IdProveedor: number,
@@ -157,7 +157,7 @@ Campos insertados:
 │ └──────────────────────────┘            │
 │                                          │
 │ ┌─── DATOS DE CARGA ────────┐           │
-│ │ Litros | Altura Inicial | Altura Final │
+│ │ Litros | Altura Antes de Carga | Altura Despues de Carga │
 │ │ Cuenta Litros | Proveedor | Remisión │
 │ │ Observaciones (textarea)   │          │
 │ └───────────────────────────┘           │

@@ -35,6 +35,7 @@ interface LecturaDiaria {
   lectura_final_cms: number;
   entradas?: number | null;
   consumo_alturas?: number | null;
+  consumo_salidas?: number | null;
   cuenta_litros_inicial: number;
   cuenta_litros_final: number;
   diferencia_cuenta_litros: number;
@@ -79,6 +80,7 @@ export default function ReporteLecturas() {
   const [lastQueryParams, setLastQueryParams] =
     useState<ReporteLecturasForm | null>(null);
 
+  const [mostrarSinMovimientos, setMostrarSinMovimientos] = useState(true);
   const {
     register,
     handleSubmit,
@@ -117,6 +119,18 @@ export default function ReporteLecturas() {
         (Number(lectura.lectura_inicial_cms ?? 0) -
           Number(lectura.lectura_final_cms ?? 0)),
     );
+
+  const lecturasFiltradas = mostrarSinMovimientos
+    ? lecturas
+    : lecturas.filter(
+        (l) =>
+          !(
+            obtenerEntradas(l) === 0 &&
+            Number(l.consumo_salidas ?? 0) === 0 &&
+            Number(l.diferencia_cuenta_litros ?? 0) === 0 &&
+            obtenerConsumoAlturas(l) === 0
+          ),
+      );
 
   const onSubmit = async (data: ReporteLecturasForm) => {
     try {
@@ -328,7 +342,7 @@ export default function ReporteLecturas() {
   };
 
   const exportarCSV = () => {
-    if (lecturas.length === 0) return;
+    if (lecturasFiltradas.length === 0) return;
 
     // Definir encabezados
     const headers = [
@@ -337,28 +351,30 @@ export default function ReporteLecturas() {
       "Fecha Lectura",
       "Lectura Inicial CMS",
       "Lectura Final CMS",
-      "Entradas",
-      "Consumo Alturas",
       "Cuenta Lts Inicial",
       "Cuenta Lts Final",
+      "Entradas",
+      "Consumo Salidas",
       "Consumo C. Litros",
+      "Consumo Alturas",
     ];
 
     // Convertir datos a formato CSV
     const csvContent = [
       headers.join(","), // Encabezado
-      ...lecturas.map((l) =>
+      ...lecturasFiltradas.map((l) =>
         [
           `"${l.ciudad}"`,
           `"${l.nombre}"`,
           `"${formatearFecha(l.fecha)}"`,
           l.lectura_inicial_cms,
           l.lectura_final_cms,
-          obtenerEntradas(l),
-          obtenerConsumoAlturas(l),
           l.cuenta_litros_inicial,
           l.cuenta_litros_final,
+          obtenerEntradas(l),
+          Number(l.consumo_salidas ?? 0),
           l.diferencia_cuenta_litros,
+          obtenerConsumoAlturas(l),
         ].join(","),
       ),
     ].join("\n");
@@ -380,7 +396,7 @@ export default function ReporteLecturas() {
   };
 
   const exportarPDF = async () => {
-    if (lecturas.length === 0) return;
+    if (lecturasFiltradas.length === 0) return;
 
     const doc = new jsPDF("landscape");
     
@@ -456,23 +472,25 @@ export default function ReporteLecturas() {
       "Fecha Lectura",
       "L. Inicial\n(cms)",
       "L. Final\n(cms)",
-      "Entradas",
-      "Consumo\nAlturas",
       "Cta Lts\nInicial",
       "Cta Lts\nFinal",
+      "Entradas",
+      "Consumo\nSalidas",
       "Consumo\nC. Litros",
+      "Consumo\nAlturas",
     ];
-    const tableRows = lecturas.map(l => [
+    const tableRows = lecturasFiltradas.map(l => [
       l.ciudad ?? "",
       l.nombre ?? "",
       l.fecha ? formatearFecha(l.fecha) : "",
       l.lectura_inicial_cms ?? 0,
       l.lectura_final_cms ?? 0,
-      obtenerEntradas(l).toLocaleString(),
-      obtenerConsumoAlturas(l).toLocaleString(),
       (l.cuenta_litros_inicial ?? 0).toLocaleString(),
       (l.cuenta_litros_final ?? 0).toLocaleString(),
-      (l.diferencia_cuenta_litros ?? 0).toLocaleString()
+      obtenerEntradas(l).toLocaleString(),
+      Number(l.consumo_salidas ?? 0).toLocaleString(),
+      (l.diferencia_cuenta_litros ?? 0).toLocaleString(),
+      obtenerConsumoAlturas(l).toLocaleString()
     ]);
 
     // Tabla UX
@@ -504,7 +522,8 @@ export default function ReporteLecturas() {
         6: { halign: 'right' },
         7: { halign: 'right' },
         8: { halign: 'right' },
-        9: { halign: 'right', fontStyle: 'bold', textColor: [52, 58, 64] } // Resalte al importante
+        9: { halign: 'right' },
+        10: { halign: 'right', fontStyle: 'bold', textColor: [52, 58, 64] } // Resalte al importante
       }
     });
 
@@ -640,7 +659,16 @@ export default function ReporteLecturas() {
       {lecturas.length > 0 && (
         <Card>
           <Card.Header className="d-flex justify-content-between align-items-center bg-white">
-            <h5 className="mb-0">Resultados</h5>
+            <div className="d-flex align-items-center gap-3">
+              <h5 className="mb-0">Resultados</h5>
+              <Form.Check
+                type="checkbox"
+                id="chk-sin-movimientos"
+                label="Mostrar Tanques sin Movimientos"
+                checked={mostrarSinMovimientos}
+                onChange={(e) => setMostrarSinMovimientos(e.target.checked)}
+              />
+            </div>
             <div>
               <Button variant="success" size="sm" onClick={exportarCSV} className="me-2">
                 Exportar CSV
@@ -659,10 +687,11 @@ export default function ReporteLecturas() {
                     <th rowSpan={2}>Tanque</th>
                     <th rowSpan={2}>Fecha Lectura</th>
                     <th colSpan={2}>Altura (cms)</th>
-                    <th rowSpan={2}>Entradas</th>
-                    <th rowSpan={2}>Consumo Alturas</th>
                     <th colSpan={2}>Cuenta Litros</th>
+                    <th rowSpan={2}>Entradas</th>
+                    <th rowSpan={2}>Consumo Salidas</th>
                     <th rowSpan={2}>Consumo C. Litros</th>
+                    <th rowSpan={2}>Consumo Alturas</th>
                     <th rowSpan={2}>Acción</th>
                   </tr>
                   <tr>
@@ -673,7 +702,7 @@ export default function ReporteLecturas() {
                   </tr>
                 </thead>
                 <tbody>
-                  {lecturas.map((lectura, index) => (
+                  {lecturasFiltradas.map((lectura, index) => (
                     <tr key={index}>
                       <td>{lectura.ciudad ?? ""}</td>
                       <td>{lectura.nombre ?? ""}</td>
@@ -682,19 +711,20 @@ export default function ReporteLecturas() {
                       </td>
                       <td>{lectura.lectura_inicial_cms ?? 0}</td>
                       <td>{lectura.lectura_final_cms ?? 0}</td>
-                      <td>{obtenerEntradas(lectura).toLocaleString()}</td>
-                      <td>{obtenerConsumoAlturas(lectura).toLocaleString()}</td>
                       <td>
                         {(lectura.cuenta_litros_inicial ?? 0).toLocaleString()}
                       </td>
                       <td>
                         {(lectura.cuenta_litros_final ?? 0).toLocaleString()}
                       </td>
+                      <td>{obtenerEntradas(lectura).toLocaleString()}</td>
+                      <td>{Number(lectura.consumo_salidas ?? 0).toLocaleString()}</td>
                       <td>
                         {(
                           lectura.diferencia_cuenta_litros ?? 0
                         ).toLocaleString()}
                       </td>
+                      <td>{obtenerConsumoAlturas(lectura).toLocaleString()}</td>
                       <td className="text-center">
                         <Button
                           variant="outline-corporate"

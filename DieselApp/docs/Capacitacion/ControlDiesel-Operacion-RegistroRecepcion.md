@@ -9,7 +9,7 @@ Clasificación: Documento de Capacitación y Control Interno
 
 ## 1. Objetivo de Control
 
-Asegurar que toda inyección de combustible comprado a proveedores sea respaldada por documentos físicos (Remisión), verificando que el volumen que se inyecta y paga concuerde mediante pruebas en el lugar ("Altura Inicial", "Altura Final", "Temperatura"). Mitiga facturas fantasma.
+Asegurar que toda inyección de combustible comprado a proveedores sea respaldada por documentos físicos (Remisión), verificando que el volumen que se inyecta y paga concuerde mediante pruebas en el lugar ("Altura Antes de Carga", "Altura Despues de Carga", "Temperatura"). Mitiga facturas fantasma.
 
 ## 2. Alcance
 
@@ -40,8 +40,8 @@ Registra la compra o ingreso de diésel por pipas externas hacia los tanques int
 | Hora          | Time        | Sí          | Hora local de la operación.                          | Modificación y manipulación de tiempos de tránsito para la pipa proveedora.                      |
 | Temperatura   | Numérico    | Sí          | Validando decimales (`any` step).                    | Enmascaramiento de faltante justificado erróneamente con la expansión o contracción volumétrica. |
 | Litros Carga  | Numérico    | Sí          | Valor estricto superior a cero.                      | Aporte de inventario ficticio o falso para ocultar otra fuga anterior.                           |
-| Altura Inicial | Numérico   | Sí          | Uso forzado de cinta métrica decimal antes de surtir. | Evidenciar el nivel real previo a la descarga y detectar inconsistencias base.                   |
-| Altura Final   | Numérico   | Sí          | Uso forzado de cinta métrica decimal después de surtir. | Confirmar que la descarga elevó físicamente el nivel del tanque.                                 |
+| Altura Antes de Carga | Numérico   | Sí          | Uso forzado de cinta métrica decimal antes de surtir. | Evidenciar el nivel real previo a la descarga y detectar inconsistencias base.                   |
+| Altura Despues de Carga | Numérico   | Sí          | Uso forzado de cinta métrica decimal después de surtir. | Confirmar que la descarga elevó físicamente el nivel del tanque.                                 |
 | Cuenta Litros | Numérico    | Sí          | Concordancia con medidores fijos.                    | Variaciones en registros mecánicos auditables a vista desnuda.                                   |
 | Proveedor     | Selección   | Sí          | Catálogo validado.                                   | Pago a empresas apócrifas y/o sin contrato.                                                      |
 | Remisión      | Texto       | Sí          | Coincidencia de papel legal (Documento contable).    | Lavado de inventario a favor de coludidos sin costo respaldado contablemente.                    |
@@ -51,8 +51,8 @@ Registra la compra o ingreso de diésel por pipas externas hacia los tanques int
 
 1. **Punto de entrada:** Desplazamiento y preparación de la pipa abastecedora con Remisión en mano.
 2. **Registro:** Captura de lugar (Ciudad y Tanque de descarga directa).
-3. **Validaciones físicas previas:** Capturista toma la "Altura Inicial" con regla física antes de abrir la descarga y registra también la "Temperatura".
-4. **Registro de carga:** Al concluir el surtido, captura la "Altura Final" y los "Litros Carga".
+3. **Validaciones físicas previas:** Capturista toma la "Altura Antes de Carga" con regla física antes de abrir la descarga y registra también la "Temperatura".
+4. **Registro de carga:** Al concluir el surtido, captura la "Altura Despues de Carga" y los "Litros Carga".
 5. **Vínculo Documental:** Imputación oficial cruzando con "Proveedor" exacto y su "Remisión" impresa.
 6. **Confirmación:** Conversión numérica en tiempo real para evitar cadenas vacías; se guardan en BD con Tipo Movimiento "E" (Entrada).
 7. **Generación de evidencia:** Creación del timestamp ineditable `FechaHoraMovimiento`.
@@ -77,7 +77,7 @@ Registra la compra o ingreso de diésel por pipas externas hacia los tanques int
 
 ## 10. Escenarios de Auditoría
 
-- **Conciliación de inventario físico vs sistema:** La diferencia entre "Altura Inicial" y "Altura Final" debe empalmar mediante las tablas de aforo del tanque con los "Litros Carga".
+- **Conciliación de inventario físico vs sistema:** La diferencia entre "Altura Antes de Carga" y "Altura Despues de Carga" debe empalmar mediante las tablas de aforo del tanque con los "Litros Carga".
 - **Comprobación Cruzada Contable:** Auditoría obtiene "Remisiones" semanales del ERP contable y coteja directamente si toda factura pagada existe como una remisión con estatus capturado en esta pantalla.
 
 ## 11. Consideraciones para Capacitación

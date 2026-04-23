@@ -25,7 +25,7 @@ interface EntradasForm {
   Temperatura: string;
   LitrosCarga: string;
   AlturaInicial: string;
-  Altura: string; // "Altura Final"
+  Altura: string; // "Altura Despues de Carga"
   CuentaLitros: string; // "Cuenta Litros Actual"
   IdProveedor: string; // Fixed: Changed from IDProveedor to IdProveedor to match ComboProveedores
   Remision: string;
@@ -230,12 +230,12 @@ export default function EntradasDiesel() {
               </Col>
               <Col md={4}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Altura Inicial (cms)</Form.Label>
+                  <Form.Label>Altura Antes de Carga (cms)</Form.Label>
                   <Form.Control
                     type="number"
                     step="any"
                     {...register("AlturaInicial", {
-                      required: "Altura inicial requerida",
+                      required: "Altura antes de carga requerida",
                     })}
                     isInvalid={!!errors.AlturaInicial}
                   />
@@ -246,7 +246,7 @@ export default function EntradasDiesel() {
               </Col>
               <Col md={4}>
                 <Form.Group className="mb-3">
-                  <Form.Label>Altura Final (cms)</Form.Label>
+                  <Form.Label>Altura Despues de Carga (cms)</Form.Label>
                   <Form.Control
                     type="number"
                     step="any"

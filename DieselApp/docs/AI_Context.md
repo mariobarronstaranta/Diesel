@@ -5,8 +5,8 @@
 > refactorización o documentación **sin fricción ni suposiciones incorrectas**.
 > Mantener este archivo actualizado tras cada cambio estructural significativo.
 
-**Última actualización:** 2026-04-10
-**Versión:** 1.5
+**Última actualización:** 2026-04-22
+**Versión:** 1.6
 
 ---
 
@@ -186,7 +186,8 @@ Todas se llaman vía `supabase.rpc('nombre_funcion', { params })`.
 | `reporte_rendimientos_v2`       | Rendimiento consolidado por unidad            | `p_fecha_inicio`, `p_fecha_fin`, `p_cve_ciudad?`, `p_id_tanque?`, `p_id_unidad?` |
 | `get_rendimientos_detalle_v2`   | Detalle consolidado de movimientos por unidad | `p_fecha_inicio`, `p_fecha_fin`, `p_cve_ciudad`, `p_id_unidad`                   |
 | `sp_obtener_lecturas_diarias`   | Lecturas de inventario físico                 | `p_ciudad?`, `p_fecha_inicial`, `p_fecha_final`, `p_id_tanque?`                  |
-| `fn_obtener_lecturas_por_fecha` | Lecturas para captura y detalle de inventario | `p_fecha`, `p_id_tanque`                                                         |
+| `sp_obtener_lecturas_diarias_consumos` | Lecturas agregadas + consumos por tanque/fecha | `p_ciudad?`, `p_fecha_inicial`, `p_fecha_final`, `p_id_tanque?`                  |
+| `fn_obtener_lecturas_por_fecha` | Lecturas para captura y detalle de inventario | `p_fecha`, `p_tanque`                                                            |
 | `reporte_productividad`         | Cruce SP + TanqueMovimiento por unidad        | `p_fecha_inicio`, `p_fecha_fin`, `p_cve_ciudad?`, `p_id_tanque?`                 |
 
 > Scripts DDL en: `docs/Scripts/*.sql`
@@ -269,7 +270,17 @@ CveCiudad (raíz)
 - `CapturaLecturas` usa una cascada obligatoria `Ciudad -> Planta -> Tanque`.
 - `ReporteLecturas` permite filtros opcionales por ciudad y tanque.
 - En `ReporteLecturas`, cuando no se selecciona ciudad o tanque, el frontend envía `null` para solicitar consulta sin ese filtro.
-- `ReporteLecturas` soporta exportación a CSV y PDF del resumen agregado.
+- `ReporteLecturas` consume la RPC `sp_obtener_lecturas_diarias_consumos` para obtener: `Entradas`, `Consumo Salidas`, `Consumo C. Litros` y `Consumo Alturas` por `tanque + fecha`.
+- `ReporteLecturas` soporta exportación a CSV y PDF del resumen agregado y respeta el filtro visual aplicado.
+- `ReporteLecturas` incluye el check `Mostrar Tanques sin Movimientos` con este flujo:
+    - Seleccionado (default): muestra todos los renglones.
+    - Sin seleccionar: oculta renglones donde simultáneamente `Entradas = 0`, `Consumo Salidas = 0`, `Consumo C. Litros = 0` y `Consumo Alturas = 0`.
+- Orden actual de columnas en `ReporteLecturas`:
+    - `Ciudad`, `Tanque`, `Fecha Lectura`
+    - `Altura (cms)` Inicial/Final
+    - `Cuenta Litros` Inicial/Final
+    - `Entradas`, `Consumo Salidas`, `Consumo C. Litros`, `Consumo Alturas`
+    - `Acción`
 
 ### 8.5 Rendimientos Actual vs Consolidado
 
@@ -325,6 +336,7 @@ Al cambiar `CveCiudad` en cualquier formulario, **todos los combos descendientes
 6. **Temperatura (`TemperaturaC`):** Campo capturado en Entradas, actualmente anecdótico. No influye en cálculos volumétricos (corrección 15°C pendiente de implementar).
 7. **`Planta` solo aplica en Lecturas:** No tiene peso transaccional en Salidas/Entradas; costeo de inventario es a nivel `CveCiudad`.
 8. **Despliegue en IIS:** El build de Vite va a `/dieselapp`. El `basename` del router debe coincidir.
+9. **ReporteLecturas (filtro check):** El check "Mostrar Tanques sin Movimientos" inicia activo. Si se desactiva, se excluyen renglones con todos los indicadores de movimiento/consumo en cero.
 
 ---
 

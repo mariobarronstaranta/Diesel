@@ -4,6 +4,7 @@
 --   Extiende el reporte base de lecturas diarias para incluir:
 --   1. Entradas por fecha/tanque desde TanqueMovimiento
 --   2. Consumo Alturas convertido a litros desde VolumenAlturaTanque
+--   3. Consumo Salidas por fecha/tanque desde TanqueMovimiento
 --
 -- Reglas de negocio:
 --   - Ciudad proviene de Tanque.CveCiudad
@@ -13,10 +14,13 @@
 --   - Consumo Alturas = Volumen(Altura Inicial) - Volumen(Altura Final)
 --       usando la tabla VolumenAlturaTanque por TanqueId
 --       y resolviendo la altura más cercana cuando LecturaCms tiene decimales
+--   - Consumo Salidas = SUM(TanqueMovimiento.LitrosCarga)
+--       donde TipoMovimiento = 'S'
+--       y se agrupa por FechaCarga + IdTanque
 --
 -- Índices recomendados:
 --   - VolumenAlturaTanque("TanqueId", "Altura") para los LATERAL de cubicación
---   - TanqueMovimiento("IdTanque", "FechaCarga", "TipoMovimiento") para entradas
+--   - TanqueMovimiento("IdTanque", "FechaCarga", "TipoMovimiento") para entradas/salidas
 --
 -- Bitácora de cambios:
 --   2026-04-16:
@@ -31,6 +35,9 @@
 --     innecesarios (ciudad/nombre son dependientes de idtanque).
 --   - Ajuste funcional: las entradas ya no dependen de que exista lectura activa
 --     el mismo dia; el reporte incluye dias con solo movimientos de entrada.
+--   2026-04-22:
+--   - Se agrega la columna consumo_salidas: SUM(LitrosCarga) TipoMovimiento='S'
+--     por tanque y fecha, usando el nuevo CTE SalidasPorDia.
 -- =============================================
 
 DROP FUNCTION IF EXISTS sp_obtener_lecturas_diarias_consumos(TEXT, DATE, DATE, INTEGER);
@@ -51,7 +58,8 @@ RETURNS TABLE (
     consumo_alturas NUMERIC(8,2),
     cuenta_litros_inicial BIGINT,
     cuenta_litros_final BIGINT,
-    diferencia_cuenta_litros BIGINT
+    diferencia_cuenta_litros BIGINT,
+    consumo_salidas BIGINT
 )
 LANGUAGE plpgsql
 AS $$
@@ -115,6 +123,32 @@ BEGIN
             tn."Nombre",
             tm."FechaCarga"
     ),
+    SalidasPorDia AS (
+        -- Suma salidas (TipoMovimiento='S') por tanque y fecha.
+        SELECT
+            tn."IDTanque"::INTEGER as idtanque,
+            tm."FechaCarga" as fecha,
+            COALESCE(SUM(tm."LitrosCarga"), 0)::BIGINT as salidas
+        FROM public."TanqueMovimiento" tm
+        JOIN public."Tanque" tn
+            ON tn."IDTanque" = tm."IdTanque"
+        WHERE
+            tm."TipoMovimiento" = 'S'
+            AND tm."FechaCarga" BETWEEN p_fecha_inicial AND p_fecha_final
+            AND (
+                p_ciudad IS NULL
+                OR p_ciudad = ''
+                OR p_ciudad = '-1'
+                OR tn."CveCiudad" = p_ciudad
+            )
+            AND (
+                p_id_tanque IS NULL
+                OR tn."IDTanque" = p_id_tanque
+            )
+        GROUP BY
+            tn."IDTanque",
+            tm."FechaCarga"
+    ),
     LecturasOrdenadas AS (
         -- Primera y última lectura del día por tanque.
         -- ciudad/nombre dependen de idtanque, no van en PARTITION BY.
@@ -131,6 +165,8 @@ BEGIN
     ),
     DiasBase AS (
         -- Conjunto base de dias a reportar: dias con lectura y dias con entradas.
+        -- NOTA: Se preserva este comportamiento por compatibilidad histórica del reporte.
+        --       Dias con solo salidas (sin lectura y sin entrada) no se agregan aquí.
         SELECT DISTINCT
             lf.idtanque,
             lf.ciudad,
@@ -168,6 +204,12 @@ BEGIN
         WHERE lo.rn_desc = 1
     )
     SELECT
+        -- Contrato de salida (orden exacto):
+        -- 1 ciudad, 2 nombre, 3 fecha,
+        -- 4 lectura_inicial_cms, 5 lectura_final_cms,
+        -- 6 entradas, 7 consumo_alturas,
+        -- 8 cuenta_litros_inicial, 9 cuenta_litros_final,
+        -- 10 diferencia_cuenta_litros, 11 consumo_salidas.
         db.ciudad,
         db.nombre,
         db.fecha,
@@ -179,9 +221,12 @@ BEGIN
         pl."CuentaLitros",
         ul."CuentaLitros",
         CASE
+            -- Diferencia de cuenta litros definida como Final - Inicial.
+            -- Si falta alguna lectura, se retorna NULL para evitar asumir cero artificial.
             WHEN pl."CuentaLitros" IS NULL OR ul."CuentaLitros" IS NULL THEN NULL
             ELSE ul."CuentaLitros" - pl."CuentaLitros"
-        END
+        END,
+        COALESCE(spd.salidas, 0)::BIGINT
     FROM DiasBase db
     LEFT JOIN PrimeraLectura pl
         ON  pl.idtanque = db.idtanque
@@ -192,8 +237,12 @@ BEGIN
     LEFT JOIN EntradasPorDia epd
         ON  epd.idtanque = db.idtanque
         AND epd.fecha    = db.fecha
+    LEFT JOIN SalidasPorDia spd
+        ON  spd.idtanque = db.idtanque
+        AND spd.fecha    = db.fecha
     LEFT JOIN LATERAL (
         -- Volumen más cercano a la altura inicial.
+        -- Criterio: distancia absoluta mínima; empate se resuelve por menor altura.
         SELECT vat."Volumen"
         FROM public."VolumenAlturaTanque" vat
         WHERE vat."TanqueId" = db.idtanque
@@ -203,6 +252,7 @@ BEGIN
     ) vi ON true
     LEFT JOIN LATERAL (
         -- Volumen más cercano a la altura final.
+        -- Criterio: distancia absoluta mínima; empate se resuelve por menor altura.
         SELECT vat."Volumen"
         FROM public."VolumenAlturaTanque" vat
         WHERE vat."TanqueId" = db.idtanque
