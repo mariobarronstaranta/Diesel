@@ -1,11 +1,21 @@
 -- =====================================================
 -- Función: reporte_productividad_v2
--- Descripción:
---   Reporte de Productividad consolidado por unidad.
---   Regla clave cuando hay filtro por tanque:
---   1) El tanque seleccionado SOLO define unidades objetivo.
---   2) El cálculo final de litros/tanques usa TODAS las cargas
---      de esas unidades dentro del rango y ciudad.
+-- Propósito:
+--   Consolidar productividad por unidad, desacoplando el filtro de tanque del cálculo final.
+--
+-- Comentarios de desarrollador:
+--   - El tanque seleccionado solo define unidades objetivo.
+--   - El cálculo final usa todas las cargas de esas unidades dentro del rango/ciudad.
+--   - Esta versión corrige la distorsión de productividad cuando una unidad carga en varios tanques.
+--
+-- HowTo:
+--   - Ejecutar este script en Supabase SQL Editor.
+--   - Probar con:
+--     SELECT * FROM public.reporte_productividad_v2('2026-04-01', '2026-04-30', 'MTY', NULL);
+--
+-- Bitácora de cambios:
+--   2026-04-23:
+--   - Se normaliza el encabezado con comentarios de desarrollador, howto y bitácora.
 -- =====================================================
 
 DROP FUNCTION IF EXISTS public.reporte_productividad_v2(date, date, text, bigint);
@@ -36,6 +46,8 @@ AS $$
 BEGIN
     RETURN QUERY
     WITH viajes_cte AS (
+        -- Base transaccional: agrega viajes y m3 por nombre de unidad en la báscula.
+        -- Aquí todavía no se cruza contra DieselApp; solo consolida la fuente externa.
         SELECT
             igc."NombreUnidad",
             COUNT(DISTINCT igc."Id_Viaje")::bigint AS "TotalViajes",
@@ -46,6 +58,9 @@ BEGIN
         GROUP BY igc."NombreUnidad"
     ),
     viajes_unidad AS (
+                -- Intenta homologar la unidad de báscula contra el catálogo de Unidades.
+                -- Se hace por IDClaveUnidad normalizado con trim para absorber espacios laterales.
+                -- Si no existe match, la unidad permanece como "No Registrada" aguas abajo.
         SELECT
             v."NombreUnidad",
             v."TotalViajes",
@@ -58,6 +73,12 @@ BEGIN
             ON RTRIM(LTRIM(v."NombreUnidad")) = RTRIM(LTRIM(u."IDClaveUnidad"))
     ),
     unidades_objetivo AS (
+        -- Define el universo de unidades que entrarán al reporte final.
+        -- Regla clave:
+        -- - Si no hay filtro por tanque, se incluyen todas las unidades homologadas.
+        -- - Si hay filtro por tanque, solo se incluyen unidades que tuvieron al menos
+        --   una salida en ese tanque dentro del rango/ciudad.
+        -- El filtro por tanque NO recorta todavía los litros consolidados; solo define objetivo.
         SELECT DISTINCT vu."IDUnidad"
         FROM viajes_unidad vu
         WHERE vu."IDUnidad" IS NOT NULL
@@ -75,6 +96,9 @@ BEGIN
           )
     ),
     movimientos_all AS (
+                -- Recupera TODAS las salidas de las unidades objetivo dentro del rango.
+                -- Importante: si hubo filtro por tanque, aquí ya NO se filtra por tanque,
+                -- porque el KPI consolidado debe usar todas las cargas de la unidad.
         SELECT
             tm."IdUnidad",
             tm."IdTanque",
@@ -89,6 +113,7 @@ BEGIN
           AND (p_cve_ciudad IS NULL OR tm."CveCiudad" = p_cve_ciudad)
     ),
     consumos_cte AS (
+        -- Litros totales consolidados por unidad.
         SELECT
             ma."IdUnidad",
             COALESCE(SUM(ma."LitrosCarga"), 0)::numeric AS "CargaTotal"
@@ -96,6 +121,8 @@ BEGIN
         GROUP BY ma."IdUnidad"
     ),
     recorridos_cte AS (
+        -- Recorrido consolidado por unidad usando delta MAX - MIN del periodo.
+        -- Esto evita sumar acumulados y replica la lógica usada en otros reportes KPI.
         SELECT
             ma."IdUnidad",
             COALESCE(MAX(ma."Odometro") - MIN(ma."Odometro"), 0)::bigint AS "KmsRecorridos",
@@ -104,6 +131,8 @@ BEGIN
         GROUP BY ma."IdUnidad"
     ),
     tanques_cte AS (
+        -- Solo para despliegue: lista textual de tanques usados por cada unidad.
+        -- No participa en el cálculo del KPI, únicamente en la columna visible "Tanque".
         SELECT
             ma."IdUnidad",
             STRING_AGG(DISTINCT COALESCE(t."Nombre", 'N/A')::text, ', ' ORDER BY COALESCE(t."Nombre", 'N/A')::text) AS "TanquesUtilizados"
@@ -113,16 +142,19 @@ BEGIN
         GROUP BY ma."IdUnidad"
     )
     SELECT
+        -- Bandera operativa para diferenciar unidades homologadas vs viajes huérfanos.
         CASE
             WHEN vu."IDUnidad" IS NOT NULL THEN 'Registrada'::text
             ELSE 'No Registrada'::text
         END AS "EstadoRegistro",
 
+        -- Si la unidad no existe en DieselApp, no hay catálogo de tanques asociado.
         CASE
             WHEN vu."IDUnidad" IS NULL THEN 'N/A'::text
             ELSE COALESCE(tq."TanquesUtilizados", 'N/A')
         END AS "Tanque",
 
+        -- Prioriza formato de unidad de DieselApp; si no hay homologación, usa la etiqueta de báscula.
         COALESCE(
             (vu."IDClaveUnidad" || '(' || vu."ClaveAlterna" || ')')::text,
             vu."NombreUnidad"::text
@@ -135,16 +167,19 @@ BEGIN
         COALESCE(rc."HrsTrabajo", 0)::bigint AS "Hrs Totales",
         COALESCE(cc."CargaTotal", 0)::numeric AS "Litros Consumidos",
 
+        -- Productividad volumétrica: litros por metro cúbico entregado.
         ROUND(
             (COALESCE(cc."CargaTotal", 0) / NULLIF(vu."TotalMetros", 0))::numeric,
             4
         ) AS "Lts/M3",
 
+        -- Rendimiento vehicular consolidado: kilómetros por litro.
         ROUND(
             (COALESCE(rc."KmsRecorridos", 0)::numeric / NULLIF(cc."CargaTotal", 0))::numeric,
             4
         ) AS "Km/Lts",
 
+        -- Eficiencia operativa: m3 promedio por viaje.
         ROUND(
             (COALESCE(vu."TotalMetros", 0) / NULLIF(vu."TotalViajes", 0))::numeric,
             4
@@ -160,11 +195,14 @@ BEGIN
     LEFT JOIN tanques_cte tq
         ON tq."IdUnidad" = vu."IDUnidad"
 
+    -- Cuando hay filtro por tanque, solo deja pasar unidades homologadas que estén dentro
+    -- de unidades_objetivo. Sin filtro, deja pasar también registros no homologados.
     WHERE (
         p_id_tanque IS NULL
         OR (vu."IDUnidad" IS NOT NULL AND uo."IDUnidad" IS NOT NULL)
     )
 
+    -- Se ordena priorizando unidades registradas y mayor volumen operativo.
     ORDER BY
         "EstadoRegistro" DESC,
         vu."TotalMetros" DESC,

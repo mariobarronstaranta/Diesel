@@ -1,7 +1,21 @@
 -- =============================================================
--- Tabla: LoginBitacora
--- Descripción: Registra cada intento de inicio de sesión
--- Ejecutar en: Supabase SQL Editor
+-- Script: LoginBitacora
+-- Propósito:
+--   Crear o ajustar la tabla de bitácora de login y sus políticas auxiliares.
+--
+-- Comentarios de desarrollador:
+--   - Este archivo mezcla ALTERs incrementales y un CREATE comentado como referencia.
+--   - `FechaLogin` usa zona horaria de México para registro operativo más útil.
+--   - Incluye ejemplo de índices, RLS y policies mínimas para uso desde app.
+--
+-- HowTo:
+--   - Si la tabla ya existe, ejecutar los ALTER visibles.
+--   - Si es instalación nueva, usar el CREATE comentado y luego índices/policies.
+--   - Validar después estructura y políticas en Supabase.
+--
+-- Bitácora de cambios:
+--   2026-04-23:
+--   - Se normaliza el encabezado con comentarios de desarrollador, howto y bitácora.
 -- =============================================================
 
 -- Si ya creaste la tabla, ejecuta estos ALTER:

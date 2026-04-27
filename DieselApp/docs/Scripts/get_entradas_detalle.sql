@@ -1,10 +1,22 @@
+-- =============================================
 -- Función: get_entradas_detalle
--- Descripción: Obtiene el detalle de movimientos de entrada de combustible
--- Parámetros:
---   p_fecha: Fecha de los movimientos a consultar
---   p_ciudad: Clave de la ciudad
---   p_id_tanque: ID del tanque
--- Retorna: Tabla con los movimientos de entrada ordenados por hora
+-- Propósito:
+--   Obtener el detalle de movimientos de entrada de combustible para un día/tanque.
+--
+-- Comentarios de desarrollador:
+--   - Solo considera movimientos `TipoMovimiento = 'E'`.
+--   - Se une a `Tanque` y `Planta` para enriquecer el resultado visible en UI.
+--   - Se usa como detalle operativo del reporte de consumos/entradas.
+--
+-- HowTo:
+--   - Ejecutar este script en Supabase SQL Editor.
+--   - Probar con:
+--     SELECT * FROM get_entradas_detalle('2026-04-01', 'MTY', 1);
+--
+-- Bitácora de cambios:
+--   2026-04-23:
+--   - Se normaliza el encabezado con comentarios de desarrollador, howto y bitácora.
+-- =============================================
 
 CREATE OR REPLACE FUNCTION get_entradas_detalle(
     p_fecha DATE,

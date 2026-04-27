@@ -25,6 +25,9 @@ import type {
 } from "../types/reportes.types";
 
 export default function ReporteRendimientosV2() {
+  // `rendimientos` guarda el resultado consolidado por unidad que devuelve la RPC v2.
+  // A diferencia del reporte histórico, aquí cada renglón representa una unidad,
+  // aunque esa unidad haya cargado en varios tanques durante el periodo.
   const [isLoading, setIsLoading] = useState(false);
   const [alertMessage, setAlertMessage] = useState<{
     type: "success" | "danger";
@@ -65,6 +68,9 @@ export default function ReporteRendimientosV2() {
   const idTanqueWatch = watch("IDTanque");
 
   useEffect(() => {
+    // Cambio de ciudad = cambio de universo operativo.
+    // Por eso se limpian tanque y unidad para evitar combinaciones inválidas
+    // o filtros heredados de otra ciudad.
     setCveCiudadSeleccionada(cveCiudad || "");
     setValue("IDTanque", "");
     setValue("IDUnidad", "");
@@ -73,6 +79,8 @@ export default function ReporteRendimientosV2() {
   }, [cveCiudad, setValue]);
 
   useEffect(() => {
+    // La unidad depende del tanque seleccionado en el combo encadenado.
+    // Si cambia el tanque, se limpia la unidad para forzar una selección consistente.
     setValue("IDUnidad", "");
     setUnidadNombre("Todas");
   }, [idTanqueWatch, setValue]);
@@ -93,7 +101,19 @@ export default function ReporteRendimientosV2() {
     });
   };
 
+  const calcularLtsHrs = (
+    cargaTotal: number | null | undefined,
+    hrsRecorridos: number | null | undefined,
+  ) => {
+    const litros = Number(cargaTotal || 0);
+    const horas = Number(hrsRecorridos || 0);
+    if (horas <= 0) return 0;
+    return litros / horas;
+  };
+
   const abrirDetalle = (r: ReporteRendimientosV2Data) => {
+    // El modal necesita recordar los filtros originales de consulta para volver a pedir
+    // el detalle con el mismo periodo/ciudad, pero ahora enfocado a una sola unidad.
     if (!lastQueryParams) return;
     setFilaSeleccionada({
       fechaInicio: lastQueryParams.FechaInicial,
@@ -111,8 +131,14 @@ export default function ReporteRendimientosV2() {
     try {
       setIsLoading(true);
       setAlertMessage(null);
+      // Se guardan los filtros efectivos de la consulta para reutilizarlos después
+      // en exportaciones y en el modal de detalle.
       setLastQueryParams(data);
 
+      // Regla de negocio clave de la RPC v2:
+      // - `p_id_tanque` no recorta el KPI final por tanque.
+      // - solo sirve para identificar unidades objetivo que cargaron en ese tanque.
+      // - el consolidado final usa todas las cargas de esas unidades en el periodo.
       const { data: result, error } = await supabase.rpc(
         "reporte_rendimientos_v2",
         {
@@ -127,6 +153,9 @@ export default function ReporteRendimientosV2() {
       if (error) throw error;
 
       if (Array.isArray(result)) {
+        // La UI solo consume el consolidado ya calculado por SQL.
+        // No recalcula Kms/Lts ni Hrs/Lts en frontend para evitar divergencias
+        // entre pantalla, CSV, PDF y la lógica de base de datos.
         setRendimientos(result);
         setAlertMessage({
           type: "success",
@@ -158,13 +187,16 @@ export default function ReporteRendimientosV2() {
   const exportarCSV = () => {
     if (rendimientos.length === 0) return;
 
+    // El CSV respeta exactamente las columnas visibles del resumen consolidado.
+    // Esto facilita auditoría entre pantalla y archivo exportado.
     const headers = [
       "Unidad",
       "Carga Total",
-      "Kms Recorridos",
-      "Hrs Recorridos",
-      "Kms/Lts",
-      "Hrs/Lts",
+      "Kms Rec.",
+      "Hrs Rec.",
+      "Km/Lt",
+      "Hr/Lt",
+      "Lt/Hr",
       "Tanque Principal",
       "Tanques Utilizados",
       "Cantidad Tanques",
@@ -180,6 +212,7 @@ export default function ReporteRendimientosV2() {
           Number(r["Hrs Recorridos"] || 0).toFixed(0),
           Number(r["Kms/Lts"] || 0).toFixed(4),
           Number(r["Hrs/Lts"] || 0).toFixed(4),
+          calcularLtsHrs(r["Carga Total"], r["Hrs Recorridos"]).toFixed(4),
           `"${r["Tanque Principal"] || ""}"`,
           `"${r["Tanques Utilizados"] || ""}"`,
           Number(r["Cantidad Tanques"] || 0).toFixed(0),
@@ -187,6 +220,7 @@ export default function ReporteRendimientosV2() {
       ),
     ].join("\n");
 
+    // Se agrega BOM UTF-8 para preservar acentos al abrir el archivo en Excel.
     const blob = new Blob([`\uFEFF${csvContent}`], {
       type: "text/csv;charset=utf-8;",
     });
@@ -207,6 +241,7 @@ export default function ReporteRendimientosV2() {
 
     const doc = new jsPDF("landscape");
 
+    // El logo se carga aparte porque jsPDF necesita la imagen resuelta antes de insertarla.
     const loadLogo = (): Promise<HTMLImageElement> => {
       return new Promise((resolve, reject) => {
         const img = new Image();
@@ -234,6 +269,7 @@ export default function ReporteRendimientosV2() {
       console.error("Error cargando logo en PDF", err);
     }
 
+    // Encabezado visual del reporte exportado.
     doc.setFontSize(22);
     doc.setTextColor(52, 58, 64);
     doc.setFont("helvetica", "bold");
@@ -256,6 +292,8 @@ export default function ReporteRendimientosV2() {
       ? formatearFecha(lastQueryParams.FechaFinal)
       : "";
 
+    // Se imprimen los filtros visibles para que el PDF sea autocontenible
+    // y pueda auditarse sin depender de la pantalla original.
     doc.text("Filtros:", 14, 30);
     doc.setFont("helvetica", "bold");
     doc.setTextColor(52, 58, 64);
@@ -283,6 +321,9 @@ export default function ReporteRendimientosV2() {
     doc.setFont("helvetica", "normal");
     doc.text(fFinal, 268, 30);
 
+    // Los totales del PDF se recalculan sobre el dataset ya consultado en pantalla.
+    // Para Kms/Lts y Hrs/Lts total se usa total_recorrido / total_litros,
+    // no un promedio simple de los indicadores por unidad.
     const totalCarga = rendimientos.reduce(
       (sum, item) => sum + Number(item["Carga Total"] || 0),
       0,
@@ -297,14 +338,17 @@ export default function ReporteRendimientosV2() {
     );
     const totalKmsLts = totalCarga > 0 ? totalKms / totalCarga : 0;
     const totalHrsLts = totalCarga > 0 ? totalHrs / totalCarga : 0;
+    const totalLtsHrs = totalHrs > 0 ? totalCarga / totalHrs : 0;
 
+    // La tabla PDF replica el resumen principal; solo omite la columna de acción.
     const tableColumn = [
       "Unidad",
       "Carga Total",
-      "Kms Recorridos",
-      "Hrs Recorridos",
-      "Kms/Lts",
-      "Hrs/Lts",
+      "Kms Rec.",
+      "Hrs Rec.",
+      "Km/Lt",
+      "Hr/Lt",
+      "Lt/Hr",
       "Tanque Principal",
       "Tanques Utilizados",
     ];
@@ -315,6 +359,7 @@ export default function ReporteRendimientosV2() {
       formatearNumero(item["Hrs Recorridos"], true),
       formatearNumero(item["Kms/Lts"]),
       formatearNumero(item["Hrs/Lts"]),
+      formatearNumero(calcularLtsHrs(item["Carga Total"], item["Hrs Recorridos"])),
       item["Tanque Principal"] ?? "",
       item["Tanques Utilizados"] ?? "",
     ]);
@@ -326,10 +371,13 @@ export default function ReporteRendimientosV2() {
       formatearNumero(totalHrs, true),
       formatearNumero(totalKmsLts),
       formatearNumero(totalHrsLts),
+      formatearNumero(totalLtsHrs),
       "",
       "",
     ]);
 
+    // Se resalta visualmente la última fila porque representa el agregado del reporte,
+    // no un renglón operativo individual.
     autoTable(doc, {
       head: [tableColumn],
       body: tableRows,
@@ -355,8 +403,9 @@ export default function ReporteRendimientosV2() {
         3: { halign: "right" },
         4: { halign: "right" },
         5: { halign: "right", fontStyle: "bold", textColor: [52, 58, 64] },
-        6: { halign: "left" },
+        6: { halign: "right", fontStyle: "bold", textColor: [52, 58, 64] },
         7: { halign: "left" },
+        8: { halign: "left" },
       },
       didParseCell: (data) => {
         if (data.row.index === tableRows.length - 1) {
@@ -378,6 +427,7 @@ export default function ReporteRendimientosV2() {
       finalY + 10,
     );
 
+    // El pie indica fecha/hora de generación para trazabilidad documental.
     const now = new Date();
     const pad = (n: number) => n.toString().padStart(2, "0");
     const month = pad(now.getMonth() + 1);
@@ -395,16 +445,22 @@ export default function ReporteRendimientosV2() {
     doc.save(`Reporte_Rendimientos_Consolidado_${safeDate}.pdf`);
   };
 
+  const totalDiesel = rendimientos.reduce(
+    (sum, item) => sum + Number(item["Carga Total"] || 0),
+    0,
+  );
+  const totalKms = rendimientos.reduce(
+    (sum, item) => sum + Number(item["Kms Recorridos"] || 0),
+    0,
+  );
+  const totalHoras = rendimientos.reduce(
+    (sum, item) => sum + Number(item["Hrs Recorridos"] || 0),
+    0,
+  );
+
   return (
     <Container fluid className="p-3">
       <h4 className="text-center mb-4">Reporte de Rendimientos Consolidado</h4>
-
-      <Alert variant="warning" className="mb-3">
-        Esta versión no reemplaza el reporte actual. Consolida el rendimiento
-        por unidad aunque haya cargado en múltiples tanques. Si se selecciona un
-        tanque, el filtro sirve para ubicar unidades que cargaron allí, pero el
-        KPI se calcula con todas sus cargas del periodo.
-      </Alert>
 
       {alertMessage && (
         <Alert
@@ -428,6 +484,8 @@ export default function ReporteRendimientosV2() {
               <Col lg={2} md={6} className="mb-3 mb-lg-0">
                 <div
                   onChange={(e) => {
+                    // Se guarda el nombre visible del tanque para usarlo en PDF.
+                    // No se reutiliza el ID porque el documento necesita etiquetas legibles.
                     const select = e.target as HTMLSelectElement;
                     const selectedOption = select.options[select.selectedIndex];
                     setTanqueNombre(selectedOption?.text || "Todos");
@@ -445,6 +503,7 @@ export default function ReporteRendimientosV2() {
               <Col lg={2} md={6} className="mb-3 mb-lg-0">
                 <div
                   onChange={(e) => {
+                    // Igual que con tanque, se conserva el texto mostrado para encabezados de exportación.
                     const select = e.target as HTMLSelectElement;
                     const selectedOption = select.options[select.selectedIndex];
                     setUnidadNombre(selectedOption?.text || "Todas");
@@ -544,6 +603,26 @@ export default function ReporteRendimientosV2() {
             </div>
           </Card.Header>
           <Card.Body>
+            <Row className="g-2 mb-3">
+              <Col md={4}>
+                <div className="border rounded p-2 bg-light h-100">
+                  <div className="small text-muted">Total Diesel</div>
+                  <div className="fw-bold fs-5">{formatearNumero(totalDiesel, true)}</div>
+                </div>
+              </Col>
+              <Col md={4}>
+                <div className="border rounded p-2 bg-light h-100">
+                  <div className="small text-muted">Total Kms</div>
+                  <div className="fw-bold fs-5">{formatearNumero(totalKms, true)}</div>
+                </div>
+              </Col>
+              <Col md={4}>
+                <div className="border rounded p-2 bg-light h-100">
+                  <div className="small text-muted">Total Horas</div>
+                  <div className="fw-bold fs-5">{formatearNumero(totalHoras, true)}</div>
+                </div>
+              </Col>
+            </Row>
             <div className="table-responsive">
               <Table
                 striped
@@ -558,6 +637,7 @@ export default function ReporteRendimientosV2() {
                   <col className="rendimientos-v2-table__col--numero" />
                   <col className="rendimientos-v2-table__col--kpi" />
                   <col className="rendimientos-v2-table__col--kpi" />
+                  <col className="rendimientos-v2-table__col--kpi" />
                   <col className="rendimientos-v2-table__col--tanque" />
                   <col className="rendimientos-v2-table__col--tanques" />
                   <col className="rendimientos-v2-table__col--accion" />
@@ -566,10 +646,11 @@ export default function ReporteRendimientosV2() {
                   <tr>
                     <th className="text-center">Unidad</th>
                     <th className="text-center">Carga Total</th>
-                    <th className="text-center">Kms Recorridos</th>
-                    <th className="text-center">Hrs Recorridos</th>
-                    <th className="text-center">Kms/Lts</th>
-                    <th className="text-center">Hrs/Lts</th>
+                    <th className="text-center">Kms Rec.</th>
+                    <th className="text-center">Hrs Rec.</th>
+                    <th className="text-center">Km/Lt</th>
+                    <th className="text-center">Hr/Lt</th>
+                    <th className="text-center">Lt/Hr</th>
                     <th className="text-center">Tanque Principal</th>
                     <th className="text-center">Tanques Utilizados</th>
                     <th className="text-center">Acción</th>
@@ -596,6 +677,9 @@ export default function ReporteRendimientosV2() {
                       <td className="text-end rendimientos-v2-table__numero">
                         {formatearNumero(r["Hrs/Lts"])}
                       </td>
+                      <td className="text-end rendimientos-v2-table__numero">
+                        {formatearNumero(calcularLtsHrs(r["Carga Total"], r["Hrs Recorridos"]))}
+                      </td>
                       <td className="rendimientos-v2-table__tanque">
                         {r["Tanque Principal"]}
                       </td>
@@ -606,6 +690,8 @@ export default function ReporteRendimientosV2() {
                         <Button
                           variant="outline-corporate"
                           size="sm"
+                          // El detalle no vuelve a filtrar por tanque del renglón,
+                          // porque el resumen consolidado ya está definido por unidad.
                           onClick={() => abrirDetalle(r)}
                         >
                           Detalle
@@ -623,6 +709,8 @@ export default function ReporteRendimientosV2() {
       <ReporteRendimientosDetalleModalV2
         show={showDetalle}
         onHide={() => setShowDetalle(false)}
+        // El modal recibe el contexto mínimo necesario para volver a consultar
+        // el detalle de la misma unidad bajo los filtros originales del reporte.
         datosFila={filaSeleccionada}
       />
     </Container>

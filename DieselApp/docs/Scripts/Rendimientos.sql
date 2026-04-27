@@ -1,14 +1,22 @@
 -- =====================================================
 -- Función: reporte_rendimientos
--- Descripción: Genera un reporte de rendimiento de diesel
---              relacionando litros consumidos con Odómetro y Horómetro.
---              Solo considera movimientos TipoMovimiento = 'S' (Salidas).
--- Parámetros:
---   - p_fecha_inicio: Fecha de inicio del rango (YYYY-MM-DD)
---   - p_fecha_fin: Fecha de fin del rango (YYYY-MM-DD)
---   - p_cve_ciudad: Clave de ciudad como texto (opcional, NULL = todas)
---   - p_id_tanque: ID de tanque (opcional, NULL = todos)
--- Retorna: TABLE con el reporte de rendimientos por unidad/fecha
+-- Propósito:
+--   Generar el reporte base de rendimientos de diesel por combinación Tanque + Unidad.
+--
+-- Comentarios de desarrollador:
+--   - Solo considera movimientos `TipoMovimiento = 'S'`.
+--   - `Carga Total` = SUM(LitrosCarga).
+--   - `Kms/Hrs Recorridos` = MAX - MIN dentro del periodo.
+--   - Protege divisiones entre cero mediante `NULLIF`.
+--
+-- HowTo:
+--   - Ejecutar este script en Supabase SQL Editor.
+--   - Probar con:
+--     SELECT * FROM public.reporte_rendimientos('2026-04-01', '2026-04-30', 'MTY', NULL, NULL);
+--
+-- Bitácora de cambios:
+--   2026-04-23:
+--   - Se normaliza el encabezado con comentarios de desarrollador, howto y bitácora.
 -- =====================================================
 
 DROP FUNCTION IF EXISTS public.reporte_rendimientos(date, date, text, bigint);

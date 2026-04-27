@@ -68,6 +68,8 @@ export interface RendimientoDetalleV2Item {
   hora: string;
   litros: number;
   cuenta_litros: number;
+  odometro_ant: number | null;
+  horometro_ant: number | null;
   horometro: number;
   odometro: number;
 }

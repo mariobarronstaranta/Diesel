@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import { Alert, Button, Form, Modal, Spinner, Table } from "react-bootstrap";
+import { Alert, Button, Col, Form, Modal, Row, Spinner, Table } from "react-bootstrap";
 import { supabase } from "../supabase/client";
 import type { RendimientoDetalleV2Item } from "../types/reportes.types";
 
 interface ReporteRendimientosDetalleModalV2Props {
   show: boolean;
   onHide: () => void;
+  // El modal recibe el contexto del renglón consolidado para consultar
+  // únicamente los movimientos que pertenecen a esa unidad y periodo.
   datosFila: {
     fechaInicio: string;
     fechaFin: string;
@@ -22,6 +24,8 @@ export default function ReporteRendimientosDetalleModalV2({
   onHide,
   datosFila,
 }: ReporteRendimientosDetalleModalV2Props) {
+  // `movimientos` es la fotografía del detalle que devuelve la RPC v2.
+  // Incluye lecturas actuales y previas para explicar el cálculo incremental.
   const [movimientos, setMovimientos] = useState<RendimientoDetalleV2Item[]>(
     [],
   );
@@ -37,6 +41,8 @@ export default function ReporteRendimientosDetalleModalV2({
   const [isUpdating, setIsUpdating] = useState(false);
 
   useEffect(() => {
+    // Cada vez que el modal abre con un renglón distinto, se reinicia el modo edición
+    // y se vuelve a consultar el detalle para mantener la vista sincronizada.
     if (show && datosFila) {
       setEditingId(null);
       cargarMovimientos();
@@ -50,6 +56,8 @@ export default function ReporteRendimientosDetalleModalV2({
     setError(null);
 
     try {
+      // La RPC ya trae el detalle enriquecido con odómetro/horímetro anterior.
+      // El frontend solo consume y pinta el resultado, sin recalcular deltas aquí.
       const { data, error: rpcError } = await supabase.rpc(
         "get_rendimientos_detalle_v2",
         {
@@ -80,6 +88,8 @@ export default function ReporteRendimientosDetalleModalV2({
   };
 
   const handleEditStart = (m: RendimientoDetalleV2Item) => {
+    // El edit inline solo modifica los valores capturados del movimiento actual.
+    // Los campos "anteriores" son de referencia y por eso permanecen de solo lectura.
     if (!m.id_tanque_movimiento) {
       alert(
         "Error: No se encontró el ID del movimiento. Verifique que la función 'get_rendimientos_detalle_v2' retorne id_tanque_movimiento.",
@@ -113,6 +123,9 @@ export default function ReporteRendimientosDetalleModalV2({
       setIsUpdating(true);
       setError(null);
 
+      // La edición impacta directamente la tabla operativa `TanqueMovimiento`.
+      // Después del update se vuelve a consultar la RPC para refrescar también
+      // los campos derivados que podrían cambiar visualmente en el detalle.
       const { error: updateError } = await supabase
         .from("TanqueMovimiento")
         .update({
@@ -141,15 +154,21 @@ export default function ReporteRendimientosDetalleModalV2({
   const exportarCSV = () => {
     if (movimientos.length === 0) return;
 
+    // Se respeta exactamente el mismo orden de columnas visible en el modal
+    // para evitar diferencias entre lo que el usuario ve y lo que exporta.
     const headers = [
-      "ID Movimiento",
+      "ID",
       "Tanque",
       "Fecha",
       "Hora",
       "Litros",
       "Cuenta Litros",
-      "Horómetro",
+      "Odómetro Ant",
       "Odómetro",
+      "Horometro Ant",
+      "Horómetro",
+      "Dif Odometro",
+      "Dif Horometro",
     ];
 
     const csvContent = [
@@ -162,12 +181,17 @@ export default function ReporteRendimientosDetalleModalV2({
           m.hora,
           m.litros,
           m.cuenta_litros,
-          m.horometro,
+          m.odometro_ant ?? "",
           m.odometro,
+          m.horometro_ant ?? "",
+          m.horometro,
+          m.odometro_ant === null ? "" : m.odometro - m.odometro_ant,
+          m.horometro_ant === null ? "" : m.horometro - m.horometro_ant,
         ].join(","),
       ),
     ].join("\n");
 
+    // Se agrega BOM UTF-8 para que Excel abra correctamente acentos y caracteres especiales.
     const blob = new Blob([`\uFEFF${csvContent}`], {
       type: "text/csv;charset=utf-8;",
     });
@@ -188,6 +212,37 @@ export default function ReporteRendimientosDetalleModalV2({
     return `${d}/${m}/${y}`;
   };
 
+  const calcularDiferencia = (
+    actual: number | null | undefined,
+    anterior: number | null,
+  ) => {
+    if (actual === null || actual === undefined || anterior === null) return "-";
+    return actual - anterior;
+  };
+
+  const formatearNumero = (
+    valor: number,
+    decimales = 0,
+  ) => {
+    return Number(valor).toLocaleString("es-MX", {
+      minimumFractionDigits: decimales,
+      maximumFractionDigits: decimales,
+    });
+  };
+
+  const totalHoras = movimientos.reduce((acc, m) => {
+    if (m.horometro_ant === null) return acc;
+    return acc + (m.horometro - m.horometro_ant);
+  }, 0);
+
+  const totalKms = movimientos.reduce((acc, m) => {
+    if (m.odometro_ant === null) return acc;
+    return acc + (m.odometro - m.odometro_ant);
+  }, 0);
+
+  const totalDiesel = movimientos.reduce((acc, m) => acc + m.litros, 0);
+
+  // Sin contexto del renglón padre no hay forma de consultar el detalle correcto.
   if (!datosFila) return null;
 
   return (
@@ -210,9 +265,7 @@ export default function ReporteRendimientosDetalleModalV2({
 
       <Modal.Body className="p-3">
         <Alert variant="info" className="mb-3">
-          El rendimiento consolidado se calcula con todas las cargas de la
-          unidad en el periodo. Tanque principal: {datosFila.tanquePrincipal}.
-          Tanques utilizados: {datosFila.tanquesUtilizados}.
+          Tanque principal: {datosFila.tanquePrincipal}. Tanques utilizados: {datosFila.tanquesUtilizados}.
         </Alert>
 
         <div className="d-flex justify-content-between align-items-center mb-3">
@@ -228,6 +281,29 @@ export default function ReporteRendimientosDetalleModalV2({
             <i className="bi bi-download me-1"></i> Exportar CSV
           </Button>
         </div>
+
+        {!loading && !error && movimientos.length > 0 && (
+          <Row className="g-2 mb-3">
+            <Col md={4}>
+              <div className="border rounded p-2 bg-light h-100">
+                <div className="small text-muted">Total Horas</div>
+                <div className="fw-bold fs-5">{formatearNumero(totalHoras)}</div>
+              </div>
+            </Col>
+            <Col md={4}>
+              <div className="border rounded p-2 bg-light h-100">
+                <div className="small text-muted">Total Kms</div>
+                <div className="fw-bold fs-5">{formatearNumero(totalKms)}</div>
+              </div>
+            </Col>
+            <Col md={4}>
+              <div className="border rounded p-2 bg-light h-100">
+                <div className="small text-muted">Total Diesel</div>
+                <div className="fw-bold fs-5">{formatearNumero(totalDiesel)}</div>
+              </div>
+            </Col>
+          </Row>
+        )}
 
         {loading && (
           <div className="text-center py-5">
@@ -268,14 +344,18 @@ export default function ReporteRendimientosDetalleModalV2({
             >
               <thead>
                 <tr>
-                  <th>ID Movimiento</th>
+                  <th>ID</th>
                   <th>Tanque</th>
                   <th>Fecha</th>
                   <th>Hora</th>
                   <th>Litros</th>
                   <th>Cuenta Litros</th>
-                  <th>Horómetro</th>
+                  <th>Odómetro Ant</th>
                   <th>Odómetro</th>
+                  <th>Horometro Ant</th>
+                  <th>Horómetro</th>
+                  <th>Dif Odometro</th>
+                  <th>Dif Horometro</th>
                   <th>Acción</th>
                 </tr>
               </thead>
@@ -288,6 +368,8 @@ export default function ReporteRendimientosDetalleModalV2({
                     <td>{m.hora}</td>
                     {editingId === m.id_tanque_movimiento ? (
                       <>
+                        {/* En modo edición solo se habilitan campos operativos capturables.
+                            Los valores "Ant" se muestran como referencia fija para auditoría visual. */}
                         <td>
                           <Form.Control
                             type="number"
@@ -315,17 +397,7 @@ export default function ReporteRendimientosDetalleModalV2({
                           />
                         </td>
                         <td>
-                          <Form.Control
-                            type="number"
-                            size="sm"
-                            value={editForm.horometro}
-                            onChange={(e) =>
-                              setEditForm({
-                                ...editForm,
-                                horometro: Number(e.target.value),
-                              })
-                            }
-                          />
+                          {m.odometro_ant ?? "-"}
                         </td>
                         <td>
                           <Form.Control
@@ -339,6 +411,26 @@ export default function ReporteRendimientosDetalleModalV2({
                               })
                             }
                           />
+                        </td>
+                        <td>
+                          {m.horometro_ant ?? "-"}
+                        </td>
+                        <td>
+                          <Form.Control
+                            type="number"
+                            size="sm"
+                            value={editForm.horometro}
+                            onChange={(e) =>
+                              setEditForm({
+                                ...editForm,
+                                horometro: Number(e.target.value),
+                              })
+                            }
+                          />
+                        </td>
+                        <td>{calcularDiferencia(editForm.odometro, m.odometro_ant)}</td>
+                        <td>
+                          {calcularDiferencia(editForm.horometro, m.horometro_ant)}
                         </td>
                         <td className="text-center">
                           <div className="d-flex gap-1 justify-content-center">
@@ -365,10 +457,16 @@ export default function ReporteRendimientosDetalleModalV2({
                       </>
                     ) : (
                       <>
+                        {/* Vista normal: muestra el detalle tal como lo devuelve la RPC,
+                            incluyendo valores previos usados para explicar el rendimiento incremental. */}
                         <td>{m.litros}</td>
                         <td>{m.cuenta_litros}</td>
-                        <td>{m.horometro}</td>
+                        <td>{m.odometro_ant ?? "-"}</td>
                         <td>{m.odometro}</td>
+                        <td>{m.horometro_ant ?? "-"}</td>
+                        <td>{m.horometro}</td>
+                        <td>{calcularDiferencia(m.odometro, m.odometro_ant)}</td>
+                        <td>{calcularDiferencia(m.horometro, m.horometro_ant)}</td>
                         <td className="text-center">
                           <Button
                             variant="outline-corporate"

@@ -1,14 +1,21 @@
 -- =====================================================
 -- Función: get_rendimientos_detalle
--- Descripción: Obtiene el detalle de los movimientos de salida de combustible
---              que forman un renglón del reporte de rendimientos.
--- Parámetros:
---   - p_fecha_inicio: Fecha de inicio del rango (YYYY-MM-DD)
---   - p_fecha_fin: Fecha de fin del rango (YYYY-MM-DD)
---   - p_cve_ciudad: Clave de ciudad como texto
---   - p_id_tanque: ID del tanque (opcional, NULL = todos los tanques)
---   - p_id_unidad: ID de la unidad
--- Retorna: TABLE con cada movimiento individual de salida
+-- Propósito:
+--   Obtener el detalle de movimientos de salida que componen un renglón del reporte de rendimientos.
+--
+-- Comentarios de desarrollador:
+--   - Solo considera movimientos `TipoMovimiento = 'S'`.
+--   - El detalle conserva granularidad por movimiento y orden cronológico.
+--   - `p_id_tanque` es opcional; `p_id_unidad` normalmente identifica el renglón del reporte.
+--
+-- HowTo:
+--   - Ejecutar este script en Supabase SQL Editor.
+--   - Probar con:
+--     SELECT * FROM public.get_rendimientos_detalle('2026-04-01', '2026-04-30', 'MTY', NULL, 1001);
+--
+-- Bitácora de cambios:
+--   2026-04-23:
+--   - Se normaliza el encabezado con comentarios de desarrollador, howto y bitácora.
 -- =====================================================
 
 DROP FUNCTION IF EXISTS public.get_rendimientos_detalle(date, date, text, bigint, bigint);

@@ -266,7 +266,21 @@ La columna `Entradas` se calcula como la suma de `TanqueMovimiento.LitrosCarga` 
 
 La columna `Consumo Salidas` se calcula como la suma de `TanqueMovimiento.LitrosCarga` cuando `TipoMovimiento = 'S'`, agregada por `IdTanque + FechaCarga`.
 
-La columna `Consumo Alturas` se calcula traduciendo `lectura_inicial_cms` y `lectura_final_cms` a litros mediante la tabla `VolumenAlturaTanque` por `TanqueId`; el valor mostrado es la diferencia entre litros iniciales y litros finales. Como `VolumenAlturaTanque.Altura` puede no coincidir exactamente con `LecturaCms`, la RPC toma la altura más cercana para resolver cada volumen.
+La columna `Consumo Alturas` se calcula mediante la función escalar `fn_calcular_consumo_alturas_por_fecha_tanque(fecha, tanque)`, invocada por la RPC. Esta función aplica:
+
+1. Sin entrada (`TipoMovimiento != 'E'`):
+  `Vol(LecturaInicial) - Vol(LecturaFinal)`
+2. Con entrada (`TipoMovimiento = 'E'`):
+  `ConsumoAntes = Vol(LecturaInicial) - Vol(AlturaTanque)`
+  `ConsumoDespues = Vol(Altura2Tanque) - Vol(LecturaFinal)`
+  `ConsumoAlturas = ConsumoAntes + ConsumoDespues`
+
+Para resolver volúmenes se usa la altura más cercana en `VolumenAlturaTanque`. Si existen múltiples entradas en el mismo día/tanque, se toma la primera por `HoraCarga` (criterio determinista). Si no hay entrada o faltan alturas antes/después, la función aplica fallback al cálculo tradicional.
+
+**Orden de despliegue SQL:**
+
+1. `docs/Scripts/fn_calcular_consumo_alturas_por_fecha_tanque.sql`
+2. `docs/Scripts/sp_obtener_lecturas_diarias_consumos.sql`
 
 **Compatibilidad:** La RPC histórica `sp_obtener_lecturas_diarias` se conserva sin cambios para no impactar producción. El reporte consume la nueva variante orientada a consumos.
 

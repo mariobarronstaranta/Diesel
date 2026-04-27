@@ -281,11 +281,11 @@
 }
 
 .rendimientos-v2-table__col--tanque {
-  width: calc(12% + 20px);
+  width: 15%;
 }
 
 .rendimientos-v2-table__col--tanques {
-  width: 18%;
+  width: 15%;
 }
 
 .rendimientos-v2-table__col--accion {

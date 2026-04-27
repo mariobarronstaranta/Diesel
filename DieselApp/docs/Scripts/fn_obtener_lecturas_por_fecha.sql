@@ -1,3 +1,23 @@
+-- =============================================
+-- Función: fn_obtener_lecturas_por_fecha
+-- Propósito:
+--   Obtener el detalle de lecturas individuales de un tanque para una fecha dada.
+--
+-- Comentarios de desarrollador:
+--   - Se filtra por nombre de tanque (`Tanque.Nombre`) y no por ID.
+--   - Solo devuelve lecturas activas (`Activo <> 0`).
+--   - Se usa como fuente del modal Detalle dentro de ReporteLecturas.
+--
+-- HowTo:
+--   - Ejecutar este script en Supabase SQL Editor.
+--   - Probar con:
+--     SELECT * FROM public.fn_obtener_lecturas_por_fecha('2026-04-01', 'TANQUE 1');
+--
+-- Bitácora de cambios:
+--   2026-04-23:
+--   - Se agrega encabezado de documentación técnica para mantenimiento.
+-- =============================================
+
 DROP FUNCTION IF EXISTS public.fn_obtener_lecturas_por_fecha(date, text);
 
 CREATE OR REPLACE FUNCTION public.fn_obtener_lecturas_por_fecha(

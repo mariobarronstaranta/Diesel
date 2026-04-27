@@ -1,10 +1,22 @@
+-- =============================================
 -- Función: get_salidas_detalle
--- Descripción: Obtiene el detalle de movimientos de salida de combustible
--- Parámetros:
---   p_fecha: Fecha de los movimientos a consultar
---   p_ciudad: Clave de la ciudad
---   p_id_tanque: ID del tanque
--- Retorna: Tabla con los movimientos de salida ordenados por hora
+-- Propósito:
+--   Obtener el detalle de movimientos de salida de combustible para un día/tanque.
+--
+-- Comentarios de desarrollador:
+--   - Solo considera movimientos `TipoMovimiento = 'S'`.
+--   - El parámetro `p_id_unidad` es opcional para filtrar una unidad específica.
+--   - La salida ya incluye datos enriquecidos de `Tanque` y `Unidades`.
+--
+-- HowTo:
+--   - Ejecutar este script en Supabase SQL Editor.
+--   - Probar con:
+--     SELECT * FROM get_salidas_detalle('2026-04-01', 'MTY', 1, NULL);
+--
+-- Bitácora de cambios:
+--   2026-04-23:
+--   - Se normaliza el encabezado con comentarios de desarrollador, howto y bitácora.
+-- =============================================
 
 DROP FUNCTION IF EXISTS get_salidas_detalle(DATE, VARCHAR, BIGINT);
 DROP FUNCTION IF EXISTS get_salidas_detalle(DATE, VARCHAR, BIGINT, BIGINT);

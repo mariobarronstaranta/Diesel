@@ -1,3 +1,24 @@
+-- =============================================
+-- Función: sp_obtener_lecturas_diarias
+-- Propósito:
+--   Obtener el resumen base de lecturas diarias sin columnas de consumos/entradas/salidas.
+--
+-- Comentarios de desarrollador:
+--   - Esta es la versión histórica/base del reporte de lecturas.
+--   - Se conserva para compatibilidad, aunque el reporte principal ya consume
+--     `sp_obtener_lecturas_diarias_consumos`.
+--   - Corrige tipos BIGINT de cuenta litros respecto a versiones anteriores.
+--
+-- HowTo:
+--   - Ejecutar este script en Supabase SQL Editor cuando se requiera mantener la versión base.
+--   - Probar con:
+--     SELECT * FROM sp_obtener_lecturas_diarias('MTY', '2026-04-01', '2026-04-30', NULL);
+--
+-- Bitácora de cambios:
+--   2026-04-23:
+--   - Se normaliza el encabezado con comentarios de desarrollador, howto y bitácora.
+-- =============================================
+
 -- Drop de la función que acabas de crear (ahora con 4 parámetros)
 DROP FUNCTION IF EXISTS sp_obtener_lecturas_diarias(TEXT, DATE, DATE, INTEGER);
 

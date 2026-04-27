@@ -187,6 +187,7 @@ Todas se llaman vía `supabase.rpc('nombre_funcion', { params })`.
 | `get_rendimientos_detalle_v2`   | Detalle consolidado de movimientos por unidad | `p_fecha_inicio`, `p_fecha_fin`, `p_cve_ciudad`, `p_id_unidad`                   |
 | `sp_obtener_lecturas_diarias`   | Lecturas de inventario físico                 | `p_ciudad?`, `p_fecha_inicial`, `p_fecha_final`, `p_id_tanque?`                  |
 | `sp_obtener_lecturas_diarias_consumos` | Lecturas agregadas + consumos por tanque/fecha | `p_ciudad?`, `p_fecha_inicial`, `p_fecha_final`, `p_id_tanque?`                  |
+| `fn_calcular_consumo_alturas_por_fecha_tanque` | Cálculo escalar de Consumo Alturas por fecha/tanque | `p_fecha`, `p_id_tanque`                                                           |
 | `fn_obtener_lecturas_por_fecha` | Lecturas para captura y detalle de inventario | `p_fecha`, `p_tanque`                                                            |
 | `reporte_productividad`         | Cruce SP + TanqueMovimiento por unidad        | `p_fecha_inicio`, `p_fecha_fin`, `p_cve_ciudad?`, `p_id_tanque?`                 |
 
@@ -271,6 +272,10 @@ CveCiudad (raíz)
 - `ReporteLecturas` permite filtros opcionales por ciudad y tanque.
 - En `ReporteLecturas`, cuando no se selecciona ciudad o tanque, el frontend envía `null` para solicitar consulta sin ese filtro.
 - `ReporteLecturas` consume la RPC `sp_obtener_lecturas_diarias_consumos` para obtener: `Entradas`, `Consumo Salidas`, `Consumo C. Litros` y `Consumo Alturas` por `tanque + fecha`.
+- `Consumo Alturas` se calcula en la función `fn_calcular_consumo_alturas_por_fecha_tanque(fecha, tanque)`, invocada por la RPC:
+    - Sin entrada: `Vol(LecturaInicial) - Vol(LecturaFinal)`.
+    - Con entrada: `Vol(LecturaInicial) - Vol(AlturaTanque)` + `Vol(Altura2Tanque) - Vol(LecturaFinal)`.
+    - Si hay múltiples entradas en el día/tanque, se usa la primera por `HoraCarga`.
 - `ReporteLecturas` soporta exportación a CSV y PDF del resumen agregado y respeta el filtro visual aplicado.
 - `ReporteLecturas` incluye el check `Mostrar Tanques sin Movimientos` con este flujo:
     - Seleccionado (default): muestra todos los renglones.
@@ -281,12 +286,41 @@ CveCiudad (raíz)
     - `Cuenta Litros` Inicial/Final
     - `Entradas`, `Consumo Salidas`, `Consumo C. Litros`, `Consumo Alturas`
     - `Acción`
+- Orden de despliegue recomendado de scripts SQL para este reporte:
+    - `docs/Scripts/fn_calcular_consumo_alturas_por_fecha_tanque.sql`
+    - `docs/Scripts/sp_obtener_lecturas_diarias_consumos.sql`
 
 ### 8.5 Rendimientos Actual vs Consolidado
 
 - `ReporteRendimientos` se mantiene como versión actual en producción y agrupa por `Tanque + Unidad`.
 - `ReporteRendimientosV2` es una versión paralela que consolida el KPI por `Unidad`, evitando distorsiones cuando la misma unidad carga en múltiples tanques dentro del periodo.
 - En `ReporteRendimientosV2`, el filtro por tanque funciona como criterio de selección de unidades involucradas, pero el cálculo del rendimiento usa todas las cargas de la unidad dentro del rango consultado.
+- `Kms Recorridos` y `Hrs Recorridos` en consolidado se calculan como suma de deltas por movimiento respecto a la salida inmediata anterior de la unidad (no como `MAX - MIN` del periodo).
+- La función helper `fn_obtener_valores_previos_salida` devuelve odómetro/horímetro previos para el cálculo por movimiento.
+- Si un movimiento no tiene salida previa válida para la unidad, su aporte a `Kms Recorridos` y `Hrs Recorridos` es `0`.
+- `Tanque Principal` se define como el tanque con mayor suma de `LitrosCarga` para la unidad dentro del universo consolidado; en empate gana el nombre de tanque en orden alfabético.
+- `Tanques Utilizados` lista todos los tanques distintos donde la unidad cargó dentro del universo consolidado.
+- Etiquetas visibles actuales en el resumen consolidado:
+    - `Kms Rec.`, `Hrs Rec.`, `Km/Lt`, `Hr/Lt`, `Lt/Hr`
+- Encima de la tabla principal se muestran tarjetas resumen calculadas sobre el dataset visible:
+    - `Total Diesel` = suma de `Carga Total`
+    - `Total Kms` = suma de `Kms Recorridos`
+    - `Total Horas` = suma de `Hrs Recorridos`
+- El modal `ReporteRendimientosDetalleModalV2` muestra el detalle cronológico por movimiento e incluye columnas de referencia `Odómetro Ant` y `Horometro Ant`, calculadas con la misma lógica del helper de previos.
+- En el modal de detalle solo son editables los valores capturados del movimiento actual (`Litros`, `Cuenta Litros`, `Odómetro`, `Horómetro`); los campos `Ant` son informativos y no se editan.
+- Orden actual de columnas en el modal de detalle de Rendimientos V2:
+    - `ID`, `Tanque`, `Fecha`, `Hora`
+    - `Litros`, `Cuenta Litros`
+    - `Odómetro Ant`, `Odómetro`
+    - `Horometro Ant`, `Horómetro`
+    - `Dif Odometro`, `Dif Horometro`
+- En el modal también se muestran tarjetas resumen:
+    - `Total Diesel` = suma de `Litros`
+    - `Total Kms` = suma de `Dif Odometro`
+    - `Total Horas` = suma de `Dif Horometro`
+- Exportaciones del consolidado:
+    - CSV: replica el resumen visible por unidad.
+    - PDF: recalcula fila de totales sobre el dataset consultado y obtiene `Km/Lt`, `Hr/Lt` y `Lt/Hr` total con base en totales acumulados, no como promedio simple.
 ```
 
 Al cambiar `CveCiudad` en cualquier formulario, **todos los combos descendientes se limpian y recargan**. En el Reporte de Consumos y Rendimientos, al cambiar `Tanque` también se limpia `Unidad`.

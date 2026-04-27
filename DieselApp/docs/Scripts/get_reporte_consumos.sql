@@ -1,13 +1,22 @@
 -- =====================================================
 -- Función: get_reporte_consumos
--- Descripción: Genera un reporte de consumos de combustible
---              agrupado por fecha, ciudad y tanque
--- Parámetros:
---   - p_fecha_inicio: Fecha de inicio del rango (YYYY-MM-DD)
---   - p_fecha_fin: Fecha de fin del rango (YYYY-MM-DD)
---   - p_cve_ciudad: Clave de ciudad como texto (opcional, NULL = todas)
---   - p_id_tanque: ID de tanque (opcional, NULL = todos)
--- Retorna: JSON con el reporte de consumos
+-- Propósito:
+--   Generar un reporte agregado de entradas y salidas por fecha, ciudad y tanque.
+--
+-- Comentarios de desarrollador:
+--   - El resultado se agrupa por `FechaCarga + CveCiudad + IdTanque`.
+--   - `totalEntradas` suma movimientos `TipoMovimiento = 'E'`.
+--   - `totalSalidas` suma movimientos `TipoMovimiento = 'S'`.
+--   - `p_id_unidad` es opcional y permite acotar el agregado a una unidad específica.
+--
+-- HowTo:
+--   - Ejecutar este script en Supabase SQL Editor.
+--   - Probar con:
+--     SELECT * FROM get_reporte_consumos('2026-04-01', '2026-04-30', 'MTY', NULL, NULL);
+--
+-- Bitácora de cambios:
+--   2026-04-23:
+--   - Se normaliza el encabezado con comentarios de desarrollador, howto y bitácora.
 -- =====================================================
 
 DROP FUNCTION IF EXISTS public.get_reporte_consumos(date, date, text, bigint);

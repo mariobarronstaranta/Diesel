@@ -1,15 +1,21 @@
 -- =====================================================
 -- Función: reporte_productividad
--- Descripción: Genera un reporte de productividad y rentabilidad
---              cruzando la información de viajes (transaccional) 
---              con el consumo de diesel (operativo). Usa un LEFT JOIN
---              desde los viajes hacia las unidades/consumos.
--- Parámetros:
---   - p_fecha_inicio: Fecha de inicio del rango (YYYY-MM-DD)
---   - p_fecha_fin: Fecha de fin del rango (YYYY-MM-DD)
---   - p_cve_ciudad: Clave de ciudad como texto (opcional, NULL = todas)
---   - p_id_tanque: ID de tanque (opcional, NULL = todos)
--- Retorna: TABLE con el reporte de productividad por unidad
+-- Propósito:
+--   Cruce de viajes de báscula con consumos operativos de diesel para medir productividad.
+--
+-- Comentarios de desarrollador:
+--   - Parte desde viajes (`InformacionGeneral_Cierres`) y cruza hacia unidades/consumos.
+--   - Mantiene unidades no registradas mediante LEFT JOIN y bandera `EstadoRegistro`.
+--   - Usa recorridos y consumos agregados en CTEs independientes para simplificar lectura.
+--
+-- HowTo:
+--   - Ejecutar este script en Supabase SQL Editor.
+--   - Probar con:
+--     SELECT * FROM public.reporte_productividad('2026-04-01', '2026-04-30', 'MTY', NULL);
+--
+-- Bitácora de cambios:
+--   2026-04-23:
+--   - Se normaliza el encabezado con comentarios de desarrollador, howto y bitácora.
 -- =====================================================
 
 DROP FUNCTION IF EXISTS public.reporte_productividad(date, date, text, bigint);

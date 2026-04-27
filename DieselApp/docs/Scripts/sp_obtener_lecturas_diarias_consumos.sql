@@ -14,6 +14,11 @@
 --   - Consumo Alturas = Volumen(Altura Inicial) - Volumen(Altura Final)
 --       usando la tabla VolumenAlturaTanque por TanqueId
 --       y resolviendo la altura más cercana cuando LecturaCms tiene decimales
+--       cuando no existe entrada en el día.
+--   - Si existe entrada ('E') en la fecha/tanque:
+--       ConsumoAntes   = Vol(LecturaInicial) - Vol(AlturaTanque)
+--       ConsumoDespues = Vol(Altura2Tanque) - Vol(LecturaFinal)
+--       ConsumoAlturas = ConsumoAntes + ConsumoDespues
 --   - Consumo Salidas = SUM(TanqueMovimiento.LitrosCarga)
 --       donde TipoMovimiento = 'S'
 --       y se agrupa por FechaCarga + IdTanque
@@ -38,7 +43,30 @@
 --   2026-04-22:
 --   - Se agrega la columna consumo_salidas: SUM(LitrosCarga) TipoMovimiento='S'
 --     por tanque y fecha, usando el nuevo CTE SalidasPorDia.
+--   2026-04-23:
+--   - Se agrega función escalar fn_calcular_consumo_alturas_por_fecha_tanque(fecha, tanque).
+--   - sp_obtener_lecturas_diarias_consumos delega el cálculo de consumo_alturas
+--     a la función escalar para soportar entradas con AlturaTanque/Altura2Tanque.
 -- =============================================
+
+-- Dependencia:
+-- Este procedimiento requiere que exista previamente:
+-- fn_calcular_consumo_alturas_por_fecha_tanque(DATE, INTEGER)
+-- Script recomendado de despliegue: ejecutar primero
+-- `fn_calcular_consumo_alturas_por_fecha_tanque.sql` y luego este archivo.
+--
+-- Contrato operativo:
+-- - Este SP NO recalcula directamente consumo_alturas.
+-- - Delega esa lógica a la función escalar para concentrar reglas de negocio
+--   y facilitar mantenimiento/versionado.
+--
+-- HowTo:
+-- - Ejecutar primero fn_calcular_consumo_alturas_por_fecha_tanque.sql.
+-- - Ejecutar después este script para recrear el SP principal del reporte.
+-- - Probar con:
+--   SELECT *
+--   FROM sp_obtener_lecturas_diarias_consumos('MTY', '2026-04-01', '2026-04-30', NULL);
+-- - Verificar especialmente días con entrada, días sin entrada y días con solo entradas.
 
 DROP FUNCTION IF EXISTS sp_obtener_lecturas_diarias_consumos(TEXT, DATE, DATE, INTEGER);
 
@@ -216,8 +244,10 @@ BEGIN
         pl."LecturaCms"::NUMERIC(8,2),
         ul."LecturaCms"::NUMERIC(8,2),
         COALESCE(epd.entradas, 0)::BIGINT,
-        -- Convierte alturas a litros vía cubicación y calcula diferencia.
-        (COALESCE(vi."Volumen", 0) - COALESCE(vf."Volumen", 0))::NUMERIC(8,2),
+        -- Consumo Alturas con lógica especial cuando existe entrada de combustible.
+        -- La función helper también aplica fallback al cálculo tradicional
+        -- cuando no hay entrada o faltan alturas antes/después.
+        fn_calcular_consumo_alturas_por_fecha_tanque(db.fecha, db.idtanque),
         pl."CuentaLitros",
         ul."CuentaLitros",
         CASE
@@ -240,26 +270,6 @@ BEGIN
     LEFT JOIN SalidasPorDia spd
         ON  spd.idtanque = db.idtanque
         AND spd.fecha    = db.fecha
-    LEFT JOIN LATERAL (
-        -- Volumen más cercano a la altura inicial.
-        -- Criterio: distancia absoluta mínima; empate se resuelve por menor altura.
-        SELECT vat."Volumen"
-        FROM public."VolumenAlturaTanque" vat
-        WHERE vat."TanqueId" = db.idtanque
-          AND pl."LecturaCms" IS NOT NULL
-        ORDER BY ABS(vat."Altura"::NUMERIC - pl."LecturaCms"), vat."Altura"
-        LIMIT 1
-    ) vi ON true
-    LEFT JOIN LATERAL (
-        -- Volumen más cercano a la altura final.
-        -- Criterio: distancia absoluta mínima; empate se resuelve por menor altura.
-        SELECT vat."Volumen"
-        FROM public."VolumenAlturaTanque" vat
-        WHERE vat."TanqueId" = db.idtanque
-          AND ul."LecturaCms" IS NOT NULL
-        ORDER BY ABS(vat."Altura"::NUMERIC - ul."LecturaCms"), vat."Altura"
-        LIMIT 1
-    ) vf ON true
     ORDER BY db.ciudad, db.nombre, db.fecha;
 END;
 $$;
