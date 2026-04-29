@@ -51,6 +51,22 @@ export default function ReporteConsumosDetalleModal({
   onHide,
   datosFila,
 }: ReporteConsumosDetalleModalProps) {
+  const toOneDecimal = (value: number) => Math.round(value * 10) / 10;
+  const formatearLectura = (value: number | string | null | undefined) => {
+    if (value === null || value === undefined) return "-";
+    const numberValue =
+      typeof value === "number"
+        ? value
+        : Number(String(value).replace(",", "."));
+
+    if (Number.isNaN(numberValue)) return String(value);
+
+    return numberValue.toLocaleString("es-MX", {
+      minimumFractionDigits: Number.isInteger(numberValue) ? 0 : 1,
+      maximumFractionDigits: 1,
+    });
+  };
+
   const [salidas, setSalidas] = useState<SalidaDetalle[]>([]);
   const [entradas, setEntradas] = useState<EntradaDetalle[]>([]);
   const [loadingSalidas, setLoadingSalidas] = useState(false);
@@ -82,25 +98,72 @@ export default function ReporteConsumosDetalleModal({
     setErrorSalidas(null);
 
     try {
-      const { data, error: rpcError } = await supabase.rpc(
-        "get_salidas_detalle",
-        {
-          p_fecha: datosFila.fecha,
-          p_ciudad: datosFila.ciudad,
-          p_id_tanque: datosFila.idTanque,
-          p_id_unidad: datosFila.idUnidad || null,
-        },
+      let query = supabase
+        .from("TanqueMovimiento")
+        .select(
+          "IdTanqueMovimiento, IdTanque, FechaCarga, HoraCarga, TemperaturaCarga, IdUnidad, LitrosCarga, CuentaLitros, Horimetro, Odometro",
+        )
+        .eq("FechaCarga", datosFila.fecha)
+        .eq("CveCiudad", datosFila.ciudad)
+        .eq("IdTanque", datosFila.idTanque)
+        .eq("TipoMovimiento", "S")
+        .order("HoraCarga", { ascending: true });
+
+      if (datosFila.idUnidad !== null && datosFila.idUnidad !== undefined) {
+        query = query.eq("IdUnidad", datosFila.idUnidad);
+      }
+
+      const { data: movimientos, error: movimientosError } = await query;
+      if (movimientosError) throw movimientosError;
+
+      const { data: tanqueInfo, error: tanqueError } = await supabase
+        .from("Tanque")
+        .select("IDTanque, Nombre")
+        .eq("IDTanque", datosFila.idTanque)
+        .maybeSingle();
+      if (tanqueError) throw tanqueError;
+
+      const unidadIds = [
+        ...new Set((movimientos || []).map((m) => m.IdUnidad).filter(Boolean)),
+      ] as number[];
+
+      let unidadesMap = new Map<number, string>();
+      if (unidadIds.length > 0) {
+        const { data: unidades, error: unidadesError } = await supabase
+          .from("Unidades")
+          .select("IDUnidad, IDClaveUnidad, ClaveAlterna")
+          .in("IDUnidad", unidadIds);
+
+        if (unidadesError) throw unidadesError;
+
+        unidadesMap = new Map(
+          (unidades || []).map((u) => [
+            u.IDUnidad,
+            `${u.IDClaveUnidad ?? ""} (${u.ClaveAlterna ?? ""})`,
+          ]),
+        );
+      }
+
+      const salidasNormalizadas: SalidaDetalle[] = (movimientos || []).map(
+        (m) => ({
+          id_tanque_movimiento: m.IdTanqueMovimiento,
+          tanque: tanqueInfo?.Nombre ?? datosFila.tanque,
+          fecha: m.FechaCarga,
+          hora: m.HoraCarga,
+          temperatura: Number(m.TemperaturaCarga ?? 0),
+          unidad:
+            unidadesMap.get(m.IdUnidad) ||
+            (m.IdUnidad ? String(m.IdUnidad) : "Sin unidad"),
+          litros: Number(m.LitrosCarga ?? 0),
+          cuenta_litros: Number(m.CuentaLitros ?? 0),
+          horometro: Number(m.Horimetro ?? 0),
+          odometro: Number(m.Odometro ?? 0),
+        }),
       );
 
-      if (rpcError) {
-        console.error("Error al obtener salidas:", rpcError);
-        setErrorSalidas("Error al cargar los datos de salidas");
-        setSalidas([]);
-      } else {
-        setSalidas(data || []);
-      }
+      setSalidas(salidasNormalizadas);
     } catch (err) {
-      console.error("Error inesperado:", err);
+      console.error("Error al obtener salidas:", err);
       setErrorSalidas("Error inesperado al cargar los datos");
       setSalidas([]);
     } finally {
@@ -143,7 +206,7 @@ export default function ReporteConsumosDetalleModal({
   const handleEditStart = (s: SalidaDetalle) => {
     if (!s.id_tanque_movimiento) {
       alert(
-        "Error: No se encontró el ID del movimiento. Por favor compila y asegúrate de haber actualizado la función 'get_salidas_detalle' en el SQL Editor de Supabase.",
+        "Error: No se encontró el ID del movimiento para este registro.",
       );
       return;
     }
@@ -174,13 +237,16 @@ export default function ReporteConsumosDetalleModal({
       setIsUpdating(true);
       setErrorSalidas(null);
 
+      const horometro = toOneDecimal(editForm.horometro);
+      const odometro = toOneDecimal(editForm.odometro);
+
       const { error } = await supabase
         .from("TanqueMovimiento")
         .update({
           LitrosCarga: editForm.litros,
           CuentaLitros: editForm.cuenta_litros,
-          Horimetro: editForm.horometro,
-          Odometro: editForm.odometro,
+          Horimetro: horometro,
+          Odometro: odometro,
         })
         .eq("IdTanqueMovimiento", id);
 
@@ -431,6 +497,7 @@ export default function ReporteConsumosDetalleModal({
                           {editingId === s.id_tanque_movimiento ? (
                             <Form.Control
                               type="number"
+                              step="0.1"
                               size="sm"
                               value={editForm.horometro}
                               onChange={(e) =>
@@ -441,13 +508,14 @@ export default function ReporteConsumosDetalleModal({
                               }
                             />
                           ) : (
-                            s.horometro.toLocaleString()
+                            formatearLectura(s.horometro)
                           )}
                         </td>
                         <td className="text-end" style={{ minWidth: "100px" }}>
                           {editingId === s.id_tanque_movimiento ? (
                             <Form.Control
                               type="number"
+                              step="0.1"
                               size="sm"
                               value={editForm.odometro}
                               onChange={(e) =>
@@ -458,7 +526,7 @@ export default function ReporteConsumosDetalleModal({
                               }
                             />
                           ) : (
-                            s.odometro.toLocaleString()
+                            formatearLectura(s.odometro)
                           )}
                         </td>
                         <td className="text-center">

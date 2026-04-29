@@ -24,6 +24,22 @@ export default function ReporteRendimientosDetalleModalV2({
   onHide,
   datosFila,
 }: ReporteRendimientosDetalleModalV2Props) {
+  const toOneDecimal = (value: number) => Math.round(value * 10) / 10;
+  const formatearLectura = (value: number | string | null | undefined) => {
+    if (value === null || value === undefined) return "-";
+    const numberValue =
+      typeof value === "number"
+        ? value
+        : Number(String(value).replace(",", "."));
+
+    if (Number.isNaN(numberValue)) return String(value);
+
+    return numberValue.toLocaleString("es-MX", {
+      minimumFractionDigits: Number.isInteger(numberValue) ? 0 : 1,
+      maximumFractionDigits: 1,
+    });
+  };
+
   // `movimientos` es la fotografía del detalle que devuelve la RPC v2.
   // Incluye lecturas actuales y previas para explicar el cálculo incremental.
   const [movimientos, setMovimientos] = useState<RendimientoDetalleV2Item[]>(
@@ -56,30 +72,78 @@ export default function ReporteRendimientosDetalleModalV2({
     setError(null);
 
     try {
-      // La RPC ya trae el detalle enriquecido con odómetro/horímetro anterior.
-      // El frontend solo consume y pinta el resultado, sin recalcular deltas aquí.
-      const { data, error: rpcError } = await supabase.rpc(
-        "get_rendimientos_detalle_v2",
-        {
-          p_fecha_inicio: datosFila.fechaInicio,
-          p_fecha_fin: datosFila.fechaFin,
-          p_cve_ciudad: datosFila.cveCiudad,
-          p_id_unidad: datosFila.idUnidad,
-        },
-      );
+      const { data: rows, error: rowsError } = await supabase
+        .from("TanqueMovimiento")
+        .select(
+          "IdTanqueMovimiento, IdTanque, FechaCarga, HoraCarga, LitrosCarga, CuentaLitros, Horimetro, Odometro",
+        )
+        .eq("TipoMovimiento", "S")
+        .eq("CveCiudad", datosFila.cveCiudad)
+        .eq("IdUnidad", datosFila.idUnidad)
+        .lte("FechaCarga", datosFila.fechaFin)
+        .order("FechaCarga", { ascending: true })
+        .order("HoraCarga", { ascending: true })
+        .order("IdTanqueMovimiento", { ascending: true });
 
-      if (rpcError) {
-        console.error(
-          "Error al obtener detalle consolidado de rendimientos:",
-          rpcError,
-        );
-        setError("Error al cargar los movimientos de detalle");
-        setMovimientos([]);
-      } else {
-        setMovimientos(data || []);
+      if (rowsError) throw rowsError;
+
+      const tanqueIds = [
+        ...new Set((rows || []).map((r) => r.IdTanque).filter(Boolean)),
+      ] as number[];
+
+      let tanquesMap = new Map<number, string>();
+      if (tanqueIds.length > 0) {
+        const { data: tanques, error: tanquesError } = await supabase
+          .from("Tanque")
+          .select("IDTanque, Nombre")
+          .in("IDTanque", tanqueIds);
+
+        if (tanquesError) throw tanquesError;
+
+        tanquesMap = new Map((tanques || []).map((t) => [t.IDTanque, t.Nombre]));
       }
+
+      let prevOdometro: number | null = null;
+      let prevHorometro: number | null = null;
+
+      const detalle: RendimientoDetalleV2Item[] = [];
+
+      for (const row of rows || []) {
+        const fecha = String(row.FechaCarga);
+        const hora = String(row.HoraCarga);
+        const odometroRaw = row.Odometro;
+        const horometroRaw = row.Horimetro;
+
+        const odometroActual = Number(odometroRaw ?? 0);
+        const horometroActual = Number(horometroRaw ?? 0);
+
+        const dentroRango =
+          fecha >= datosFila.fechaInicio && fecha <= datosFila.fechaFin;
+
+        if (dentroRango) {
+          detalle.push({
+            id_tanque_movimiento: Number(row.IdTanqueMovimiento),
+            tanque:
+              tanquesMap.get(Number(row.IdTanque)) ||
+              String(row.IdTanque ?? "N/A"),
+            fecha,
+            hora,
+            litros: Number(row.LitrosCarga ?? 0),
+            cuenta_litros: Number(row.CuentaLitros ?? 0),
+            odometro_ant: prevOdometro,
+            horometro_ant: prevHorometro,
+            horometro: horometroActual,
+            odometro: odometroActual,
+          });
+        }
+
+        prevOdometro = odometroRaw === null ? null : odometroActual;
+        prevHorometro = horometroRaw === null ? null : horometroActual;
+      }
+
+      setMovimientos(detalle);
     } catch (err) {
-      console.error("Error inesperado:", err);
+      console.error("Error al obtener detalle consolidado de rendimientos:", err);
       setError("Error inesperado al cargar los datos");
       setMovimientos([]);
     } finally {
@@ -92,7 +156,7 @@ export default function ReporteRendimientosDetalleModalV2({
     // Los campos "anteriores" son de referencia y por eso permanecen de solo lectura.
     if (!m.id_tanque_movimiento) {
       alert(
-        "Error: No se encontró el ID del movimiento. Verifique que la función 'get_rendimientos_detalle_v2' retorne id_tanque_movimiento.",
+        "Error: No se encontró el ID del movimiento para este registro.",
       );
       return;
     }
@@ -123,6 +187,9 @@ export default function ReporteRendimientosDetalleModalV2({
       setIsUpdating(true);
       setError(null);
 
+      const horometro = toOneDecimal(editForm.horometro);
+      const odometro = toOneDecimal(editForm.odometro);
+
       // La edición impacta directamente la tabla operativa `TanqueMovimiento`.
       // Después del update se vuelve a consultar la RPC para refrescar también
       // los campos derivados que podrían cambiar visualmente en el detalle.
@@ -131,8 +198,8 @@ export default function ReporteRendimientosDetalleModalV2({
         .update({
           LitrosCarga: editForm.litros,
           CuentaLitros: editForm.cuenta_litros,
-          Horimetro: editForm.horometro,
-          Odometro: editForm.odometro,
+          Horimetro: horometro,
+          Odometro: odometro,
         })
         .eq("IdTanqueMovimiento", id);
 
@@ -222,11 +289,15 @@ export default function ReporteRendimientosDetalleModalV2({
 
   const formatearNumero = (
     valor: number,
-    decimales = 0,
+    decimales?: number,
   ) => {
+    const minDecimales =
+      decimales ?? (Number.isInteger(valor) ? 0 : 1);
+    const maxDecimales = decimales ?? 1;
+
     return Number(valor).toLocaleString("es-MX", {
-      minimumFractionDigits: decimales,
-      maximumFractionDigits: decimales,
+      minimumFractionDigits: minDecimales,
+      maximumFractionDigits: maxDecimales,
     });
   };
 
@@ -397,11 +468,12 @@ export default function ReporteRendimientosDetalleModalV2({
                           />
                         </td>
                         <td>
-                          {m.odometro_ant ?? "-"}
+                          {formatearLectura(m.odometro_ant)}
                         </td>
                         <td>
                           <Form.Control
                             type="number"
+                            step="0.1"
                             size="sm"
                             value={editForm.odometro}
                             onChange={(e) =>
@@ -413,11 +485,12 @@ export default function ReporteRendimientosDetalleModalV2({
                           />
                         </td>
                         <td>
-                          {m.horometro_ant ?? "-"}
+                          {formatearLectura(m.horometro_ant)}
                         </td>
                         <td>
                           <Form.Control
                             type="number"
+                            step="0.1"
                             size="sm"
                             value={editForm.horometro}
                             onChange={(e) =>
@@ -428,9 +501,9 @@ export default function ReporteRendimientosDetalleModalV2({
                             }
                           />
                         </td>
-                        <td>{calcularDiferencia(editForm.odometro, m.odometro_ant)}</td>
+                        <td>{formatearLectura(calcularDiferencia(editForm.odometro, m.odometro_ant))}</td>
                         <td>
-                          {calcularDiferencia(editForm.horometro, m.horometro_ant)}
+                          {formatearLectura(calcularDiferencia(editForm.horometro, m.horometro_ant))}
                         </td>
                         <td className="text-center">
                           <div className="d-flex gap-1 justify-content-center">
@@ -461,12 +534,12 @@ export default function ReporteRendimientosDetalleModalV2({
                             incluyendo valores previos usados para explicar el rendimiento incremental. */}
                         <td>{m.litros}</td>
                         <td>{m.cuenta_litros}</td>
-                        <td>{m.odometro_ant ?? "-"}</td>
-                        <td>{m.odometro}</td>
-                        <td>{m.horometro_ant ?? "-"}</td>
-                        <td>{m.horometro}</td>
-                        <td>{calcularDiferencia(m.odometro, m.odometro_ant)}</td>
-                        <td>{calcularDiferencia(m.horometro, m.horometro_ant)}</td>
+                        <td>{formatearLectura(m.odometro_ant)}</td>
+                        <td>{formatearLectura(m.odometro)}</td>
+                        <td>{formatearLectura(m.horometro_ant)}</td>
+                        <td>{formatearLectura(m.horometro)}</td>
+                        <td>{formatearLectura(calcularDiferencia(m.odometro, m.odometro_ant))}</td>
+                        <td>{formatearLectura(calcularDiferencia(m.horometro, m.horometro_ant))}</td>
                         <td className="text-center">
                           <Button
                             variant="outline-corporate"

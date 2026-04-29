@@ -109,14 +109,6 @@ export default function ReporteConsumos() {
       setAlertMessage(null);
       setLastQueryParams(data);
 
-      console.log("Consultando consumos:", {
-        p_fecha_inicio: data.FechaInicial,
-        p_fecha_fin: data.FechaFinal,
-        p_cve_ciudad: data.CveCiudad || null,
-        p_id_tanque: data.IDTanque ? parseInt(data.IDTanque) : null,
-        p_id_unidad: data.IDUnidad ? parseInt(data.IDUnidad) : null,
-      });
-
       // Llamar a la función RPC de Supabase
       const { data: result, error } = await supabase.rpc(
         "get_reporte_consumos",
@@ -132,8 +124,6 @@ export default function ReporteConsumos() {
       if (error) {
         throw error;
       }
-
-      console.log("Resultado de Supabase RPC:", result);
 
       if (Array.isArray(result)) {
         setConsumos(result);

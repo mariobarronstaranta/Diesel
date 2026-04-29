@@ -22,6 +22,22 @@ export default function ReporteRendimientosDetalleModal({
   onHide,
   datosFila,
 }: ReporteRendimientosDetalleModalProps) {
+  const toOneDecimal = (value: number) => Math.round(value * 10) / 10;
+  const formatearLectura = (value: number | string | null | undefined) => {
+    if (value === null || value === undefined) return "-";
+    const numberValue =
+      typeof value === "number"
+        ? value
+        : Number(String(value).replace(",", "."));
+
+    if (Number.isNaN(numberValue)) return String(value);
+
+    return numberValue.toLocaleString("es-MX", {
+      minimumFractionDigits: Number.isInteger(numberValue) ? 0 : 1,
+      maximumFractionDigits: 1,
+    });
+  };
+
   const [movimientos, setMovimientos] = useState<RendimientoDetalleItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -111,13 +127,16 @@ export default function ReporteRendimientosDetalleModal({
       setIsUpdating(true);
       setError(null);
 
+      const horometro = toOneDecimal(editForm.horometro);
+      const odometro = toOneDecimal(editForm.odometro);
+
       const { error } = await supabase
         .from("TanqueMovimiento")
         .update({
           LitrosCarga: editForm.litros,
           CuentaLitros: editForm.cuenta_litros,
-          Horimetro: editForm.horometro,
-          Odometro: editForm.odometro,
+          Horimetro: horometro,
+          Odometro: odometro,
         })
         .eq("IdTanqueMovimiento", id);
 
@@ -315,6 +334,7 @@ export default function ReporteRendimientosDetalleModal({
                       {editingId === m.id_tanque_movimiento ? (
                         <Form.Control
                           type="number"
+                          step="0.1"
                           size="sm"
                           value={editForm.horometro}
                           onChange={(e) =>
@@ -325,13 +345,14 @@ export default function ReporteRendimientosDetalleModal({
                           }
                         />
                       ) : (
-                        (m.horometro ?? 0).toLocaleString()
+                        formatearLectura(m.horometro)
                       )}
                     </td>
                     <td className="text-end" style={{ minWidth: "100px" }}>
                       {editingId === m.id_tanque_movimiento ? (
                         <Form.Control
                           type="number"
+                          step="0.1"
                           size="sm"
                           value={editForm.odometro}
                           onChange={(e) =>
@@ -342,7 +363,7 @@ export default function ReporteRendimientosDetalleModal({
                           }
                         />
                       ) : (
-                        (m.odometro ?? 0).toLocaleString()
+                        formatearLectura(m.odometro)
                       )}
                     </td>
                     <td className="text-center">

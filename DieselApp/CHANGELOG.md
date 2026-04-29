@@ -26,6 +26,7 @@ El formato está basado en [Keep a Changelog](https://keepachangelog.com/es/1.1.
 
 - Homologación de tipografía en `ReporteConsumosDetalleModal.tsx`: eliminación de clase `font-monospace` en tablas de Salidas y Entradas.
 - **Dashboard movido** de link directo en TopNav al dropdown de **Reportes** como primer item, con separador visual (`TopNav.tsx`).
+- **Reporte Consumos (modal Detalle de Salidas)**: se reemplazó la carga por RPC `get_salidas_detalle` por consulta directa a tablas (`TanqueMovimiento`, `Tanque`, `Unidades`) para evitar errores 400 por desalineación de firma entre entornos.
 
 ---
 

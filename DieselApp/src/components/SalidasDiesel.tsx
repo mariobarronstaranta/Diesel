@@ -39,6 +39,13 @@ export default function SalidasDiesel() {
   const { alert: message, showSuccess, showError, clearAlert } = useFormAlert();
   const [cveCiudad, setCveCiudad] = useState<string>("");
 
+  const toOneDecimal = (value: number) => Math.round(value * 10) / 10;
+  const parseOneDecimal = (value: string) => {
+    const normalized = value.replace(",", ".").trim();
+    const parsed = Number(normalized);
+    return toOneDecimal(parsed);
+  };
+
   const {
     register,
     handleSubmit,
@@ -128,8 +135,8 @@ export default function SalidasDiesel() {
           IdUnidad: Number(data.IDUnidad),
           IdPersonal: Number(data.IdOperador), // Mapped to IdPersonal
           FolioVale: data.FolioVale,
-          Horimetro: Number(data.Horimetro),
-          Odometro: Number(data.Odometro),
+          Horimetro: parseOneDecimal(data.Horimetro),
+          Odometro: parseOneDecimal(data.Odometro),
         },
       ]);
 
@@ -252,9 +259,17 @@ export default function SalidasDiesel() {
                   <Form.Label>Horometro</Form.Label>
                   <Form.Control
                     type="number"
+                    step="0.1"
                     isInvalid={!!errors.Horimetro}
                     {...register("Horimetro", {
                       required: "El horometro es obligatorio",
+                      validate: (value) => {
+                        const normalized = String(value).replace(",", ".").trim();
+                        if (!/^\d+(\.\d)?$/.test(normalized)) {
+                          return "El horometro debe tener máximo 1 decimal";
+                        }
+                        return true;
+                      },
                     })}
                   />
                   <Form.Control.Feedback type="invalid">
@@ -267,9 +282,17 @@ export default function SalidasDiesel() {
                   <Form.Label>Odómetro</Form.Label>
                   <Form.Control
                     type="number"
+                    step="0.1"
                     isInvalid={!!errors.Odometro}
                     {...register("Odometro", {
                       required: "El odómetro es obligatorio",
+                      validate: (value) => {
+                        const normalized = String(value).replace(",", ".").trim();
+                        if (!/^\d+(\.\d)?$/.test(normalized)) {
+                          return "El odómetro debe tener máximo 1 decimal";
+                        }
+                        return true;
+                      },
                     })}
                   />
                   <Form.Control.Feedback type="invalid">

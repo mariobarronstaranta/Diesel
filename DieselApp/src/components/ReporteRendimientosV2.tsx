@@ -101,14 +101,14 @@ export default function ReporteRendimientosV2() {
     });
   };
 
-  const calcularLtsHrs = (
+  const calcularLtsKms = (
     cargaTotal: number | null | undefined,
-    hrsRecorridos: number | null | undefined,
+    kmsRecorridos: number | null | undefined,
   ) => {
     const litros = Number(cargaTotal || 0);
-    const horas = Number(hrsRecorridos || 0);
-    if (horas <= 0) return 0;
-    return litros / horas;
+    const kms = Number(kmsRecorridos || 0);
+    if (kms <= 0) return 0;
+    return litros / kms;
   };
 
   const abrirDetalle = (r: ReporteRendimientosV2Data) => {
@@ -196,7 +196,7 @@ export default function ReporteRendimientosV2() {
       "Hrs Rec.",
       "Km/Lt",
       "Hr/Lt",
-      "Lt/Hr",
+      "Lt/Km",
       "Tanque Principal",
       "Tanques Utilizados",
       "Cantidad Tanques",
@@ -212,7 +212,7 @@ export default function ReporteRendimientosV2() {
           Number(r["Hrs Recorridos"] || 0).toFixed(0),
           Number(r["Kms/Lts"] || 0).toFixed(4),
           Number(r["Hrs/Lts"] || 0).toFixed(4),
-          calcularLtsHrs(r["Carga Total"], r["Hrs Recorridos"]).toFixed(4),
+          calcularLtsKms(r["Carga Total"], r["Kms Recorridos"]).toFixed(4),
           `"${r["Tanque Principal"] || ""}"`,
           `"${r["Tanques Utilizados"] || ""}"`,
           Number(r["Cantidad Tanques"] || 0).toFixed(0),
@@ -338,7 +338,7 @@ export default function ReporteRendimientosV2() {
     );
     const totalKmsLts = totalCarga > 0 ? totalKms / totalCarga : 0;
     const totalHrsLts = totalCarga > 0 ? totalHrs / totalCarga : 0;
-    const totalLtsHrs = totalHrs > 0 ? totalCarga / totalHrs : 0;
+    const totalLtsKms = totalKms > 0 ? totalCarga / totalKms : 0;
 
     // La tabla PDF replica el resumen principal; solo omite la columna de acción.
     const tableColumn = [
@@ -348,7 +348,7 @@ export default function ReporteRendimientosV2() {
       "Hrs Rec.",
       "Km/Lt",
       "Hr/Lt",
-      "Lt/Hr",
+      "Lt/Km",
       "Tanque Principal",
       "Tanques Utilizados",
     ];
@@ -359,7 +359,7 @@ export default function ReporteRendimientosV2() {
       formatearNumero(item["Hrs Recorridos"], true),
       formatearNumero(item["Kms/Lts"]),
       formatearNumero(item["Hrs/Lts"]),
-      formatearNumero(calcularLtsHrs(item["Carga Total"], item["Hrs Recorridos"])),
+      formatearNumero(calcularLtsKms(item["Carga Total"], item["Kms Recorridos"])),
       item["Tanque Principal"] ?? "",
       item["Tanques Utilizados"] ?? "",
     ]);
@@ -371,7 +371,7 @@ export default function ReporteRendimientosV2() {
       formatearNumero(totalHrs, true),
       formatearNumero(totalKmsLts),
       formatearNumero(totalHrsLts),
-      formatearNumero(totalLtsHrs),
+      formatearNumero(totalLtsKms),
       "",
       "",
     ]);
@@ -650,7 +650,7 @@ export default function ReporteRendimientosV2() {
                     <th className="text-center">Hrs Rec.</th>
                     <th className="text-center">Km/Lt</th>
                     <th className="text-center">Hr/Lt</th>
-                    <th className="text-center">Lt/Hr</th>
+                    <th className="text-center">Lt/Km</th>
                     <th className="text-center">Tanque Principal</th>
                     <th className="text-center">Tanques Utilizados</th>
                     <th className="text-center">Acción</th>
@@ -678,7 +678,7 @@ export default function ReporteRendimientosV2() {
                         {formatearNumero(r["Hrs/Lts"])}
                       </td>
                       <td className="text-end rendimientos-v2-table__numero">
-                        {formatearNumero(calcularLtsHrs(r["Carga Total"], r["Hrs Recorridos"]))}
+                        {formatearNumero(calcularLtsKms(r["Carga Total"], r["Kms Recorridos"]))}
                       </td>
                       <td className="rendimientos-v2-table__tanque">
                         {r["Tanque Principal"]}
